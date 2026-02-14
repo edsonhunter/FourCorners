@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Particles;
 using ElementLogicFail.Scripts.Components.Pool;
 using ElementLogicFail.Scripts.Components.Request;
@@ -23,7 +23,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         private ComponentLookup<SpawnerRegistry> _spawnerRegistryLookup;
         private ComponentLookup<ParticlePrefabs>  _particlePrefabLookup;
         
-        private NativeParallelHashMap<int, Entity> _typeToSpawnerMap;
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -34,8 +33,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
             _spawnerRegistryLookup = SystemAPI.GetComponentLookup<SpawnerRegistry>(true);
             _particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
-            
-            _typeToSpawnerMap = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
         }
 
         [BurstCompile]
@@ -49,10 +46,10 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             bool hasParticles = SystemAPI.TryGetSingletonEntity<ParticlePrefabs>(out var particleManagerEntity);
             var particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
             
-            _typeToSpawnerMap.Clear();
+            var typeToSpawnerMap = new NativeParallelHashMap<int, Entity>(16, Allocator.TempJob);
             foreach (var (registry, entity) in SystemAPI.Query<RefRO<SpawnerRegistry>>().WithEntityAccess())
             {
-                _typeToSpawnerMap[(int)registry.ValueRO.Type] = registry.ValueRO.SpawnerEntity;
+                typeToSpawnerMap[(int)registry.ValueRO.Type] = registry.ValueRO.SpawnerEntity;
             }
             
             SimulationSingleton simulation = SystemAPI.GetSingleton<SimulationSingleton>();
@@ -63,7 +60,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             {
                 ElementLookup = _elementLookup,
                 LocalTransformLookup = _localTransformLookup,
-                TypeToSpawnerMap = _typeToSpawnerMap,
+                TypeToSpawnerMap = typeToSpawnerMap,
                 ParticlePrefabLookup = particlePrefabLookup,
                 ParticleManagerEntity = particleManagerEntity,
                 HasParticle = hasParticles,
@@ -76,8 +73,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            if (_typeToSpawnerMap.IsCreated)
-                _typeToSpawnerMap.Dispose();
         }
     }
     
@@ -85,7 +80,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     {
         [ReadOnly] public ComponentLookup<ElementData> ElementLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
-        [ReadOnly] public NativeParallelHashMap<int, Entity>  TypeToSpawnerMap;
+        [ReadOnly] [DeallocateOnJobCompletion] public NativeParallelHashMap<int, Entity>  TypeToSpawnerMap;
         [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
