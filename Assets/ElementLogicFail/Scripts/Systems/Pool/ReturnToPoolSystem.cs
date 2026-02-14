@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Pool;
 using Unity.Burst;
 using Unity.Collections;
@@ -49,7 +49,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                         var data = state.EntityManager.GetComponentData<ElementData>(returnEntity);
                         if (_typeToPool.TryGetValue((int)data.Type, out var poolEntity))
                         {
-                            entityCommandBuffer.AddComponent<Disabled>(returnEntities);
+                            entityCommandBuffer.AddComponent<Disabled>(returnEntity);
                             entityCommandBuffer.AppendToBuffer(poolEntity, new PooledEntity
                             {
                                 Value = returnEntity
