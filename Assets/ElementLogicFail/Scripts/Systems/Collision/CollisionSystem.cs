@@ -68,6 +68,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             };
             
             state.Dependency = job.Schedule(simulation, state.Dependency);
+            state.Dependency = typeToSpawnerMap.Dispose(state.Dependency);
         }
 
         [BurstCompile]
@@ -80,7 +81,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     {
         [ReadOnly] public ComponentLookup<ElementData> ElementLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
-        [ReadOnly] [DeallocateOnJobCompletion] public NativeParallelHashMap<int, Entity>  TypeToSpawnerMap;
+        [ReadOnly] public NativeParallelHashMap<int, Entity> TypeToSpawnerMap;
         [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
