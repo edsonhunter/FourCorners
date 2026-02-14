@@ -1,4 +1,5 @@
-﻿using ElementLogicFail.Scripts.Components.Particles;
+using ElementLogicFail.Scripts.Components.Particles;
+using ElementLogicFail.Scripts.Components.Pool;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -28,7 +29,14 @@ namespace ElementLogicFail.Scripts.Systems.Particles
                 particle.ValueRW.Timer += deltaTime;
                 if (particle.ValueRO.Timer >= particle.ValueRO.Lifetime)
                 {
-                    entityCommandBuffer.DestroyEntity(entity);
+                    if (SystemAPI.HasComponent<ParentPool>(entity))
+                    {
+                        entityCommandBuffer.AddComponent<ReturnToParticlePool>(entity);
+                    }
+                    else
+                    {
+                        entityCommandBuffer.DestroyEntity(entity);
+                    }
                 }
                 else
                 {
