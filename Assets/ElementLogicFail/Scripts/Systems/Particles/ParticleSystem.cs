@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Particles;
+using ElementLogicFail.Scripts.Components.Particles;
 using ElementLogicFail.Scripts.Components.Request;
 using Unity.Burst;
 using Unity.Entities;
@@ -28,16 +28,13 @@ namespace ElementLogicFail.Scripts.Systems.Particles
             {
                 foreach (var spawnRequest in request)
                 {
-                    for (int requestIdx = 0; requestIdx < request.Length; requestIdx++)
+                    var instance = entityCommandBuffer.Instantiate(spawnRequest.Prefab);
+                    entityCommandBuffer.SetComponent(instance, LocalTransform.FromPosition(spawnRequest.Position));
+                    entityCommandBuffer.AddComponent(instance, new ParticleEffectData
                     {
-                        var instance = entityCommandBuffer.Instantiate(spawnRequest.Prefab);
-                        entityCommandBuffer.SetComponent(instance, LocalTransform.FromPosition(spawnRequest.Position));
-                        entityCommandBuffer.AddComponent(instance, new ParticleEffectData
-                        {
-                            Lifetime = 1f,
-                            Timer = 0f
-                        });
-                    }
+                        Lifetime = 1f,
+                        Timer = 0f
+                    });
                 }
                 request.Clear();
             }
