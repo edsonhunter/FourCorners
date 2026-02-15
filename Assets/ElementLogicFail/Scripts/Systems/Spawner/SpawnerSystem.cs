@@ -25,47 +25,63 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         public void OnUpdate(ref SystemState state)
         {
             var deltaTime = SystemAPI.Time.DeltaTime;
-            var entitySimulationCommandBufferSystem =
-                SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            EntityCommandBuffer entityCommandBuffer =
-                entitySimulationCommandBufferSystem.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
             var requestBuffer = SystemAPI.GetSingletonBuffer<SpawnerRateChangeRequest>();
-            var rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.Temp);
+            var rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.TempJob);
+            
             foreach (var request in requestBuffer)
             {
                 rateChanges[(int)request.Type] = request.NewRate;
             }
-            
-            foreach (var (spawner, transform, entity) in
-                     SystemAPI.Query<RefRW<Components.Spawner.Spawner>, RefRO<LocalTransform>>().WithEntityAccess())
-            {
-                Components.Spawner.Spawner spawnerRW = spawner.ValueRW;
-                
-                if (rateChanges.TryGetValue((int)spawner.ValueRO.Type, out var newRate))
-                {
-                    spawnerRW.SpawnRate = newRate;
-                }
-                
-                spawnerRW.Timer += deltaTime;
-                float timePerSpawn = 1f / spawnerRW.SpawnRate;
-                if (spawnerRW.Timer >= timePerSpawn)
-                {
-                    spawnerRW.Timer = 0f;
-                    entityCommandBuffer.AppendToBuffer(entity, new ElementSpawnRequest
-                    {
-                        Type = spawnerRW.Type,
-                        Position = transform.ValueRO.Position,
-                    });
-                }
-                spawner.ValueRW = spawnerRW;
-            }
             requestBuffer.Clear();
+
+            state.Dependency = new SpawnerJob
+            {
+                DeltaTime = deltaTime,
+                Ecb = ecb,
+                RateChanges = rateChanges
+            }.ScheduleParallel(state.Dependency);
+
+            rateChanges.Dispose(state.Dependency);
         }
 
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
+        }
+    }
+
+    [BurstCompile]
+    public partial struct SpawnerJob : IJobEntity
+    {
+        public float DeltaTime;
+        public EntityCommandBuffer.ParallelWriter Ecb;
+        [ReadOnly] public NativeHashMap<int, float> RateChanges;
+
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform)
+        {
+            if (RateChanges.TryGetValue((int)spawner.Type, out var newRate))
+            {
+                spawner.SpawnRate = newRate;
+            }
+
+            spawner.Timer += DeltaTime;
+            
+            if (spawner.SpawnRate > 0.001f)
+            {
+                float timePerSpawn = 1f / spawner.SpawnRate;
+                if (spawner.Timer >= timePerSpawn)
+                {
+                    spawner.Timer = 0f;
+                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    {
+                        Type = spawner.Type,
+                        Position = transform.ValueRO.Position,
+                    });
+                }
+            }
         }
     }
 }
