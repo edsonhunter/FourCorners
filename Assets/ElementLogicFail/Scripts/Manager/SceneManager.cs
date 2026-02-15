@@ -1,8 +1,6 @@
-﻿using System;
-using ElementLogicFail.Scripts.Manager.Interface;
+﻿using ElementLogicFail.Scripts.Manager.Interface;
 using ElementLogicFail.Scripts.Scenes;
 using ElementLogicFail.Scripts.Scenes.Interface;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -30,7 +28,7 @@ namespace ElementLogicFail.Scripts.Manager
                     .completed +=
                 async operation =>
                 {
-                    _activeScene = GetActiveSceneController();
+                    _activeScene = BaseScene.GetActiveScene();
                     _activeScene.Init(_application, data);
                     _activeScene.SetActiveScene(true);
                     await _activeScene.FireLoading();
@@ -45,7 +43,7 @@ namespace ElementLogicFail.Scripts.Manager
                 async operation =>
                 {
                     SetLastLoadedSceneActive();
-                    var overlay = GetActiveSceneController();
+                    var overlay = BaseScene.GetActiveScene();
                     overlay.Init(_application, data);
                     _activeScene.SetActiveScene(false);
                     await overlay.FireLoading();
@@ -61,26 +59,7 @@ namespace ElementLogicFail.Scripts.Manager
                 _activeScene.SetActiveScene(true);
             };
         }
-
-        public BaseScene GetActiveSceneController()
-        {
-            Scene activeScene = UnitySceneManager.GetActiveScene();
-            GameObject[] rootObjects = activeScene.GetRootGameObjects();
-
-            foreach (var rootObject in rootObjects)
-            {
-                if (rootObject.GetComponent<BaseScene>() == null)
-                {
-                    continue;
-                }
-
-                return rootObject.GetComponent<BaseScene>();
-            }
-
-            throw new InvalidOperationException(
-                $"Cannot have a scene without a game object with component {nameof(BaseScene)}.");
-        }
-
+        
         public void StartFirstScene(ISceneData data)
         {
             LoadScene(data);

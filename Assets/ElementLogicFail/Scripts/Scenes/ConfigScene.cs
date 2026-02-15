@@ -1,4 +1,5 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface;
+﻿using System.Runtime.CompilerServices;
+using ElementLogicFail.Scripts.Manager.Interface;
 using ElementLogicFail.Scripts.Scenes.Interface;
 using UnityEngine;
 using UnityEngine.UI;
