@@ -79,6 +79,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     {
                         Type = spawner.Type,
                         Position = transform.ValueRO.Position,
+                        SpawnerEntity = entity
                     });
                 }
             }
