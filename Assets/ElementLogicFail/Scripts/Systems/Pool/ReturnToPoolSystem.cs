@@ -24,48 +24,25 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            
             _typeToPool.Clear();
             
-            var entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
-            var poolQuery = SystemAPI.QueryBuilder().WithAll<ElementPool>().Build();
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            using (var poolEntities = poolQuery.ToEntityArray(Allocator.TempJob))
+            var buildMapJob = new BuildTypeToPoolMapJob
             {
-                foreach (var entity in poolEntities)
-                {
-                    var pool = state.EntityManager.GetComponentData<ElementPool>(entity);
-                    if (!_typeToPool.ContainsKey(pool.ElementType))
-                    {
-                        _typeToPool.Add(pool.ElementType, entity);
-                    }
-                }
+                TypeToPool = _typeToPool
+            };
+            
+            state.Dependency = buildMapJob.Schedule(state.Dependency);
 
-                var returnQuery = SystemAPI.QueryBuilder().WithAll<ReturnToPool>().Build();
-                using (var returnEntities = returnQuery.ToEntityArray(Allocator.Temp))
-                {
-                    foreach (var returnEntity in returnEntities)
-                    {
-                        var data = state.EntityManager.GetComponentData<ElementData>(returnEntity);
-                        if (_typeToPool.TryGetValue((int)data.Type, out var poolEntity))
-                        {
-                            entityCommandBuffer.AddComponent<Disabled>(returnEntity);
-                            entityCommandBuffer.AppendToBuffer(poolEntity, new PooledEntity
-                            {
-                                Value = returnEntity
-                            });
-                        }
-                        else
-                        {
-                            entityCommandBuffer.DestroyEntity(returnEntity);
-                        }
-                        entityCommandBuffer.RemoveComponent<ReturnToPool>(returnEntity);
-                    }
-                }
-            }
-
-            entityCommandBuffer.Playback(state.EntityManager);
-            entityCommandBuffer.Dispose();
+            var returnJob = new ReturnJob
+            {
+                TypeToPool = _typeToPool,
+                Ecb = ecb
+            };
+            
+            state.Dependency = returnJob.ScheduleParallel(state.Dependency);
         }
 
         [BurstCompile]
@@ -73,6 +50,44 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         {
             if (_typeToPool.IsCreated)
                 _typeToPool.Dispose();
+        }
+    }
+
+    [BurstCompile]
+    public partial struct BuildTypeToPoolMapJob : IJobEntity
+    {
+        public NativeParallelHashMap<int, Entity> TypeToPool;
+
+        private void Execute(Entity entity, RefRO<ElementPool> pool)
+        {
+            if (!TypeToPool.ContainsKey(pool.ValueRO.ElementType))
+            {
+                TypeToPool.Add(pool.ValueRO.ElementType, entity);
+            }
+        }
+    }
+
+    [BurstCompile]
+    public partial struct ReturnJob : IJobEntity
+    {
+        [ReadOnly] public NativeParallelHashMap<int, Entity> TypeToPool;
+        public EntityCommandBuffer.ParallelWriter Ecb;
+
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ElementData> data, RefRO<ReturnToPool> returnTag)
+        {
+            if (TypeToPool.TryGetValue((int)data.ValueRO.Type, out var poolEntity))
+            {
+                Ecb.AddComponent<Disabled>(sortKey, entity);
+                Ecb.AppendToBuffer(sortKey, poolEntity, new PooledEntity
+                {
+                    Value = entity
+                });
+            }
+            else
+            {
+                Ecb.DestroyEntity(sortKey, entity);
+            }
+            Ecb.RemoveComponent<ReturnToPool>(sortKey, entity);
         }
     }
 }
