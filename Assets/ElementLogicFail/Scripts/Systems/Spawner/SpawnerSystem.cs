@@ -53,7 +53,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 DeltaTime = deltaTime,
                 Ecb = ecb,
                 RateChanges = rateChanges,
-                Random = Random.CreateFromIndex(seed)
+                BaseSeed = seed
             }.ScheduleParallel(state.Dependency);
 
             rateChanges.Dispose(state.Dependency);
@@ -71,14 +71,20 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         public float DeltaTime;
         public EntityCommandBuffer.ParallelWriter Ecb;
         [ReadOnly] public NativeHashMap<int, float> RateChanges;
-        public Random Random;
+        public uint BaseSeed;
 
         private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform, DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
         {
+            var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
+
             if (RateChanges.TryGetValue((int)spawner.Type, out var newRate))
             {
                 spawner.SpawnRate = newRate;
             }
+
+            // Clamp rate to avoid memory explosion or divide by zero issues
+            // Min 0.0f (paused), Max 20.0f (20 per sec is plenty for this demo)
+            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 50f);
 
             spawner.Timer += DeltaTime;
             
@@ -89,7 +95,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 {
                     spawner.Timer = 0f;
                     
-                    var prefabIndex = Random.NextInt(0, prefabs.Length);
+                    var prefabIndex = random.NextInt(0, prefabs.Length);
                     var prefabEntity = prefabs[prefabIndex].Prefab;
                     
                     Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
