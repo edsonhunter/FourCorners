@@ -150,8 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
   prefabs:
-  - {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
-  - {fileID: 5117180317900934959, guid: 1f29100832feed640a3ee66563718cb5, type: 3}
+  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
   spawnRate: 1
   initialPoolSize: 500
   Waypoints:
@@ -191,7 +190,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &496306360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,7 +246,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &596508301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -364,6 +363,7 @@ Transform:
   m_Children:
   - {fileID: 708016460}
   - {fileID: 158076814}
+  - {fileID: 1263765479}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &708016458
@@ -397,8 +397,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
   prefabs:
-  - {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
-  - {fileID: 5117180317900934959, guid: 1f29100832feed640a3ee66563718cb5, type: 3}
+  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
   spawnRate: 1
   initialPoolSize: 500
   Waypoints:
@@ -580,6 +579,92 @@ Transform:
   m_Children: []
   m_Father: {fileID: 496306361}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1263765478
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1263765479}
+  - component: {fileID: 1263765480}
+  m_Layer: 0
+  m_Name: SpawnerFireC
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1263765479
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1263765478}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -5, y: 0, z: 5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1370399939}
+  m_Father: {fileID: 642305892}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1263765480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1263765478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 917d6f8bd34c409bb2fc635255e0cb75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
+  type: 0
+  prefabs:
+  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  spawnRate: 1
+  initialPoolSize: 500
+  Waypoints:
+  - {fileID: 932893979}
+  - {fileID: 810817598}
+  - {fileID: 923951199}
+  - {fileID: 642305892}
+--- !u!1 &1370399938
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1370399939}
+  m_Layer: 0
+  m_Name: waypointA
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1370399939
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1370399938}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1263765479}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1412271716
 GameObject:
   m_ObjectHideFlags: 0
@@ -667,7 +752,7 @@ Transform:
   m_GameObject: {fileID: 1412271716}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalPosition: {x: 0, y: -0.01, z: 0}
   m_LocalScale: {x: 5, y: 0, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -959,7 +1044,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1853416371
 MonoBehaviour:
   m_ObjectHideFlags: 0
