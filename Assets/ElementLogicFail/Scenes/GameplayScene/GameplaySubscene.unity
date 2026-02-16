@@ -149,7 +149,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  prefab: {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
+  prefabs:
+  - {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
   spawnRate: 1
   initialPoolSize: 256
   Waypoints:
@@ -202,7 +203,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 1
-  prefab: {fileID: 5117180317900934959, guid: 1f29100832feed640a3ee66563718cb5, type: 3}
+  prefabs:
+  - {fileID: 5117180317900934959, guid: 1f29100832feed640a3ee66563718cb5, type: 3}
   spawnRate: 1
   initialPoolSize: 256
   Waypoints:
@@ -255,7 +257,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  prefab: {fileID: 5117180317900934959, guid: c5e4a1db8da1d9c4c86eea78e81117be, type: 3}
+  prefabs:
+  - {fileID: 5117180317900934959, guid: c5e4a1db8da1d9c4c86eea78e81117be, type: 3}
+  - {fileID: 5117180317900934959, guid: c5e4a1db8da1d9c4c86eea78e81117be, type: 3}
+  - {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
   spawnRate: 1
   initialPoolSize: 256
   Waypoints:
@@ -387,7 +392,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  prefab: {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
+  prefabs:
+  - {fileID: 5117180317900934959, guid: cbd62107221a1f2498e644eb7c71c020, type: 3}
   spawnRate: 1
   initialPoolSize: 256
   Waypoints:
@@ -961,7 +967,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  prefab: {fileID: 5117180317900934959, guid: 2070eba2ec008844a9d121ce16250d3f, type: 3}
+  prefabs:
+  - {fileID: 5117180317900934959, guid: 2070eba2ec008844a9d121ce16250d3f, type: 3}
+  - {fileID: 5117180317900934959, guid: 1f29100832feed640a3ee66563718cb5, type: 3}
+  - {fileID: 5117180317900934959, guid: 2070eba2ec008844a9d121ce16250d3f, type: 3}
   spawnRate: 1
   initialPoolSize: 256
   Waypoints:

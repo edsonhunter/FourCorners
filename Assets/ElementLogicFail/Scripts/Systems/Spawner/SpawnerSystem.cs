@@ -19,7 +19,6 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<Components.Spawner.Spawner>();
             state.RequireForUpdate<ElementSpawnRequest>();
-            state.RequireForUpdate<SpawnerRateChangeRequest>();
         }
 
         [BurstCompile]
@@ -29,14 +28,23 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            var requestBuffer = SystemAPI.GetSingletonBuffer<SpawnerRateChangeRequest>();
-            var rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.TempJob);
-            
-            foreach (var request in requestBuffer)
+            var rateChanges = new NativeHashMap<int, float>(0, Allocator.TempJob);
+
+            if (SystemAPI.TryGetSingletonBuffer<SpawnerRateChangeRequest>(out var requestBuffer))
             {
-                rateChanges[(int)request.Type] = request.NewRate;
+                if (requestBuffer.Length > 0)
+                {
+                    // Resize/Reallocate if needed, but since we created with 0, we must create new one or use capacity
+                    rateChanges.Dispose(); // Dispose empty
+                    rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.TempJob);
+                    
+                    foreach (var request in requestBuffer)
+                    {
+                        rateChanges[(int)request.Type] = request.NewRate;
+                    }
+                    requestBuffer.Clear();
+                }
             }
-            requestBuffer.Clear();
 
             var seed = (uint)SystemAPI.Time.ElapsedTime + 1;
             
