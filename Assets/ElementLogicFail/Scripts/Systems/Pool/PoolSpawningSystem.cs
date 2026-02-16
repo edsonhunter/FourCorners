@@ -125,9 +125,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                             Entity instance = pooledBuffer[pooledBuffer.Length - 1].Value;
                             pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
 
-                            // Mark the source pool so it knows where to return
-                            // Ecb.AddComponent(instance, new SourcePool { PoolEntity = poolEntity }); // Handled in PrewarmSystem now
-
                             // Copy Path from Spawner to Instance
                             if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
                             {
