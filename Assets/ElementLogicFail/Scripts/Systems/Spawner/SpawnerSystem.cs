@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics.Systems;
 using Unity.Transforms;
+using Unity.Mathematics;
 
 namespace ElementLogicFail.Scripts.Systems.Spawner
 {
@@ -37,11 +38,14 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             }
             requestBuffer.Clear();
 
+            var seed = (uint)SystemAPI.Time.ElapsedTime + 1;
+            
             state.Dependency = new SpawnerJob
             {
                 DeltaTime = deltaTime,
                 Ecb = ecb,
-                RateChanges = rateChanges
+                RateChanges = rateChanges,
+                Random = Random.CreateFromIndex(seed)
             }.ScheduleParallel(state.Dependency);
 
             rateChanges.Dispose(state.Dependency);
@@ -59,8 +63,9 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         public float DeltaTime;
         public EntityCommandBuffer.ParallelWriter Ecb;
         [ReadOnly] public NativeHashMap<int, float> RateChanges;
+        public Random Random;
 
-        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform)
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform, DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
         {
             if (RateChanges.TryGetValue((int)spawner.Type, out var newRate))
             {
@@ -69,17 +74,22 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             spawner.Timer += DeltaTime;
             
-            if (spawner.SpawnRate > 0.001f)
+            if (spawner.SpawnRate > 0.001f && prefabs.Length > 0)
             {
                 float timePerSpawn = 1f / spawner.SpawnRate;
                 if (spawner.Timer >= timePerSpawn)
                 {
                     spawner.Timer = 0f;
+                    
+                    var prefabIndex = Random.NextInt(0, prefabs.Length);
+                    var prefabEntity = prefabs[prefabIndex].Prefab;
+                    
                     Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
                     {
                         Type = spawner.Type,
                         Position = transform.ValueRO.Position,
-                        SpawnerEntity = entity
+                        SpawnerEntity = entity,
+                        PrefabToSpawn = prefabEntity
                     });
                 }
             }

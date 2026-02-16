@@ -115,7 +115,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 var request = requestBuffer[i];
                 if (request.Type != spawner.ValueRO.Type) continue;
 
-                if (PrefabToPool.TryGetValue(spawner.ValueRO.ElementPrefab, out var poolEntity))
+                // Lookup pool based on the specific Prefab requested
+                if (PrefabToPool.TryGetValue(request.PrefabToSpawn, out var poolEntity))
                 {
                     if (PoolLookup.TryGetBuffer(poolEntity, out var pooledBuffer))
                     {
@@ -123,6 +124,9 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                         {
                             Entity instance = pooledBuffer[pooledBuffer.Length - 1].Value;
                             pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
+
+                            // Mark the source pool so it knows where to return
+                            Ecb.AddComponent(instance, new SourcePool { PoolEntity = poolEntity });
 
                             // Copy Path from Spawner to Instance
                             if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
