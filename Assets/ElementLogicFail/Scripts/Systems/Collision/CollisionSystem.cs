@@ -106,7 +106,9 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             ParticlePrefabs particlePrefabs = HasParticle ? ParticlePrefabLookup[ParticleManagerEntity] : default;
             
             if (dataA.Type == dataB.Type)
-            {
+            { 
+                return;
+                //Remove temporarly the logic to spawn new characters when they collide with each other
                 if (dataA.Cooldown > 0f || dataB.Cooldown > 0f)
                 {
                     return;

@@ -23,9 +23,7 @@ namespace ElementLogicFail.Scripts.Systems.Path
                 var followerRW = follower.ValueRW;
                 var currentTarget = buffer[followerRW.CurrentIndex].Position;
                 
-                // Update ElementData target just in case, though we handle movement here
                 element.ValueRW.Target = currentTarget;
-
                 // Move towards target
                 float3 direction = math.normalizesafe(currentTarget - transform.ValueRO.Position);
                 // Zero out Y movement if purely 2D plane logic is desired, but keeping 3D generally safe

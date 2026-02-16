@@ -121,7 +121,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                     {
                         if (pooledBuffer.Length > 0)
                         {
-                            // Pop from pool
                             Entity instance = pooledBuffer[pooledBuffer.Length - 1].Value;
                             pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
 
