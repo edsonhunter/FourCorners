@@ -33,6 +33,10 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 {
                     var newInstance = entityCommandBuffer.Instantiate( pool.ValueRO.Prefab);
                     entityCommandBuffer.AddComponent<Disabled>(newInstance);
+                    
+                    // Bake in the SourcePool component at creation time
+                    entityCommandBuffer.AddComponent(newInstance, new SourcePool { PoolEntity = entity });
+                    
                     entityCommandBuffer.AppendToBuffer(entity, new PooledEntity
                     {
                         Value = newInstance
