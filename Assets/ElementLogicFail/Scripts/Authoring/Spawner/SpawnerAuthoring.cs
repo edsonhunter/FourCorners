@@ -8,7 +8,7 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
     public class SpawnerAuthoring : MonoBehaviour
     {
         public ElementType type;
-        public GameObject prefab;
+        public List<GameObject> prefabs;
         public float spawnRate;
         public int initialPoolSize;
         public List<Transform> Waypoints;
@@ -22,18 +22,35 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
                 AddComponent(entity, new Components.Spawner.Spawner
                 {
                     Type = authoring.type,
-                    ElementPrefab = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic),
                     SpawnRate = authoring.spawnRate,
                     Timer = 0
                 });
                 
-                AddComponent(entity, new Components.Pool.ElementPool
+                // Create Pool for EACH prefab
+                if (authoring.prefabs != null)
                 {
-                    ElementType = (int)authoring.type,
-                    Prefab = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic),
-                    PoolSize = authoring.initialPoolSize
-                });
+                    var prefabBuffer = AddBuffer<Components.Spawner.SpawnerPrefab>(entity);
+                    foreach (var prefabGo in authoring.prefabs)
+                    {
+                        if (prefabGo == null) continue;
+                        var prefabEntity = GetEntity(prefabGo, TransformUsageFlags.Dynamic);
+                        
+                        prefabBuffer.Add(new Components.Spawner.SpawnerPrefab { Prefab = prefabEntity });
 
+                        // Create a unique Pool Entity for this Prefab
+                        var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
+                        AddComponent(poolEntity, new Components.Pool.ElementPool
+                        {
+                            ElementType = (int)authoring.type, // Initial type hint, but pool is prefab-keyed
+                            Prefab = prefabEntity,
+                            PoolSize = authoring.initialPoolSize
+                        });
+                        // Add buffer for pooled entities
+                        AddBuffer<Components.Pool.PooledEntity>(poolEntity);
+                    }
+                }
+
+                // Create Registry Entity for Collision System lookup
                 var registryEntity = CreateAdditionalEntity(TransformUsageFlags.None);
                 AddComponent(registryEntity, new Components.Spawner.SpawnerRegistry
                 {
