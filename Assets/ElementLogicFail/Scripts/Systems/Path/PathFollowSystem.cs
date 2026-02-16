@@ -15,35 +15,47 @@ namespace ElementLogicFail.Scripts.Systems.Path
         {
             var deltaTime = SystemAPI.Time.DeltaTime;
 
-            foreach (var (transform, follower, element, buffer) in 
-                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<PathFollower>, RefRW<ElementData>, DynamicBuffer<PathWaypoint>>())
+            var job = new PathFollowJob
             {
-                if (buffer.IsEmpty) continue;
+                DeltaTime = deltaTime
+            };
+            
+            state.Dependency = job.ScheduleParallel(state.Dependency);
+        }
+    }
 
-                var followerRW = follower.ValueRW;
-                var currentTarget = buffer[followerRW.CurrentIndex].Position;
-                
-                element.ValueRW.Target = currentTarget;
-                // Move towards target
-                float3 direction = math.normalizesafe(currentTarget - transform.ValueRO.Position);
-                // Zero out Y movement if purely 2D plane logic is desired, but keeping 3D generally safe
-                direction.y = 0; 
-                
-                transform.ValueRW.Position += direction * element.ValueRO.Speed * deltaTime;
+    [BurstCompile]
+    public partial struct PathFollowJob : IJobEntity
+    {
+        public float DeltaTime;
 
-                // Check distance
-                if (math.distancesq(transform.ValueRO.Position, currentTarget) < 0.2f * 0.2f)
+        private void Execute(RefRW<LocalTransform> transform, RefRW<PathFollower> follower, RefRW<ElementData> element, DynamicBuffer<PathWaypoint> buffer)
+        {
+            if (buffer.IsEmpty) return;
+
+            var followerRW = follower.ValueRW;
+            var currentTarget = buffer[followerRW.CurrentIndex].Position;
+            
+            element.ValueRW.Target = currentTarget;
+            // Move towards target
+            float3 direction = math.normalizesafe(currentTarget - transform.ValueRO.Position);
+            // Zero out Y movement if purely 2D plane logic is desired, but keeping 3D generally safe
+            direction.y = 0; 
+            
+            transform.ValueRW.Position += direction * element.ValueRO.Speed * DeltaTime;
+
+            // Check distance
+            if (math.distancesq(transform.ValueRO.Position, currentTarget) < 0.2f * 0.2f)
+            {
+                // Reached waypoint
+                followerRW.CurrentIndex++;
+                if (followerRW.CurrentIndex >= buffer.Length)
                 {
-                    // Reached waypoint
-                    followerRW.CurrentIndex++;
-                    if (followerRW.CurrentIndex >= buffer.Length)
-                    {
-                        followerRW.CurrentIndex = 0;
-                    }
+                    followerRW.CurrentIndex = 0;
                 }
-                
-                follower.ValueRW = followerRW;
             }
+            
+            follower.ValueRW = followerRW;
         }
     }
 }
