@@ -104,47 +104,15 @@ namespace ElementLogicFail.Scripts.Systems.Collision
 
             float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
             ParticlePrefabs particlePrefabs = HasParticle ? ParticlePrefabLookup[ParticleManagerEntity] : default;
-            
-            if (dataA.Type == dataB.Type)
-            { 
-                return;
-                //Remove temporarly the logic to spawn new characters when they collide with each other
-                if (dataA.Cooldown > 0f || dataB.Cooldown > 0f)
-                {
-                    return;
-                }
-                if (TypeToSpawnerMap.TryGetValue((int)dataA.Type, out var spawnerEntity))
-                {
-                    EntityCommandBuffer.SetComponent(0, a, new ElementData
-                    {
-                        Type = dataA.Type,
-                        Speed = dataA.Speed,
-                        RandomSeed = dataA.RandomSeed,
-                        Target = dataA.Target,
-                        Cooldown = 2f,
-                    });
-                    EntityCommandBuffer.SetComponent(0, b, new ElementData
-                    {
-                        Type = dataB.Type,
-                        Speed = dataB.Speed,
-                        RandomSeed = dataB.RandomSeed,
-                        Target = dataB.Target,
-                        Cooldown = 2f,
-                    });
 
-                    EntityCommandBuffer.AppendToBuffer(0, spawnerEntity, new ElementSpawnRequest
-                    {
-                        Type = dataA.Type,
-                        Position = position
-                    });
-                }
-            }
-            else
+            if (dataA.Type == dataB.Type)
             {
-                EntityCommandBuffer.AddComponent(0, a, new ReturnToPool());
-                EntityCommandBuffer.AddComponent(0, b, new ReturnToPool());
-                AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
+                return;
             }
+
+            EntityCommandBuffer.AddComponent(0, a, new ReturnToPool());
+            EntityCommandBuffer.AddComponent(0, b, new ReturnToPool());
+            AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position)
