@@ -7,21 +7,37 @@ namespace ElementLogicFail.Scripts.Systems.Particles
 {
     public partial struct ReturnParticleToPoolSystem : ISystem
     {
+        [BurstCompile]
+        public void OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
+        }
         
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            foreach (var (pool, entity) in SystemAPI.Query<ParentPool>().WithAll<ReturnToParticlePool>().WithEntityAccess())
+            var job = new ReturnParticleJob
             {
-                entityCommandBuffer.AddComponent<Disabled>(entity);
-                entityCommandBuffer.AppendToBuffer(pool.PoolEntity, new PooledEntity { Value = entity });
-                entityCommandBuffer.RemoveComponent<ReturnToParticlePool>(entity);
-            }
+                Ecb = ecb
+            };
             
-            entityCommandBuffer.Playback(state.EntityManager);
-            entityCommandBuffer.Dispose();
+            state.Dependency = job.ScheduleParallel(state.Dependency);
+        }
+    }
+
+    [BurstCompile]
+    public partial struct ReturnParticleJob : IJobEntity
+    {
+        public EntityCommandBuffer.ParallelWriter Ecb;
+
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ParentPool> pool, RefRO<ReturnToParticlePool> returnTag)
+        {
+            Ecb.AddComponent<Disabled>(sortKey, entity);
+            Ecb.AppendToBuffer(sortKey, pool.ValueRO.PoolEntity, new PooledEntity { Value = entity });
+            Ecb.RemoveComponent<ReturnToParticlePool>(sortKey, entity);
         }
     }
 }
