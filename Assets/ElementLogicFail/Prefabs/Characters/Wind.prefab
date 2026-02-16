@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 906096033886702912}
   - component: {fileID: 6440703426270416427}
   - component: {fileID: 8138982614330994099}
+  - component: {fileID: -6987930781010683126}
   - component: {fileID: 4567458647617807953}
   - component: {fileID: 4736601689745010635}
   m_Layer: 0
@@ -91,6 +92,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &8138982614330994099
 MonoBehaviour:
@@ -107,6 +109,19 @@ MonoBehaviour:
   Type: 3
   speed: 2
   Cooldown: 2
+--- !u!114 &-6987930781010683126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5117180317900934959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a6bc768245b5584eb5aff8756342ca1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PathAuthoring
+  Waypoints: []
 --- !u!114 &4567458647617807953
 MonoBehaviour:
   m_ObjectHideFlags: 0

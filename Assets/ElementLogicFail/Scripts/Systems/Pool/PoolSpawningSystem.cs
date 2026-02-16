@@ -1,6 +1,7 @@
 ﻿using ElementLogicFail.Scripts.Components.Bounds;
 using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Pool;
+using ElementLogicFail.Scripts.Components.Path;
 using ElementLogicFail.Scripts.Components.Request;
 using ElementLogicFail.Scripts.Systems.Collision;
 using ElementLogicFail.Scripts.Systems.Spawner;
@@ -48,12 +49,14 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             state.Dependency = buildMapJob.Schedule(state.Dependency);
 
             var poolLookup = SystemAPI.GetBufferLookup<PooledEntity>();
+            var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
             var jobRandom = new Random(_random.NextUInt());
 
             var spawnJob = new ProcessSpawningJob
             {
                 PrefabToPool = _prefabToPool,
                 PoolLookup = poolLookup,
+                PathLookup = pathLookup,
                 Ecb = ecb,
                 Area = area,
                 Random = jobRandom
@@ -98,6 +101,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     {
         [ReadOnly] public NativeParallelHashMap<Entity, Entity> PrefabToPool;
         public BufferLookup<PooledEntity> PoolLookup;
+        [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
         public EntityCommandBuffer Ecb;
         public WanderArea Area;
         public Random Random;
@@ -117,9 +121,16 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                     {
                         if (pooledBuffer.Length > 0)
                         {
-                            // Pop from pool
                             Entity instance = pooledBuffer[pooledBuffer.Length - 1].Value;
                             pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
+
+                            // Copy Path from Spawner to Instance
+                            if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
+                            {
+                                var instancePath = Ecb.SetBuffer<PathWaypoint>(instance);
+                                instancePath.AddRange(spawnerPath.AsNativeArray());
+                                Ecb.SetComponent(instance, new PathFollower { CurrentIndex = 0 });
+                            }
 
                             Ecb.SetComponent(instance, LocalTransform.FromPosition(request.Position));
                             Ecb.SetComponent(instance, new ElementData
