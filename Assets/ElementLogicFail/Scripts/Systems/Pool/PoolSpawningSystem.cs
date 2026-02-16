@@ -115,7 +115,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 var request = requestBuffer[i];
                 if (request.Type != spawner.ValueRO.Type) continue;
 
-                if (PrefabToPool.TryGetValue(spawner.ValueRO.ElementPrefab, out var poolEntity))
+                // Lookup pool based on the specific Prefab requested
+                if (PrefabToPool.TryGetValue(request.PrefabToSpawn, out var poolEntity))
                 {
                     if (PoolLookup.TryGetBuffer(poolEntity, out var pooledBuffer))
                     {

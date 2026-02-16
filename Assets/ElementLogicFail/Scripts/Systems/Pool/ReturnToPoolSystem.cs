@@ -12,33 +12,20 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     public partial struct ReturnToPoolSystem : ISystem
     {
-        private NativeParallelHashMap<int, Entity> _typeToPool;
-        
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<ElementPool>();
-            _typeToPool = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            _typeToPool.Clear();
-            
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            var buildMapJob = new BuildTypeToPoolMapJob
-            {
-                TypeToPool = _typeToPool
-            };
-            
-            state.Dependency = buildMapJob.Schedule(state.Dependency);
-
             var returnJob = new ReturnJob
             {
-                TypeToPool = _typeToPool,
                 Ecb = ecb
             };
             
@@ -48,45 +35,27 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            if (_typeToPool.IsCreated)
-                _typeToPool.Dispose();
-        }
-    }
-
-    [BurstCompile]
-    public partial struct BuildTypeToPoolMapJob : IJobEntity
-    {
-        public NativeParallelHashMap<int, Entity> TypeToPool;
-
-        private void Execute(Entity entity, RefRO<ElementPool> pool)
-        {
-            if (!TypeToPool.ContainsKey(pool.ValueRO.ElementType))
-            {
-                TypeToPool.Add(pool.ValueRO.ElementType, entity);
-            }
         }
     }
 
     [BurstCompile]
     public partial struct ReturnJob : IJobEntity
     {
-        [ReadOnly] public NativeParallelHashMap<int, Entity> TypeToPool;
         public EntityCommandBuffer.ParallelWriter Ecb;
 
-        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ElementData> data, RefRO<ReturnToPool> returnTag)
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ElementData> data, RefRO<ReturnToPool> returnTag, RefRO<SourcePool> sourcePool)
         {
-            if (TypeToPool.TryGetValue((int)data.ValueRO.Type, out var poolEntity))
+            var poolEntity = sourcePool.ValueRO.PoolEntity;
+            
+            // We assume the pool entity is valid because the SourcePool component says so.
+            // In a robust system we might want to check if the pool entity still exists, but for now we trust it.
+            
+            Ecb.AddComponent<Disabled>(sortKey, entity);
+            Ecb.AppendToBuffer(sortKey, poolEntity, new PooledEntity
             {
-                Ecb.AddComponent<Disabled>(sortKey, entity);
-                Ecb.AppendToBuffer(sortKey, poolEntity, new PooledEntity
-                {
-                    Value = entity
-                });
-            }
-            else
-            {
-                Ecb.DestroyEntity(sortKey, entity);
-            }
+                Value = entity
+            });
+            
             Ecb.RemoveComponent<ReturnToPool>(sortKey, entity);
         }
     }

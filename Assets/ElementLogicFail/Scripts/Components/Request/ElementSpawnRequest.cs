@@ -9,5 +9,6 @@ namespace ElementLogicFail.Scripts.Components.Request
         public ElementType Type;
         public float3 Position;
         public Entity SpawnerEntity;
+        public Entity PrefabToSpawn;
     }
 }

@@ -65,7 +65,6 @@ namespace ElementLogicFail.Scripts.Tests
             entityManager.SetComponentData(entity, new Spawner
             {
                 Type = ElementType.Fire,
-                ElementPrefab = Entity.Null,
                 SpawnRate = spawnRate,
                 Timer = timer
             });
