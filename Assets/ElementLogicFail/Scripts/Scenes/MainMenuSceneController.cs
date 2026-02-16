@@ -11,7 +11,6 @@ namespace ElementLogicFail.Scripts.Scenes
         [field: SerializeField] private Button configButton;
         protected override void Loaded()
         {
-            Debug.Log("Main Menu Load Complete");
             playGameButton.onClick.AddListener(PlayGame);
             configButton.onClick.AddListener(OpenConfig);
         }

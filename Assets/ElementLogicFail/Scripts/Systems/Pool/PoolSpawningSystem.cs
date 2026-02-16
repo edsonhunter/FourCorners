@@ -1,6 +1,7 @@
 ﻿using ElementLogicFail.Scripts.Components.Bounds;
 using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Pool;
+using ElementLogicFail.Scripts.Components.Path;
 using ElementLogicFail.Scripts.Components.Request;
 using ElementLogicFail.Scripts.Systems.Collision;
 using ElementLogicFail.Scripts.Systems.Spawner;
@@ -20,7 +21,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     public partial struct PoolSpawningSystem : ISystem
     {
         private NativeParallelHashMap<Entity, Entity> _prefabToPool;
-        private NativeList<ElementSpawnRequest> _tempRequests;
+        private Random _random;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -29,79 +30,41 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             state.RequireForUpdate<WanderArea>();
 
             _prefabToPool = new NativeParallelHashMap<Entity, Entity>(16, Allocator.Persistent);
-            _tempRequests = new NativeList<ElementSpawnRequest>(Allocator.Persistent);
+            _random = Random.CreateFromIndex(1234);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            
             _prefabToPool.Clear();
             
             var area = SystemAPI.GetSingleton<WanderArea>();
-            var entitySimulationCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            EntityCommandBuffer entityCommandBuffer = entitySimulationCommandBufferSystem.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-            var poolQuery = SystemAPI.QueryBuilder().WithAll<ElementPool>().Build();
-            foreach (var poolEntity in poolQuery.ToEntityArray(Allocator.Temp))
+            var buildMapJob = new BuildPoolMapJob
             {
-                var pool = state.EntityManager.GetComponentData<ElementPool>(poolEntity);
-                if (pool.Prefab != Entity.Null)
-                {
-                    _prefabToPool.TryAdd(pool.Prefab, poolEntity);
-                }
-            }
+                PrefabToPool = _prefabToPool
+            };
+            state.Dependency = buildMapJob.Schedule(state.Dependency);
 
-            var spawnRequestQuery = SystemAPI.QueryBuilder().WithAll<ElementSpawnRequest>().Build();
-            foreach (var spawnerEntity in spawnRequestQuery.ToEntityArray(Allocator.Temp))
+            var poolLookup = SystemAPI.GetBufferLookup<PooledEntity>();
+            var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
+            var jobRandom = new Random(_random.NextUInt());
+
+            var spawnJob = new ProcessSpawningJob
             {
-                var requestBuffer = state.EntityManager.GetBuffer<ElementSpawnRequest>(spawnerEntity);
-                if (requestBuffer.Length == 0) continue;
-                
-                _tempRequests.Clear();
-                for (int i = 0; i < requestBuffer.Length; i++)
-                {
-                    _tempRequests.Add(requestBuffer[i]);
-                }
-
-                var spawner = state.EntityManager.GetComponentData<Components.Spawner.Spawner>(spawnerEntity);
-                for (int i = 0; i < _tempRequests.Length; i++)
-                {
-                    var request = _tempRequests[i];
-                    if (request.Type != spawner.Type) continue;
-
-                    if (_prefabToPool.TryGetValue(spawner.ElementPrefab, out var poolEntity))
-                    {
-                        var pooledBuffer = state.EntityManager.GetBuffer<PooledEntity>(poolEntity);
-                        if (pooledBuffer.Length > 0)
-                        {
-                            Entity instance = pooledBuffer[^1].Value;
-                            pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
-                            entityCommandBuffer.SetComponent(instance, LocalTransform.FromPosition(request.Position));
-                            var rand = new Random((uint)UnityEngine.Random.Range(1, int.MaxValue));
-                            entityCommandBuffer.SetComponent(instance, new ElementData
-                            {
-                                Type = request.Type,
-                                Speed = 2f,
-                                Target = new float3(
-                                    rand.NextFloat(area.MinArea.x, area.MaxArea.x),
-                                    0,
-                                    rand.NextFloat(area.MinArea.z, area.MaxArea.z)),
-                                RandomSeed = rand.NextUInt(),
-                                Cooldown = 2f
-                            });
-
-                            entityCommandBuffer.RemoveComponent<Disabled>(instance);
-                        }
-                        else
-                        {
-                            
-                        }
-                    }
-                }
-
-                entityCommandBuffer.SetBuffer<ElementSpawnRequest>(spawnerEntity).Clear();
-            }
+                PrefabToPool = _prefabToPool,
+                PoolLookup = poolLookup,
+                PathLookup = pathLookup,
+                Ecb = ecb,
+                Area = area,
+                Random = jobRandom
+            };
+            
+            state.Dependency = spawnJob.Schedule(state.Dependency);
+            
+            _random.NextUInt(); 
         }
 
         [BurstCompile]
@@ -111,11 +74,84 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             {
                 _prefabToPool.Dispose();
             }
+        }
+    }
 
-            if (_tempRequests.IsCreated)
+    [BurstCompile]
+    public partial struct BuildPoolMapJob : IJobEntity
+    {
+        public NativeParallelHashMap<Entity, Entity> PrefabToPool;
+
+        private void Execute(Entity entity, RefRO<ElementPool> pool)
+        {
+            if (pool.ValueRO.Prefab != Entity.Null)
             {
-                _tempRequests.Dispose();
+                // NativeParallelHashMap is generally not safe for parallel writing unless using MultiHashMap or ParallelWriter.
+                // Since we Schedule() this job and not Parallel, it is safe.
+                if (!PrefabToPool.ContainsKey(pool.ValueRO.Prefab))
+                {
+                    PrefabToPool.Add(pool.ValueRO.Prefab, entity);
+                }
             }
+        }
+    }
+
+    [BurstCompile]
+    public partial struct ProcessSpawningJob : IJobEntity
+    {
+        [ReadOnly] public NativeParallelHashMap<Entity, Entity> PrefabToPool;
+        public BufferLookup<PooledEntity> PoolLookup;
+        [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
+        public EntityCommandBuffer Ecb;
+        public WanderArea Area;
+        public Random Random;
+
+        private void Execute(Entity spawnerEntity, DynamicBuffer<ElementSpawnRequest> requestBuffer, RefRO<Components.Spawner.Spawner> spawner)
+        {
+            if (requestBuffer.IsEmpty) return;
+
+            for (int i = 0; i < requestBuffer.Length; i++)
+            {
+                var request = requestBuffer[i];
+                if (request.Type != spawner.ValueRO.Type) continue;
+
+                // Lookup pool based on the specific Prefab requested
+                if (PrefabToPool.TryGetValue(request.PrefabToSpawn, out var poolEntity))
+                {
+                    if (PoolLookup.TryGetBuffer(poolEntity, out var pooledBuffer))
+                    {
+                        if (pooledBuffer.Length > 0)
+                        {
+                            Entity instance = pooledBuffer[pooledBuffer.Length - 1].Value;
+                            pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
+
+                            // Copy Path from Spawner to Instance
+                            if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
+                            {
+                                var instancePath = Ecb.SetBuffer<PathWaypoint>(instance);
+                                instancePath.AddRange(spawnerPath.AsNativeArray());
+                                Ecb.SetComponent(instance, new PathFollower { CurrentIndex = 0 });
+                            }
+
+                            Ecb.SetComponent(instance, LocalTransform.FromPosition(request.Position));
+                            Ecb.SetComponent(instance, new ElementData
+                            {
+                                Type = request.Type,
+                                Speed = 2f,
+                                Target = new float3(
+                                    Random.NextFloat(Area.MinArea.x, Area.MaxArea.x),
+                                    0,
+                                    Random.NextFloat(Area.MinArea.z, Area.MaxArea.z)),
+                                RandomSeed = Random.NextUInt(),
+                                Cooldown = 2f
+                            });
+
+                            Ecb.RemoveComponent<Disabled>(instance);
+                        }
+                    }
+                }
+            }
+            requestBuffer.Clear();
         }
     }
 }

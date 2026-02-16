@@ -23,21 +23,11 @@ namespace ElementLogicFail.Scripts.Manager
 
         public void RegisterServices<T>(IService service) where T : IService
         {
-            if(!(service is T))
-            {
-                throw new InvalidOperationException($"Cannot register service {service.GetType().FullName} into the interface {typeof(T).FullName}");
-            }
-
             _services.Register((T)service);
         }
 
         public void RegisterManager<T>(IManager manager) where T : IManager
         {
-            if (!(manager is T))
-            {
-                throw new InvalidOperationException($"Cannot register manager {manager.GetType().FullName} into the interface {typeof(T).FullName}");
-            }
-
             _managers.Register((T)manager);
         }
 

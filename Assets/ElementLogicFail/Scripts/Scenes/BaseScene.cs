@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ElementLogicFail.Scripts.Manager.Interface;
 using ElementLogicFail.Scripts.Scenes.Interface;
 using ElementLogicFail.Scripts.Services.Interface;
@@ -16,7 +15,8 @@ namespace ElementLogicFail.Scripts.Scenes
     public abstract class BaseScene : MonoBehaviour, IBaseScene
     {
         public bool IsActiveScene { get; private set; }
-        
+        public static BaseScene GetActiveScene() => _currentScene;
+        private static BaseScene _currentScene;
         internal ISceneData SceneData;
         internal IApplication Application;
         
@@ -26,11 +26,16 @@ namespace ElementLogicFail.Scripts.Scenes
         protected virtual void Unload() { }
 
         #if UNITY_EDITOR
-        public BaseScene()
+        protected BaseScene()
         {
             this.AssertForbiddenMethods("Start", "Awake", "Update");
         }
         #endif
+        
+        private void Awake()
+        {
+            _currentScene = this;
+        }
         
         public async Task FireLoading()
         {

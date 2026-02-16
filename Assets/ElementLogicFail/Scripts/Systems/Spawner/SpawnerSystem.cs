@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics.Systems;
 using Unity.Transforms;
+using Unity.Mathematics;
 
 namespace ElementLogicFail.Scripts.Systems.Spawner
 {
@@ -18,54 +19,94 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<Components.Spawner.Spawner>();
             state.RequireForUpdate<ElementSpawnRequest>();
-            state.RequireForUpdate<SpawnerRateChangeRequest>();
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var deltaTime = SystemAPI.Time.DeltaTime;
-            var entitySimulationCommandBufferSystem =
-                SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            EntityCommandBuffer entityCommandBuffer =
-                entitySimulationCommandBufferSystem.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            var requestBuffer = SystemAPI.GetSingletonBuffer<SpawnerRateChangeRequest>();
-            var rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.Temp);
-            foreach (var request in requestBuffer)
+            var rateChanges = new NativeHashMap<int, float>(0, Allocator.TempJob);
+
+            if (SystemAPI.TryGetSingletonBuffer<SpawnerRateChangeRequest>(out var requestBuffer))
             {
-                rateChanges[(int)request.Type] = request.NewRate;
-            }
-            
-            foreach (var (spawner, transform, entity) in
-                     SystemAPI.Query<RefRW<Components.Spawner.Spawner>, RefRO<LocalTransform>>().WithEntityAccess())
-            {
-                Components.Spawner.Spawner spawnerRW = spawner.ValueRW;
-                
-                if (rateChanges.TryGetValue((int)spawner.ValueRO.Type, out var newRate))
+                if (requestBuffer.Length > 0)
                 {
-                    spawnerRW.SpawnRate = newRate;
-                }
-                
-                spawnerRW.Timer += deltaTime;
-                float timePerSpawn = 1f / spawnerRW.SpawnRate;
-                if (spawnerRW.Timer >= timePerSpawn)
-                {
-                    spawnerRW.Timer = 0f;
-                    entityCommandBuffer.AppendToBuffer(entity, new ElementSpawnRequest
+                    // Resize/Reallocate if needed, but since we created with 0, we must create new one or use capacity
+                    rateChanges.Dispose(); // Dispose empty
+                    rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.TempJob);
+                    
+                    foreach (var request in requestBuffer)
                     {
-                        Type = spawnerRW.Type,
-                        Position = transform.ValueRO.Position,
-                    });
+                        rateChanges[(int)request.Type] = request.NewRate;
+                    }
+                    requestBuffer.Clear();
                 }
-                spawner.ValueRW = spawnerRW;
             }
-            requestBuffer.Clear();
+
+            var seed = (uint)SystemAPI.Time.ElapsedTime + 1;
+            
+            state.Dependency = new SpawnerJob
+            {
+                DeltaTime = deltaTime,
+                Ecb = ecb,
+                RateChanges = rateChanges,
+                BaseSeed = seed
+            }.ScheduleParallel(state.Dependency);
+
+            rateChanges.Dispose(state.Dependency);
         }
 
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
+        }
+    }
+
+    [BurstCompile]
+    public partial struct SpawnerJob : IJobEntity
+    {
+        public float DeltaTime;
+        public EntityCommandBuffer.ParallelWriter Ecb;
+        [ReadOnly] public NativeHashMap<int, float> RateChanges;
+        public uint BaseSeed;
+
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform, DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
+        {
+            var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
+
+            if (RateChanges.TryGetValue((int)spawner.Type, out var newRate))
+            {
+                spawner.SpawnRate = newRate;
+            }
+
+            // Clamp rate to avoid memory explosion or divide by zero issues
+            // Min 0.0f (paused), Max 20.0f (20 per sec is plenty for this demo)
+            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 50f);
+
+            spawner.Timer += DeltaTime;
+            
+            if (spawner.SpawnRate > 0.001f && prefabs.Length > 0)
+            {
+                float timePerSpawn = 1f / spawner.SpawnRate;
+                if (spawner.Timer >= timePerSpawn)
+                {
+                    spawner.Timer = 0f;
+                    
+                    var prefabIndex = random.NextInt(0, prefabs.Length);
+                    var prefabEntity = prefabs[prefabIndex].Prefab;
+                    
+                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    {
+                        Type = spawner.Type,
+                        Position = transform.ValueRO.Position,
+                        SpawnerEntity = entity,
+                        PrefabToSpawn = prefabEntity
+                    });
+                }
+            }
         }
     }
 }

@@ -23,7 +23,8 @@ namespace ElementLogicFail.Scripts.Systems.Wander
             var deltaTime = SystemAPI.Time.DeltaTime;
             var area = SystemAPI.GetSingleton<WanderArea>();
 
-            foreach (var (element, transform) in SystemAPI.Query<RefRW<ElementData>, RefRW<LocalTransform>>())
+            foreach (var (element, transform) in SystemAPI.Query<RefRW<ElementData>, RefRW<LocalTransform>>()
+                         .WithNone<ElementLogicFail.Scripts.Components.Path.PathFollower>())
             {
                 var elementRW = element.ValueRW;
                 var transformRW = transform.ValueRW;

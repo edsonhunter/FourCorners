@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Particles;
 using ElementLogicFail.Scripts.Components.Pool;
 using ElementLogicFail.Scripts.Components.Request;
@@ -23,7 +23,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         private ComponentLookup<SpawnerRegistry> _spawnerRegistryLookup;
         private ComponentLookup<ParticlePrefabs>  _particlePrefabLookup;
         
-        private NativeParallelHashMap<int, Entity> _typeToSpawnerMap;
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -34,8 +33,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
             _spawnerRegistryLookup = SystemAPI.GetComponentLookup<SpawnerRegistry>(true);
             _particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
-            
-            _typeToSpawnerMap = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
         }
 
         [BurstCompile]
@@ -49,10 +46,10 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             bool hasParticles = SystemAPI.TryGetSingletonEntity<ParticlePrefabs>(out var particleManagerEntity);
             var particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
             
-            _typeToSpawnerMap.Clear();
+            var typeToSpawnerMap = new NativeParallelHashMap<int, Entity>(16, Allocator.TempJob);
             foreach (var (registry, entity) in SystemAPI.Query<RefRO<SpawnerRegistry>>().WithEntityAccess())
             {
-                _typeToSpawnerMap[(int)registry.ValueRO.Type] = registry.ValueRO.SpawnerEntity;
+                typeToSpawnerMap[(int)registry.ValueRO.Type] = registry.ValueRO.SpawnerEntity;
             }
             
             SimulationSingleton simulation = SystemAPI.GetSingleton<SimulationSingleton>();
@@ -63,7 +60,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             {
                 ElementLookup = _elementLookup,
                 LocalTransformLookup = _localTransformLookup,
-                TypeToSpawnerMap = _typeToSpawnerMap,
+                TypeToSpawnerMap = typeToSpawnerMap,
                 ParticlePrefabLookup = particlePrefabLookup,
                 ParticleManagerEntity = particleManagerEntity,
                 HasParticle = hasParticles,
@@ -71,13 +68,12 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             };
             
             state.Dependency = job.Schedule(simulation, state.Dependency);
+            typeToSpawnerMap.Dispose(state.Dependency);
         }
 
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            if (_typeToSpawnerMap.IsCreated)
-                _typeToSpawnerMap.Dispose();
         }
     }
     
@@ -108,46 +104,15 @@ namespace ElementLogicFail.Scripts.Systems.Collision
 
             float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
             ParticlePrefabs particlePrefabs = HasParticle ? ParticlePrefabLookup[ParticleManagerEntity] : default;
-            
+
             if (dataA.Type == dataB.Type)
             {
-                if (dataA.Cooldown > 0f || dataB.Cooldown > 0f)
-                {
-                    return;
-                }
-                if (TypeToSpawnerMap.TryGetValue((int)dataA.Type, out var spawnerEntity))
-                {
-                    EntityCommandBuffer.SetComponent(0, a, new ElementData
-                    {
-                        Type = dataA.Type,
-                        Speed = dataA.Speed,
-                        RandomSeed = dataA.RandomSeed,
-                        Target = dataA.Target,
-                        Cooldown = 2f,
-                    });
-                    EntityCommandBuffer.SetComponent(0, b, new ElementData
-                    {
-                        Type = dataB.Type,
-                        Speed = dataB.Speed,
-                        RandomSeed = dataB.RandomSeed,
-                        Target = dataB.Target,
-                        Cooldown = 2f,
-                    });
+                return;
+            }
 
-                    EntityCommandBuffer.AppendToBuffer(0, spawnerEntity, new ElementSpawnRequest
-                    {
-                        Type = dataA.Type,
-                        Position = position
-                    });
-                    AppendParticleRequest(particlePrefabs.CreationEffect, position);
-                }
-            }
-            else
-            {
-                EntityCommandBuffer.AddComponent(0, a, new ReturnToPool());
-                EntityCommandBuffer.AddComponent(0, b, new ReturnToPool());
-                AppendParticleRequest(particlePrefabs.ExplosionEffect, position);
-            }
+            EntityCommandBuffer.AddComponent(0, a, new ReturnToPool());
+            EntityCommandBuffer.AddComponent(0, b, new ReturnToPool());
+            AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position)
