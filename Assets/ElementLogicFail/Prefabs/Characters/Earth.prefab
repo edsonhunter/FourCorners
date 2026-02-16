@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 906096033886702912}
   - component: {fileID: 6440703426270416427}
   - component: {fileID: 8138982614330994099}
+  - component: {fileID: 7185408488872804591}
   - component: {fileID: -5054883385247339670}
   - component: {fileID: 5180726654302415839}
-  - component: {fileID: 7185408488872804591}
   m_Layer: 0
   m_Name: Earth
   m_TagString: Untagged
@@ -109,6 +109,19 @@ MonoBehaviour:
   Type: 2
   speed: 2
   Cooldown: 2
+--- !u!114 &7185408488872804591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5117180317900934959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a6bc768245b5584eb5aff8756342ca1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PathAuthoring
+  Waypoints: []
 --- !u!114 &-5054883385247339670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,16 +316,3 @@ MonoBehaviour:
     Tag05: 0
     Tag06: 0
     Tag07: 0
---- !u!114 &7185408488872804591
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5117180317900934959}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a6bc768245b5584eb5aff8756342ca1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PathAuthoring
-  Waypoints: []

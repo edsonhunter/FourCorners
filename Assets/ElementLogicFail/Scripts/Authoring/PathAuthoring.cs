@@ -16,8 +16,6 @@ namespace ElementLogicFail.Scripts.Authoring
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
 
-                if (authoring.Waypoints == null || authoring.Waypoints.Count == 0) return;
-
                 AddComponent(entity, new PathFollower
                 {
                     CurrentIndex = 0,
@@ -25,11 +23,14 @@ namespace ElementLogicFail.Scripts.Authoring
                 });
 
                 var buffer = AddBuffer<PathWaypoint>(entity);
-                foreach (var wp in authoring.Waypoints)
+                if (authoring.Waypoints != null)
                 {
-                    if (wp != null)
+                    foreach (var wp in authoring.Waypoints)
                     {
-                        buffer.Add(new PathWaypoint { Position = wp.position });
+                        if (wp != null)
+                        {
+                            buffer.Add(new PathWaypoint { Position = wp.position });
+                        }
                     }
                 }
             }
