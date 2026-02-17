@@ -23,34 +23,43 @@ namespace ElementLogicFail.Scripts.Systems.Wander
             var deltaTime = SystemAPI.Time.DeltaTime;
             var area = SystemAPI.GetSingleton<WanderArea>();
 
-            foreach (var (element, transform) in SystemAPI.Query<RefRW<ElementData>, RefRW<LocalTransform>>()
-                         .WithNone<ElementLogicFail.Scripts.Components.Path.PathFollower>())
+            var job = new WanderJob
             {
-                var elementRW = element.ValueRW;
-                var transformRW = transform.ValueRW;
+                DeltaTime = deltaTime,
+                Area = area
+            };
 
-                if (math.distance(transformRW.Position, elementRW.Target) < 0.2f)
-                {
-                    elementRW.RandomSeed = elementRW.RandomSeed * 1664525u + 1013904223u;
-                    var rand = new Random(elementRW.RandomSeed);
-                    elementRW.Target = new float3(
-                        rand.NextFloat(area.MinArea.x, area.MaxArea.x),
-                        0,
-                        rand.NextFloat(area.MinArea.z, area.MaxArea.z));
-                    elementRW.RandomSeed = rand.NextUInt();
-                }
-                
-                float3 direction = math.normalizesafe(elementRW.Target - transformRW.Position);
-                transformRW.Position += direction * elementRW.Speed * deltaTime;
-                element.ValueRW = elementRW;
-                transform.ValueRW = transformRW;
-            }
+            state.Dependency = job.ScheduleParallel(state.Dependency);
         }
 
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
+        }
+    }
 
+    [BurstCompile]
+    [WithNone(typeof(ElementLogicFail.Scripts.Components.Path.PathFollower))]
+    public partial struct WanderJob : IJobEntity
+    {
+        public float DeltaTime;
+        public WanderArea Area;
+
+        private void Execute(ref ElementData element, ref LocalTransform transform)
+        {
+            if (math.distance(transform.Position, element.Target) < 0.2f)
+            {
+                element.RandomSeed = element.RandomSeed * 1664525u + 1013904223u;
+                var rand = new Unity.Mathematics.Random(element.RandomSeed);
+                element.Target = new float3(
+                    rand.NextFloat(Area.MinArea.x, Area.MaxArea.x),
+                    0,
+                    rand.NextFloat(Area.MinArea.z, Area.MaxArea.z));
+                element.RandomSeed = rand.NextUInt();
+            }
+            
+            float3 direction = math.normalizesafe(element.Target - transform.Position);
+            transform.Position += direction * element.Speed * DeltaTime;
         }
     }
 }

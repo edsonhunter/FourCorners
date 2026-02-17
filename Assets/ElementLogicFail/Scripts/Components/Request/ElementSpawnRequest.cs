@@ -7,8 +7,7 @@ namespace ElementLogicFail.Scripts.Components.Request
     public struct ElementSpawnRequest : IBufferElementData
     {
         public ElementType Type;
+        public UnitModelType ModelType;
         public float3 Position;
-        public Entity SpawnerEntity;
-        public Entity PrefabToSpawn;
     }
 }
