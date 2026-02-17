@@ -10,7 +10,6 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
         public ElementType type;
         public List<GameObject> prefabs;
         public float spawnRate;
-        public int initialPoolSize;
         public List<Transform> Waypoints;
 
         public class SpawnerAuthoringBaker : Baker<SpawnerAuthoring>
@@ -36,17 +35,6 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
                         var prefabEntity = GetEntity(prefabGo, TransformUsageFlags.Dynamic);
                         
                         prefabBuffer.Add(new Components.Spawner.SpawnerPrefab { Prefab = prefabEntity });
-
-                        // Create a unique Pool Entity for this Prefab
-                        var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
-                        AddComponent(poolEntity, new Components.Pool.ElementPool
-                        {
-                            ElementType = (int)authoring.type, // Initial type hint, but pool is prefab-keyed
-                            Prefab = prefabEntity,
-                            PoolSize = authoring.initialPoolSize
-                        });
-                        // Add buffer for pooled entities
-                        AddBuffer<Components.Pool.PooledEntity>(poolEntity);
                     }
                 }
 
