@@ -48,13 +48,19 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             var seed = (uint)SystemAPI.Time.ElapsedTime + 1;
             
-            state.Dependency = new SpawnerJob
+            //The source generator, which automatically writes the boilerplate code for IJobEntity,
+            //sometimes fails when a job is initialized and scheduled in the same line.
+            //It creates a unique key for the job based on the code text,
+            //and if the initialization block is complex,
+            //it can accidentally try to add the same key twice to its internal database.
+            var job = new SpawnerJob
             {
                 DeltaTime = deltaTime,
                 Ecb = ecb,
                 RateChanges = rateChanges,
                 BaseSeed = seed
-            }.ScheduleParallel(state.Dependency);
+            };
+            state.Dependency = job.ScheduleParallel(state.Dependency);
 
             rateChanges.Dispose(state.Dependency);
         }
