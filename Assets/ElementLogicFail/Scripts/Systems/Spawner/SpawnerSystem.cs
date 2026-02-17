@@ -28,24 +28,6 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            var rateChanges = new NativeHashMap<int, float>(0, Allocator.TempJob);
-
-            if (SystemAPI.TryGetSingletonBuffer<SpawnerRateChangeRequest>(out var requestBuffer))
-            {
-                if (requestBuffer.Length > 0)
-                {
-                    // Resize/Reallocate if needed, but since we created with 0, we must create new one or use capacity
-                    rateChanges.Dispose(); // Dispose empty
-                    rateChanges = new NativeHashMap<int, float>(requestBuffer.Length, Allocator.TempJob);
-                    
-                    foreach (var request in requestBuffer)
-                    {
-                        rateChanges[(int)request.Type] = request.NewRate;
-                    }
-                    requestBuffer.Clear();
-                }
-            }
-
             var seed = (uint)SystemAPI.Time.ElapsedTime + 1;
             
             //The source generator, which automatically writes the boilerplate code for IJobEntity,
@@ -57,12 +39,9 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             {
                 DeltaTime = deltaTime,
                 Ecb = ecb,
-                RateChanges = rateChanges,
                 BaseSeed = seed
             };
             state.Dependency = job.ScheduleParallel(state.Dependency);
-
-            rateChanges.Dispose(state.Dependency);
         }
 
         [BurstCompile]
@@ -76,20 +55,14 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     {
         public float DeltaTime;
         public EntityCommandBuffer.ParallelWriter Ecb;
-        [ReadOnly] public NativeHashMap<int, float> RateChanges;
         public uint BaseSeed;
 
         private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform, DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
         {
             var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
 
-            if (RateChanges.TryGetValue((int)spawner.Type, out var newRate))
-            {
-                spawner.SpawnRate = newRate;
-            }
-
             // Clamp rate to avoid memory explosion or divide by zero issues
-            // Min 0.0f (paused), Max 20.0f (20 per sec is plenty for this demo)
+            // Min 0.0f (paused), Max 50.0f
             spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 50f);
 
             spawner.Timer += DeltaTime;
