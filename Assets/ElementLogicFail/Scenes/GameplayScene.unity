@@ -351,7 +351,7 @@ Camera:
   m_ShutterSpeed: 0.005
   m_Aperture: 16
   m_FocusDistance: 10
-  m_FocalLength: 15.10379
+  m_FocalLength: 4.819885
   m_BladeCount: 5
   m_Curvature: {x: 2, y: 11}
   m_BarrelClipping: 0.25
@@ -366,7 +366,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 2000
-  field of view: 129.0674
+  field of view: 129.06737
   orthographic: 0
   orthographic size: 30
   m_Depth: -1

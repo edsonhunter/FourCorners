@@ -2,9 +2,9 @@
 {
     public enum ElementType
     {
-        Fire = 0,
-        Water = 1,
-        Earth = 2,
-        Wind = 3
+        Player1 = 0,
+        Player2 = 1,
+        Player3 = 2,
+        Player4 = 3,
     }
 }
