@@ -22,6 +22,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         private ComponentLookup<LocalTransform> _localTransformLookup;
         private ComponentLookup<SpawnerRegistry> _spawnerRegistryLookup;
         private ComponentLookup<ParticlePrefabs>  _particlePrefabLookup;
+        private ComponentLookup<SourcePool> _sourcePoolLookup;
         
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -33,6 +34,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
             _spawnerRegistryLookup = SystemAPI.GetComponentLookup<SpawnerRegistry>(true);
             _particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
+            _sourcePoolLookup = SystemAPI.GetComponentLookup<SourcePool>(true);
         }
 
         [BurstCompile]
@@ -42,6 +44,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             _localTransformLookup.Update(ref state);
             _spawnerRegistryLookup.Update(ref state);
             _particlePrefabLookup.Update(ref state);
+            _sourcePoolLookup.Update(ref state);
 
             bool hasParticles = SystemAPI.TryGetSingletonEntity<ParticlePrefabs>(out var particleManagerEntity);
             var particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
@@ -65,6 +68,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 ParticleManagerEntity = particleManagerEntity,
                 HasParticle = hasParticles,
                 EntityCommandBuffer = parallelWriter,
+                SourcePoolLookup = _sourcePoolLookup,
             };
             
             state.Dependency = job.Schedule(simulation, state.Dependency);
@@ -85,6 +89,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
+        [ReadOnly] public ComponentLookup<SourcePool> SourcePoolLookup;
         
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
         
@@ -110,8 +115,15 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 return;
             }
 
-            EntityCommandBuffer.AddComponent(0, a, new ReturnToPool());
-            EntityCommandBuffer.AddComponent(0, b, new ReturnToPool());
+            var poolEntityA = SourcePoolLookup[a].PoolEntity;
+            var poolEntityB = SourcePoolLookup[b].PoolEntity;
+
+            EntityCommandBuffer.AddComponent<Disabled>(0, a);
+            EntityCommandBuffer.AddComponent<Disabled>(0, b);
+            
+            EntityCommandBuffer.AppendToBuffer(0, poolEntityA, new PooledEntity { Value = a });
+            EntityCommandBuffer.AppendToBuffer(0, poolEntityB, new PooledEntity { Value = b });
+            
             AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
         }
 

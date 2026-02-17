@@ -47,9 +47,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         {
             var poolEntity = sourcePool.ValueRO.PoolEntity;
             
-            // We assume the pool entity is valid because the SourcePool component says so.
-            // In a robust system we might want to check if the pool entity still exists, but for now we trust it.
-            
             Ecb.AddComponent<Disabled>(sortKey, entity);
             Ecb.AppendToBuffer(sortKey, poolEntity, new PooledEntity
             {
