@@ -14,7 +14,7 @@ namespace ElementLogicFail.Scripts.Authoring
         {
             public GameObject Prefab;
             public int InitialCount;
-            public ElementType Type;
+            public UnitModelType ModelType;
         }
 
         public List<PoolDefinition> Pools;
@@ -37,7 +37,7 @@ namespace ElementLogicFail.Scripts.Authoring
 
                     AddComponent(poolEntity, new ElementPool
                     {
-                        ElementType = (int)poolDef.Type,
+                        ModelType = poolDef.ModelType,
                         Prefab = prefabEntity,
                         PoolSize = poolDef.InitialCount
                     });

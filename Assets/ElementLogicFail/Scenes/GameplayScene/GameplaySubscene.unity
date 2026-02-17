@@ -165,10 +165,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 642305892}
   - {fileID: 1810817323}
@@ -220,10 +218,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 1
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 690835788}
   - {fileID: 403897270}
@@ -259,10 +255,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 04000000
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 690835788}
   - {fileID: 403897270}
@@ -475,10 +469,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 642305892}
   - {fileID: 1810817323}
@@ -548,10 +540,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 0200000003000000
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 1810817323}
   - {fileID: 403897270}
@@ -619,10 +609,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 1
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 03000000
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 403897270}
   - {fileID: 690835788}
@@ -722,13 +710,13 @@ MonoBehaviour:
   Pools:
   - Prefab: {fileID: 7307109365850241512, guid: 2622608273fda304d8d4045002b4bcd3, type: 3}
     InitialCount: 100
-    Type: 0
+    ModelType: 2
   - Prefab: {fileID: 2513294134061946814, guid: ca7f57900aa91064398992ea016de566, type: 3}
     InitialCount: 100
-    Type: 0
+    ModelType: 3
   - Prefab: {fileID: 4036081636672898341, guid: 005a6c4a66e1cb64ea3d9181c1c5ec15, type: 3}
     InitialCount: 100
-    Type: 0
+    ModelType: 4
 --- !u!4 &1003808048
 Transform:
   m_ObjectHideFlags: 0
@@ -852,10 +840,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 1
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 0200000004000000
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 642305892}
   - {fileID: 690835788}
@@ -907,10 +893,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 403897270}
   - {fileID: 1810817323}
@@ -962,10 +946,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 1810817323}
   - {fileID: 642305892}
@@ -1411,10 +1393,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 690835788}
   - {fileID: 642305892}
@@ -1466,10 +1446,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 403897270}
   - {fileID: 1810817323}
@@ -1617,10 +1595,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  prefabs:
-  - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
+  UnitsToSpawn: 
   spawnRate: 1
-  initialPoolSize: 200
   Waypoints:
   - {fileID: 1810817323}
   - {fileID: 642305892}

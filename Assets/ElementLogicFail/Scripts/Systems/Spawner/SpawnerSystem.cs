@@ -75,14 +75,13 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     spawner.Timer = 0f;
                     
                     var prefabIndex = random.NextInt(0, prefabs.Length);
-                    var prefabEntity = prefabs[prefabIndex].Prefab;
+                    var modelType = prefabs[prefabIndex].ModelType;
                     
                     Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
                     {
                         Type = spawner.Type,
                         Position = transform.ValueRO.Position,
-                        SpawnerEntity = entity,
-                        PrefabToSpawn = prefabEntity
+                        ModelType = modelType
                     });
                 }
             }

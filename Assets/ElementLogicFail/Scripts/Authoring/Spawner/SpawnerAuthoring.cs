@@ -8,7 +8,7 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
     public class SpawnerAuthoring : MonoBehaviour
     {
         public ElementType type;
-        public List<GameObject> prefabs;
+        public List<UnitModelType> UnitsToSpawn;
         public float spawnRate;
         public List<Transform> Waypoints;
 
@@ -25,16 +25,13 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
                     Timer = 0
                 });
                 
-                // Create Pool for EACH prefab
-                if (authoring.prefabs != null)
+                // Add Unit Types to Spawn
+                if (authoring.UnitsToSpawn != null)
                 {
                     var prefabBuffer = AddBuffer<Components.Spawner.SpawnerPrefab>(entity);
-                    foreach (var prefabGo in authoring.prefabs)
+                    foreach (var unitType in authoring.UnitsToSpawn)
                     {
-                        if (prefabGo == null) continue;
-                        var prefabEntity = GetEntity(prefabGo, TransformUsageFlags.Dynamic);
-                        
-                        prefabBuffer.Add(new Components.Spawner.SpawnerPrefab { Prefab = prefabEntity });
+                        prefabBuffer.Add(new Components.Spawner.SpawnerPrefab { ModelType = unitType });
                     }
                 }
 

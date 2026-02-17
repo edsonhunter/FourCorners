@@ -20,7 +20,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [UpdateAfter(typeof(SpawnerSystem))]
     public partial struct PoolSpawningSystem : ISystem
     {
-        private NativeParallelHashMap<Entity, Entity> _prefabToPool;
+        private NativeParallelHashMap<int, Entity> _modelTypeToPool;
         private Random _random;
 
         [BurstCompile]
@@ -29,14 +29,14 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<WanderArea>();
 
-            _prefabToPool = new NativeParallelHashMap<Entity, Entity>(16, Allocator.Persistent);
+            _modelTypeToPool = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
             _random = Random.CreateFromIndex(1234);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            _prefabToPool.Clear();
+            _modelTypeToPool.Clear();
             
             var area = SystemAPI.GetSingleton<WanderArea>();
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
@@ -44,7 +44,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
             var buildMapJob = new BuildPoolMapJob
             {
-                PrefabToPool = _prefabToPool
+                ModelTypeToPool = _modelTypeToPool
             };
             state.Dependency = buildMapJob.Schedule(state.Dependency);
 
@@ -54,7 +54,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
             var spawnJob = new ProcessSpawningJob
             {
-                PrefabToPool = _prefabToPool,
+                ModelTypeToPool = _modelTypeToPool,
                 PoolLookup = poolLookup,
                 PathLookup = pathLookup,
                 Ecb = ecb,
@@ -70,9 +70,9 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            if (_prefabToPool.IsCreated)
+            if (_modelTypeToPool.IsCreated)
             {
-                _prefabToPool.Dispose();
+                _modelTypeToPool.Dispose();
             }
         }
     }
@@ -80,17 +80,17 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [BurstCompile]
     public partial struct BuildPoolMapJob : IJobEntity
     {
-        public NativeParallelHashMap<Entity, Entity> PrefabToPool;
+        public NativeParallelHashMap<int, Entity> ModelTypeToPool;
 
         private void Execute(Entity entity, RefRO<ElementPool> pool)
         {
-            if (pool.ValueRO.Prefab != Entity.Null)
+            if (pool.ValueRO.ModelType != UnitModelType.None)
             {
                 // NativeParallelHashMap is generally not safe for parallel writing unless using MultiHashMap or ParallelWriter.
                 // Since we Schedule() this job and not Parallel, it is safe.
-                if (!PrefabToPool.ContainsKey(pool.ValueRO.Prefab))
+                if (!ModelTypeToPool.ContainsKey((int)pool.ValueRO.ModelType))
                 {
-                    PrefabToPool.Add(pool.ValueRO.Prefab, entity);
+                    ModelTypeToPool.Add((int)pool.ValueRO.ModelType, entity);
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [BurstCompile]
     public partial struct ProcessSpawningJob : IJobEntity
     {
-        [ReadOnly] public NativeParallelHashMap<Entity, Entity> PrefabToPool;
+        [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPool;
         public BufferLookup<PooledEntity> PoolLookup;
         [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
         public EntityCommandBuffer Ecb;
@@ -116,7 +116,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 if (request.Type != spawner.ValueRO.Type) continue;
 
                 // Lookup pool based on the specific Prefab requested
-                if (PrefabToPool.TryGetValue(request.PrefabToSpawn, out var poolEntity))
+                if (ModelTypeToPool.TryGetValue((int)request.ModelType, out var poolEntity))
                 {
                     if (PoolLookup.TryGetBuffer(poolEntity, out var pooledBuffer))
                     {
