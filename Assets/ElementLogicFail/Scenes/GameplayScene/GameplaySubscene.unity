@@ -709,10 +709,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PoolConfigAuthoring
   Pools:
   - Prefab: {fileID: 4036081636672898341, guid: 005a6c4a66e1cb64ea3d9181c1c5ec15, type: 3}
-    InitialCount: 0
+    InitialCount: 200
     ModelType: 1
   - Prefab: {fileID: 2981157077527548589, guid: 27c1643188e20f9428146adfcce38722, type: 3}
-    InitialCount: 0
+    InitialCount: 200
     ModelType: 2
   - Prefab: {fileID: 7307109365850241512, guid: 2622608273fda304d8d4045002b4bcd3, type: 3}
     InitialCount: 200
