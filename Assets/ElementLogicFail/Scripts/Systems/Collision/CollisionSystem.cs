@@ -20,9 +20,8 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     {
         private ComponentLookup<ElementData> _elementLookup;
         private ComponentLookup<LocalTransform> _localTransformLookup;
-        private ComponentLookup<SpawnerRegistry> _spawnerRegistryLookup;
-        private ComponentLookup<ParticlePrefabs>  _particlePrefabLookup;
         private ComponentLookup<SourcePool> _sourcePoolLookup;
+        private NativeList<Entity> _processedEntities;
         
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -32,9 +31,8 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             
             _elementLookup = SystemAPI.GetComponentLookup<ElementData>(true);
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
-            _spawnerRegistryLookup = SystemAPI.GetComponentLookup<SpawnerRegistry>(true);
-            _particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
             _sourcePoolLookup = SystemAPI.GetComponentLookup<SourcePool>(true);
+            _processedEntities = new NativeList<Entity>(128, Allocator.Persistent);
         }
 
         [BurstCompile]
@@ -42,18 +40,12 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         {
             _elementLookup.Update(ref state);
             _localTransformLookup.Update(ref state);
-            _spawnerRegistryLookup.Update(ref state);
-            _particlePrefabLookup.Update(ref state);
             _sourcePoolLookup.Update(ref state);
+
+            _processedEntities.Clear();
 
             bool hasParticles = SystemAPI.TryGetSingletonEntity<ParticlePrefabs>(out var particleManagerEntity);
             var particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
-            
-            var typeToSpawnerMap = new NativeParallelHashMap<int, Entity>(16, Allocator.TempJob);
-            foreach (var (registry, entity) in SystemAPI.Query<RefRO<SpawnerRegistry>>().WithEntityAccess())
-            {
-                typeToSpawnerMap[(int)registry.ValueRO.Type] = registry.ValueRO.SpawnerEntity;
-            }
             
             SimulationSingleton simulation = SystemAPI.GetSingleton<SimulationSingleton>();
             EndSimulationEntityCommandBufferSystem.Singleton endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
@@ -63,21 +55,22 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             {
                 ElementLookup = _elementLookup,
                 LocalTransformLookup = _localTransformLookup,
-                TypeToSpawnerMap = typeToSpawnerMap,
                 ParticlePrefabLookup = particlePrefabLookup,
                 ParticleManagerEntity = particleManagerEntity,
                 HasParticle = hasParticles,
                 EntityCommandBuffer = parallelWriter,
                 SourcePoolLookup = _sourcePoolLookup,
+                ProcessedEntities = _processedEntities
             };
             
             state.Dependency = job.Schedule(simulation, state.Dependency);
-            typeToSpawnerMap.Dispose(state.Dependency);
         }
 
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
+            if (_processedEntities.IsCreated)
+                _processedEntities.Dispose();
         }
     }
     
@@ -85,11 +78,11 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     {
         [ReadOnly] public ComponentLookup<ElementData> ElementLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
-        [ReadOnly] public NativeParallelHashMap<int, Entity>  TypeToSpawnerMap;
         [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
         [ReadOnly] public ComponentLookup<SourcePool> SourcePoolLookup;
+        public NativeList<Entity> ProcessedEntities;
         
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
         
@@ -107,33 +100,52 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             var dataA = ElementLookup[a];
             var dataB = ElementLookup[b];
 
-            float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
-            ParticlePrefabs particlePrefabs = HasParticle ? ParticlePrefabLookup[ParticleManagerEntity] : default;
-
             if (dataA.Team == dataB.Team)
             {
                 return;
             }
 
-            var poolEntityA = SourcePoolLookup[a].PoolEntity;
-            var poolEntityB = SourcePoolLookup[b].PoolEntity;
+            bool returnA = !EntityListContains(ProcessedEntities, a);
+            bool returnB = !EntityListContains(ProcessedEntities, b);
 
-            EntityCommandBuffer.AddComponent<Disabled>(0, a);
-            EntityCommandBuffer.AddComponent<Disabled>(0, b);
+            if (!returnA && !returnB) return;
+
+            float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
+
+            if (returnA)
+            {
+                ProcessedEntities.Add(a);
+                var poolEntityA = SourcePoolLookup[a].PoolEntity;
+                EntityCommandBuffer.AddComponent<Disabled>(0, a);
+                EntityCommandBuffer.AppendToBuffer(0, poolEntityA, new PooledEntity { Value = a });
+            }
+
+            if (returnB)
+            {
+                ProcessedEntities.Add(b);
+                var poolEntityB = SourcePoolLookup[b].PoolEntity;
+                EntityCommandBuffer.AddComponent<Disabled>(0, b);
+                EntityCommandBuffer.AppendToBuffer(0, poolEntityB, new PooledEntity { Value = b });
+            }
             
-            EntityCommandBuffer.AppendToBuffer(0, poolEntityA, new PooledEntity { Value = a });
-            EntityCommandBuffer.AppendToBuffer(0, poolEntityB, new PooledEntity { Value = b });
-            
-            AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
+            if (HasParticle)
+            {
+                var particlePrefabs = ParticlePrefabLookup[ParticleManagerEntity];
+                AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
+            }
+        }
+
+        private bool EntityListContains(NativeList<Entity> list, Entity entity)
+        {
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (list[i] == entity) return true;
+            }
+            return false;
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position)
         {
-            if (!HasParticle)
-            {
-                return;
-            }
-            
             EntityCommandBuffer.AppendToBuffer(0, ParticleManagerEntity, new ParticleSpawnRequest
             {
                 Prefab = particlePrefab,

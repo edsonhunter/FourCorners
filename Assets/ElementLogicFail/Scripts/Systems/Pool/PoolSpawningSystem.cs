@@ -137,6 +137,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                             Ecb.SetComponent(instance, new ElementData
                             {
                                 Team = request.Type,
+                                TeamColor = (TeamColor)request.Type,
                                 Speed = 2f,
                                 Target = new float3(
                                     Random.NextFloat(Area.MinArea.x, Area.MaxArea.x),

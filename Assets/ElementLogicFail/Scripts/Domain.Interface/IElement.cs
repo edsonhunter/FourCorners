@@ -15,12 +15,4 @@
         Earth,
         Wind
     }
-    
-    //Future ideas. Joining different elements together results in different outcomes:
-    //Fire+Water=Smoke
-    //Fire+Earth=Lava
-    //Fire+Wind=Explosion
-    //Water+Earth=Mud
-    //Water+Wind=Rain
-    //Earth+Wind=Hurricane
 }
