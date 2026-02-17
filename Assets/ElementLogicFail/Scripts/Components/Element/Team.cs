@@ -1,6 +1,6 @@
 ﻿namespace ElementLogicFail.Scripts.Components.Element
 {
-    public enum ElementType
+    public enum Team
     {
         Player1 = 0,
         Player2 = 1,

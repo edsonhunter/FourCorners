@@ -7,7 +7,7 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
 {
     public class SpawnerAuthoring : MonoBehaviour
     {
-        public ElementType type;
+        public Team type;
         public List<UnitModelType> UnitsToSpawn;
         public float spawnRate;
         public List<Transform> Waypoints;
@@ -20,7 +20,7 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
 
                 AddComponent(entity, new Components.Spawner.Spawner
                 {
-                    Type = authoring.type,
+                    Team = authoring.type,
                     SpawnRate = authoring.spawnRate,
                     Timer = 0
                 });

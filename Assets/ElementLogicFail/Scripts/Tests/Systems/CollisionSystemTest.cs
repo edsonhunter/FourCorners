@@ -31,14 +31,14 @@ namespace ElementLogicFail.Scripts.Tests.Systems
             });
 
             _spawnerEntity = EntityManager.CreateEntity(typeof(SpawnerRegistry), typeof(ElementSpawnRequest));
-            EntityManager.SetComponentData(_spawnerEntity, new SpawnerRegistry { Type = ElementType.Fire, SpawnerEntity = _spawnerEntity });
+            EntityManager.SetComponentData(_spawnerEntity, new SpawnerRegistry { Type = Team.Player1, SpawnerEntity = _spawnerEntity });
         }
 
         [Test]
         public void SameTypeCollision_WithNoCooldown_CreatesAllRequests()
         {
-            EntityTest.CreateTestElement(EntityManager, ElementType.Fire, 0, new float3(0, 0, 0));
-            EntityTest.CreateTestElement(EntityManager, ElementType.Fire, 0, new float3(0.1f, 0, 0));
+            EntityTest.CreateTestElement(EntityManager, Team.Player1, 0, new float3(0, 0, 0));
+            EntityTest.CreateTestElement(EntityManager, Team.Player1, 0, new float3(0.1f, 0, 0));
 
             World.GetOrCreateSystemManaged<PhysicsSystemGroup>().Update();
             World.GetOrCreateSystem<CollisionSystem>().Update(World.Unmanaged);
@@ -54,8 +54,8 @@ namespace ElementLogicFail.Scripts.Tests.Systems
         [Test]
         public void SameTypeCollision_WithCooldown_CreatesNoRequests()
         {
-            EntityTest.CreateTestElement(EntityManager, ElementType.Fire, 5f, new float3(0, 0, 0));
-            EntityTest.CreateTestElement(EntityManager, ElementType.Fire, 0, new float3(0.1f, 0, 0));
+            EntityTest.CreateTestElement(EntityManager, Team.Player1, 5f, new float3(0, 0, 0));
+            EntityTest.CreateTestElement(EntityManager, Team.Player1, 0, new float3(0.1f, 0, 0));
 
             World.GetOrCreateSystemManaged<PhysicsSystemGroup>().Update();
             World.GetOrCreateSystem<CollisionSystem>().Update(World.Unmanaged);
@@ -71,8 +71,8 @@ namespace ElementLogicFail.Scripts.Tests.Systems
         [Test]
         public void DifferentTypeCollision_AddsReturnToPoolAndParticleRequest()
         {
-            var entityA = EntityTest.CreateTestElement(EntityManager, ElementType.Fire, 0, new float3(0, 0, 0));
-            var entityB = EntityTest.CreateTestElement(EntityManager, ElementType.Water, 0, new float3(0.1f, 0, 0));
+            var entityA = EntityTest.CreateTestElement(EntityManager, Team.Player1, 0, new float3(0, 0, 0));
+            var entityB = EntityTest.CreateTestElement(EntityManager, Team.Player2, 0, new float3(0.1f, 0, 0));
 
             World.GetOrCreateSystemManaged<PhysicsSystemGroup>().Update();
             World.GetOrCreateSystem<CollisionSystem>().Update(World.Unmanaged);

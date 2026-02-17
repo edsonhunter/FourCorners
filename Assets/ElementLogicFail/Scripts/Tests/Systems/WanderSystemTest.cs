@@ -31,7 +31,7 @@ namespace ElementLogicFail.Scripts.Tests.Systems
             var targetPosition = new float3(5, 0, 5);
             
             EntityManager.SetComponentData(entity, new LocalTransform { Position = initialPosition, Scale = 1 });
-            var elementData = EntityTest.CreateElementData(ElementType.Wind, 5f,  0);
+            var elementData = EntityTest.CreateElementData(Team.Player2, 5f,  0);
             elementData.Target = targetPosition;
             EntityManager.SetComponentData(entity, elementData);
 
@@ -49,7 +49,7 @@ namespace ElementLogicFail.Scripts.Tests.Systems
             var initialTarget = new float3(5, 0, 5);
             
             EntityManager.SetComponentData(entity, new LocalTransform { Position = initialTarget, Scale = 1 });
-            var elementData = EntityTest.CreateElementData(ElementType.Wind, 5f,  0);
+            var elementData = EntityTest.CreateElementData(Team.Player2, 5f,  0);
             elementData.Target = initialTarget;
             EntityManager.SetComponentData(entity, elementData);
 

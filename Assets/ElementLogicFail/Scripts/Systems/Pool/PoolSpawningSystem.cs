@@ -113,7 +113,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             for (int i = 0; i < requestBuffer.Length; i++)
             {
                 var request = requestBuffer[i];
-                if (request.Type != spawner.ValueRO.Type) continue;
+                if (request.Type != spawner.ValueRO.Team) continue;
 
                 // Lookup pool based on the specific Prefab requested
                 if (ModelTypeToPool.TryGetValue((int)request.ModelType, out var poolEntity))
@@ -136,7 +136,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                             Ecb.SetComponent(instance, LocalTransform.FromPosition(request.Position));
                             Ecb.SetComponent(instance, new ElementData
                             {
-                                Type = request.Type,
+                                Team = request.Type,
                                 Speed = 2f,
                                 Target = new float3(
                                     Random.NextFloat(Area.MinArea.x, Area.MaxArea.x),

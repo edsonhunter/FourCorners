@@ -6,7 +6,7 @@ namespace ElementLogicFail.Scripts.Components.Request
 {
     public struct ElementSpawnRequest : IBufferElementData
     {
-        public ElementType Type;
+        public Team Type;
         public UnitModelType ModelType;
         public float3 Position;
     }

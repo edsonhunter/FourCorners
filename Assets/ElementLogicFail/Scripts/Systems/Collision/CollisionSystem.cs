@@ -110,7 +110,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
             ParticlePrefabs particlePrefabs = HasParticle ? ParticlePrefabLookup[ParticleManagerEntity] : default;
 
-            if (dataA.Type == dataB.Type)
+            if (dataA.Team == dataB.Team)
             {
                 return;
             }

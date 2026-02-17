@@ -5,7 +5,7 @@ namespace ElementLogicFail.Scripts.Components.Spawner
 {
     public struct Spawner : IComponentData
     {
-        public ElementType Type;
+        public Team Team;
         public float SpawnRate;
         public float Timer;
     }

@@ -79,7 +79,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     
                     Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
                     {
-                        Type = spawner.Type,
+                        Type = spawner.Team,
                         Position = transform.ValueRO.Position,
                         ModelType = modelType
                     });

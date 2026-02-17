@@ -7,7 +7,7 @@ namespace ElementLogicFail.Scripts.Authoring.Element
 {
     public class ElementAuthoring : MonoBehaviour
     {
-        public ElementType Type;
+        public Team Type;
         public float speed;
         public int Cooldown;
         
@@ -18,7 +18,7 @@ namespace ElementLogicFail.Scripts.Authoring.Element
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity, new ElementData
                 {
-                    Type = authoring.Type,
+                    Team = authoring.Type,
                     Speed = authoring.speed,
                     Target = float3.zero,
                     RandomSeed = (uint)UnityEngine.Random.Range(1, int.MaxValue),
