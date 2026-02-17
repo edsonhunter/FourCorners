@@ -167,8 +167,8 @@ MonoBehaviour:
   type: 2
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 642305892}
   - {fileID: 1810817323}
@@ -222,8 +222,8 @@ MonoBehaviour:
   type: 1
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 690835788}
   - {fileID: 403897270}
@@ -261,8 +261,8 @@ MonoBehaviour:
   type: 0
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 690835788}
   - {fileID: 403897270}
@@ -477,8 +477,8 @@ MonoBehaviour:
   type: 3
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 642305892}
   - {fileID: 1810817323}
@@ -550,8 +550,8 @@ MonoBehaviour:
   type: 0
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 1810817323}
   - {fileID: 403897270}
@@ -621,8 +621,8 @@ MonoBehaviour:
   type: 1
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 403897270}
   - {fileID: 690835788}
@@ -800,8 +800,8 @@ MonoBehaviour:
   type: 1
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 642305892}
   - {fileID: 690835788}
@@ -855,8 +855,8 @@ MonoBehaviour:
   type: 0
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 403897270}
   - {fileID: 1810817323}
@@ -910,8 +910,8 @@ MonoBehaviour:
   type: 2
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 1810817323}
   - {fileID: 642305892}
@@ -1359,8 +1359,8 @@ MonoBehaviour:
   type: 2
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 690835788}
   - {fileID: 642305892}
@@ -1414,8 +1414,8 @@ MonoBehaviour:
   type: 3
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 403897270}
   - {fileID: 1810817323}
@@ -1565,8 +1565,8 @@ MonoBehaviour:
   type: 3
   prefabs:
   - {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-  spawnRate: 0.2
-  initialPoolSize: 500
+  spawnRate: 1
+  initialPoolSize: 200
   Waypoints:
   - {fileID: 1810817323}
   - {fileID: 642305892}
