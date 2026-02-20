@@ -61,6 +61,12 @@ namespace ElementLogicFail.Scripts.Systems.Path
             float wanderStrength = 0.8f; 
             float3 finalDirection = math.normalizesafe(forwardDirection + (rightDirection * noiseValue * wanderStrength));
             
+            // Apply rotation to face movement direction
+            if (math.lengthsq(finalDirection) > 0.001f)
+            {
+                transform.ValueRW.Rotation = quaternion.LookRotationSafe(finalDirection, math.up());
+            }
+
             // Apply drift
             transform.ValueRW.Position += finalDirection * element.ValueRO.Speed * DeltaTime;
 

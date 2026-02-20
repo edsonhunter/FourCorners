@@ -59,6 +59,13 @@ namespace ElementLogicFail.Scripts.Systems.Wander
             }
             
             float3 direction = math.normalizesafe(element.Target - transform.Position);
+            
+            // Apply rotation to face movement direction
+            if (math.lengthsq(direction) > 0.001f)
+            {
+                transform.Rotation = quaternion.LookRotationSafe(direction, math.up());
+            }
+
             transform.Position += direction * element.Speed * DeltaTime;
         }
     }
