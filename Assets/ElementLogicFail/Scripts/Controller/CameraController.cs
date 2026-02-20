@@ -31,7 +31,7 @@ namespace ElementLogicFail.Scripts.Controller
         {
             _controls = new PlayerControl();
             _targetPosition = transform.position;
-            _targetZoom = transform.position.y;
+            _targetZoom = cameraTransform != null ? cameraTransform.localPosition.z : 0f;
         }
 
         private void OnEnable()
@@ -55,12 +55,12 @@ namespace ElementLogicFail.Scripts.Controller
             Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
             float scrollInput = _controls.Gameplay.Zoom.ReadValue<float>();
 
-            // Normalize scroll input (New Input System scroll values are often around 120/-120)
+            // Normalize scroll input
             float zoomInput = Mathf.Clamp(scrollInput, -1f, 1f);
 
             Vector3 moveDir = (Vector3.forward * moveInput.y) + (Vector3.right * moveInput.x);
 
-            float heightFactor = transform.position.y / zoomLimits.y;
+            float heightFactor = Mathf.InverseLerp(zoomLimits.x, zoomLimits.y, Mathf.Abs(_targetZoom));
             float currentSpeed = moveSpeed * (0.5f + heightFactor);
 
             Vector3 targetMove = _targetPosition + (moveDir * currentSpeed * Time.deltaTime);
@@ -71,17 +71,29 @@ namespace ElementLogicFail.Scripts.Controller
             _targetPosition.x = targetMove.x;
             _targetPosition.z = targetMove.z;
 
-            // Invert zoom delta: scroll up (positive) should decrease Y (zoom in)
-            float zoomStep = -zoomInput * zoomSpeed;
+            // Scroll up (positive) = zoom in (move Z towards 0 / positive)
+            float zoomStep = zoomInput * zoomSpeed;
             _targetZoom += zoomStep;
-            _targetZoom = Mathf.Clamp(_targetZoom, zoomLimits.x, zoomLimits.y);
-            _targetPosition.y = _targetZoom;
+            _targetZoom = Mathf.Clamp(_targetZoom, -zoomLimits.y, -zoomLimits.x);
         }
 
         private void MoveRig()
         {
-            // Smooth positioning (includes height/zoom)
+            // Smooth horizontal positioning
             transform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * moveSmoothing);
+
+            // Smooth local zoom
+            if (cameraTransform != null)
+            {
+                Vector3 targetLocalPos = cameraTransform.localPosition;
+                targetLocalPos.z = _targetZoom;
+                
+                cameraTransform.localPosition = Vector3.Lerp(
+                    cameraTransform.localPosition, 
+                    targetLocalPos, 
+                    Time.deltaTime * zoomSmoothing
+                );
+            }
         }
     }
 }

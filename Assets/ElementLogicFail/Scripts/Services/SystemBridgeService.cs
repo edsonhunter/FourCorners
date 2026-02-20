@@ -1,5 +1,6 @@
-using ElementLogicFail.Scripts.Authoring.Bounds;
+using ElementLogicFail.Scripts.Components.Bounds;
 using ElementLogicFail.Scripts.Services.Interface;
+using Unity.Entities;
 using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Services
@@ -8,10 +9,18 @@ namespace ElementLogicFail.Scripts.Services
     {
         public (Vector3 min, Vector3 max) GetMapBounds()
         {
-            var bounds = Object.FindAnyObjectByType<BoundsAuthoring>();
-            if (bounds != null)
+            if (World.DefaultGameObjectInjectionWorld == null)
             {
-                return (bounds.min, bounds.max);
+                return (Vector3.zero, Vector3.zero);
+            }
+
+            var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            var query = entityManager.CreateEntityQuery(typeof(WanderArea));
+
+            if (!query.IsEmpty)
+            {
+                var area = query.GetSingleton<WanderArea>();
+                return (area.MinArea, area.MaxArea);
             }
             
             return (Vector3.zero, Vector3.zero);
