@@ -368,7 +368,7 @@ Camera:
   far clip plane: 2000
   field of view: 129.06737
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 3
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -785,9 +785,9 @@ MonoBehaviour:
   moveSmoothing: 10
   zoomSpeed: 5
   zoomSmoothing: 5
-  zoomLimits: {x: 10, y: 20}
-  mapLimitX: {x: -50, y: 30}
-  mapLimitZ: {x: -50, y: 10}
+  zoomLimits: {x: 10, y: 50}
+  mapLimitX: {x: -60, y: 30}
+  mapLimitZ: {x: -60, y: 30}
 --- !u!4 &1365089960
 Transform:
   m_ObjectHideFlags: 0
