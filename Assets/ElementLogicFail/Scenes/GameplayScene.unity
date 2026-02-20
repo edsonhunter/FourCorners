@@ -833,6 +833,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38bb7349428d4a328cbbdfd956bba70d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Elf.Scenes::ElementLogicFail.Scripts.Scenes.GameplaySceneController
+  _cameraController: {fileID: 1365089959}
 --- !u!4 &1649699142
 Transform:
   m_ObjectHideFlags: 0

@@ -1,6 +1,8 @@
 using ElementLogicFail.Scripts.Manager;
 using ElementLogicFail.Scripts.Manager.Interface;
 using ElementLogicFail.Scripts.Scenes;
+using ElementLogicFail.Scripts.Services;
+using ElementLogicFail.Scripts.Services.Interface;
 using ElementLogicFail.Scripts.Utils.Threadpool;
 using UnityEngine;
 
@@ -34,7 +36,7 @@ namespace ElementLogicFail.Scripts.Bootstrapper
 
         private void SetupServices()
         {
-            //register all services
+            _applicationManager.RegisterServices<ISystemBridgeService>(new SystemBridgeService());
         }
 
         private void SetupManagers()
