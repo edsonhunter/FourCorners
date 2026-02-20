@@ -115,32 +115,32 @@ namespace ElementLogicFail.Scripts.Systems.Collision
 
             if (canDisableA)
             {
-                AppendEntityRequest(a);
+                AppendEntityRequest(a, collisionEvent.BodyIndexA);
             }
 
             if (canDisableB)
             {
-                AppendEntityRequest(b);
+                AppendEntityRequest(b, collisionEvent.BodyIndexB);
             }
             
             if (HasParticle)
             {
                 var particlePrefabs = ParticlePrefabLookup[ParticleManagerEntity];
-                AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
+                AppendParticleRequest(particlePrefabs.ParticlePrefab, position, collisionEvent.BodyIndexA);
             }
         }
 
-        private void AppendEntityRequest(Entity entity)
+        private void AppendEntityRequest(Entity entity, int sortKey)
         {
             ProcessedEntities.Add(entity);
             var poolEntity = SourcePoolLookup[entity].PoolEntity;
-            EntityCommandBuffer.AddComponent<Disabled>(0, entity);
-            EntityCommandBuffer.AppendToBuffer(0, poolEntity, new PooledEntity { Value = entity });
+            EntityCommandBuffer.AddComponent<Disabled>(sortKey, entity);
+            EntityCommandBuffer.AppendToBuffer(sortKey, poolEntity, new PooledEntity { Value = entity });
         }
 
-        private void AppendParticleRequest(Entity particlePrefab, float3 position)
+        private void AppendParticleRequest(Entity particlePrefab, float3 position, int sortKey)
         {
-            EntityCommandBuffer.AppendToBuffer(0, ParticleManagerEntity, new ParticleSpawnRequest
+            EntityCommandBuffer.AppendToBuffer(sortKey, ParticleManagerEntity, new ParticleSpawnRequest
             {
                 Prefab = particlePrefab,
                 Position = position,

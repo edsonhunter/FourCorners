@@ -61,10 +61,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         {
             var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
 
-            // Clamp rate to avoid memory explosion or divide by zero issues
-            // Min 0.0f (paused), Max 50.0f
-            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 50f);
-
+            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 10);
             spawner.Timer += DeltaTime;
             
             if (spawner.SpawnRate > 0.001f && prefabs.Length > 0)
