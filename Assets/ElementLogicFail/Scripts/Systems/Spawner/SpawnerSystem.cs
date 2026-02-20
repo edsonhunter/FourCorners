@@ -70,9 +70,9 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             if (spawner.SpawnRate > 0.001f && prefabs.Length > 0)
             {
                 float timePerSpawn = 1f / spawner.SpawnRate;
-                if (spawner.Timer >= timePerSpawn)
+                while (spawner.Timer >= timePerSpawn)
                 {
-                    spawner.Timer = 0f;
+                    spawner.Timer -= timePerSpawn;
                     
                     var prefabIndex = random.NextInt(0, prefabs.Length);
                     var modelType = prefabs[prefabIndex].ModelType;
