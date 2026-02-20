@@ -61,25 +61,22 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         {
             var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
 
-            // Clamp rate to avoid memory explosion or divide by zero issues
-            // Min 0.0f (paused), Max 50.0f
-            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 50f);
-
+            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 10);
             spawner.Timer += DeltaTime;
             
             if (spawner.SpawnRate > 0.001f && prefabs.Length > 0)
             {
                 float timePerSpawn = 1f / spawner.SpawnRate;
-                if (spawner.Timer >= timePerSpawn)
+                while (spawner.Timer >= timePerSpawn)
                 {
-                    spawner.Timer = 0f;
+                    spawner.Timer -= timePerSpawn;
                     
                     var prefabIndex = random.NextInt(0, prefabs.Length);
                     var modelType = prefabs[prefabIndex].ModelType;
                     
                     Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
                     {
-                        Type = spawner.Type,
+                        Type = spawner.Team,
                         Position = transform.ValueRO.Position,
                         ModelType = modelType
                     });

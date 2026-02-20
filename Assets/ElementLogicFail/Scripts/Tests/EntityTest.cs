@@ -10,12 +10,12 @@ namespace ElementLogicFail.Scripts.Tests
 {
     public static class EntityTest
     {
-        public static Entity CreateElement(EntityManager manager, ElementType type, float speed, int cooldown)
+        public static Entity CreateElement(EntityManager manager, Team type, float speed, int cooldown)
         {
             var entity = manager.CreateEntity();
             manager.SetComponentData(entity, new ElementData()
             {
-                Type= type,
+                Team= type,
                 Speed = speed,
                 Cooldown = cooldown,
                 Target = float3.zero,
@@ -25,11 +25,11 @@ namespace ElementLogicFail.Scripts.Tests
             return entity;
         }
 
-        public static ElementData CreateElementData(ElementType type, float speed, float cooldown)
+        public static ElementData CreateElementData(Team type, float speed, float cooldown)
         {
             return new ElementData()
             {
-                Type = type,
+                Team = type,
                 Speed = speed,
                 Cooldown = cooldown,
                 Target = float3.zero,
@@ -37,7 +37,7 @@ namespace ElementLogicFail.Scripts.Tests
             };
         }
         
-        public static Entity CreateTestElement(EntityManager entityManager, ElementType type, float cooldown, float3 position)
+        public static Entity CreateTestElement(EntityManager entityManager, Team type, float cooldown, float3 position)
         {
             var entity = entityManager.CreateEntity(
                 typeof(LocalTransform),
@@ -64,7 +64,7 @@ namespace ElementLogicFail.Scripts.Tests
             Entity entity = entityManager.CreateEntity(typeof(Spawner), typeof(LocalTransform), typeof(ElementSpawnRequest));
             entityManager.SetComponentData(entity, new Spawner
             {
-                Type = ElementType.Fire,
+                Team = Team.Player1,
                 SpawnRate = spawnRate,
                 Timer = timer
             });

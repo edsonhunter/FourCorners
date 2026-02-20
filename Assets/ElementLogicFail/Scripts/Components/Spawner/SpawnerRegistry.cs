@@ -5,7 +5,7 @@ namespace ElementLogicFail.Scripts.Components.Spawner
 {
     public struct SpawnerRegistry : IComponentData
     {
-        public ElementType Type;
+        public Team Type;
         public Entity SpawnerEntity;
     }
 }
