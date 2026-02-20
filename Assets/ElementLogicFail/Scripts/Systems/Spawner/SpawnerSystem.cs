@@ -61,26 +61,31 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         {
             var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
 
-            spawner.SpawnRate = math.clamp(spawner.SpawnRate, 0f, 10);
             spawner.Timer += DeltaTime;
-            
-            if (spawner.SpawnRate > 0.001f && prefabs.Length > 0)
+
+            if (!(spawner.SpawnInterval > 0f) || spawner.SpawnAmount <= 0 || prefabs.Length <= 0)
             {
-                float timePerSpawn = 1f / spawner.SpawnRate;
-                while (spawner.Timer >= timePerSpawn)
+                return;
+            }
+            
+            if (!(spawner.Timer >= spawner.SpawnInterval))
+            {
+                return;
+            }
+            
+            spawner.Timer = 0f;
+                    
+            for (int i = 0; i < spawner.SpawnAmount; i++)
+            {
+                var prefabIndex = random.NextInt(0, prefabs.Length);
+                var modelType = prefabs[prefabIndex].ModelType;
+                        
+                Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
                 {
-                    spawner.Timer -= timePerSpawn;
-                    
-                    var prefabIndex = random.NextInt(0, prefabs.Length);
-                    var modelType = prefabs[prefabIndex].ModelType;
-                    
-                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
-                    {
-                        Type = spawner.Team,
-                        Position = transform.ValueRO.Position,
-                        ModelType = modelType
-                    });
-                }
+                    Type = spawner.Team,
+                    Position = transform.ValueRO.Position,
+                    ModelType = modelType
+                });
             }
         }
     }
