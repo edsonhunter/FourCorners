@@ -83,9 +83,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         [ReadOnly] public bool HasParticle;
         [ReadOnly] public ComponentLookup<SourcePool> SourcePoolLookup;
         public NativeHashSet<Entity> ProcessedEntities;
-        
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
-        
 
         public void Execute(CollisionEvent collisionEvent)
         {
@@ -108,24 +106,21 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             bool canDisableA = !ProcessedEntities.Contains(a);
             bool canDisableB = !ProcessedEntities.Contains(b);
 
-            if (!canDisableA && !canDisableB) return;
+            if (!canDisableA && !canDisableB)
+            {
+                return;
+            }
 
             float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
 
             if (canDisableA)
             {
-                ProcessedEntities.Add(a);
-                var poolEntityA = SourcePoolLookup[a].PoolEntity;
-                EntityCommandBuffer.AddComponent<Disabled>(0, a);
-                EntityCommandBuffer.AppendToBuffer(0, poolEntityA, new PooledEntity { Value = a });
+                AppendEntityRequest(a);
             }
 
             if (canDisableB)
             {
-                ProcessedEntities.Add(b);
-                var poolEntityB = SourcePoolLookup[b].PoolEntity;
-                EntityCommandBuffer.AddComponent<Disabled>(0, b);
-                EntityCommandBuffer.AppendToBuffer(0, poolEntityB, new PooledEntity { Value = b });
+                AppendEntityRequest(b);
             }
             
             if (HasParticle)
@@ -133,6 +128,14 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 var particlePrefabs = ParticlePrefabLookup[ParticleManagerEntity];
                 AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
             }
+        }
+
+        private void AppendEntityRequest(Entity entity)
+        {
+            ProcessedEntities.Add(entity);
+            var poolEntity = SourcePoolLookup[entity].PoolEntity;
+            EntityCommandBuffer.AddComponent<Disabled>(0, entity);
+            EntityCommandBuffer.AppendToBuffer(0, poolEntity, new PooledEntity { Value = entity });
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position)
