@@ -21,7 +21,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         private ComponentLookup<ElementData> _elementLookup;
         private ComponentLookup<LocalTransform> _localTransformLookup;
         private ComponentLookup<SourcePool> _sourcePoolLookup;
-        private NativeList<Entity> _processedEntities;
+        private NativeHashSet<Entity> _processedEntities;
         
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -32,7 +32,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             _elementLookup = SystemAPI.GetComponentLookup<ElementData>(true);
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
             _sourcePoolLookup = SystemAPI.GetComponentLookup<SourcePool>(true);
-            _processedEntities = new NativeList<Entity>(128, Allocator.Persistent);
+            _processedEntities = new NativeHashSet<Entity>(128, Allocator.Persistent);
         }
 
         [BurstCompile]
@@ -82,7 +82,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
         [ReadOnly] public ComponentLookup<SourcePool> SourcePoolLookup;
-        public NativeList<Entity> ProcessedEntities;
+        public NativeHashSet<Entity> ProcessedEntities;
         
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
         
@@ -105,14 +105,14 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 return;
             }
 
-            bool returnA = !EntityListContains(ProcessedEntities, a);
-            bool returnB = !EntityListContains(ProcessedEntities, b);
+            bool canDisableA = !ProcessedEntities.Contains(a);
+            bool canDisableB = !ProcessedEntities.Contains(b);
 
-            if (!returnA && !returnB) return;
+            if (!canDisableA && !canDisableB) return;
 
             float3 position = 0.5f * (LocalTransformLookup[a].Position + LocalTransformLookup[b].Position);
 
-            if (returnA)
+            if (canDisableA)
             {
                 ProcessedEntities.Add(a);
                 var poolEntityA = SourcePoolLookup[a].PoolEntity;
@@ -120,7 +120,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 EntityCommandBuffer.AppendToBuffer(0, poolEntityA, new PooledEntity { Value = a });
             }
 
-            if (returnB)
+            if (canDisableB)
             {
                 ProcessedEntities.Add(b);
                 var poolEntityB = SourcePoolLookup[b].PoolEntity;
@@ -133,15 +133,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 var particlePrefabs = ParticlePrefabLookup[ParticleManagerEntity];
                 AppendParticleRequest(particlePrefabs.ParticlePrefab, position);
             }
-        }
-
-        private bool EntityListContains(NativeList<Entity> list, Entity entity)
-        {
-            for (int i = 0; i < list.Length; i++)
-            {
-                if (list[i] == entity) return true;
-            }
-            return false;
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position)
