@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  UnitsToSpawn: 0400000005000000
+  UnitsToSpawn: 04000000
   spawnRate: 1
   Waypoints:
   - {fileID: 642305892}
@@ -255,7 +255,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  UnitsToSpawn: 0100000003000000
+  UnitsToSpawn: 01000000
   spawnRate: 1
   Waypoints:
   - {fileID: 690835788}
@@ -469,7 +469,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  UnitsToSpawn: 070000000600000008000000
+  UnitsToSpawn: 03000000
   spawnRate: 1
   Waypoints:
   - {fileID: 642305892}
@@ -540,7 +540,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  UnitsToSpawn: 0100000003000000
+  UnitsToSpawn: 01000000
   spawnRate: 1
   Waypoints:
   - {fileID: 1810817323}
@@ -721,16 +721,16 @@ MonoBehaviour:
     InitialCount: 200
     ModelType: 4
   - Prefab: {fileID: 28070048135596434, guid: 2af51f89a8c345048940a6b52d6a1e0f, type: 3}
-    InitialCount: 200
+    InitialCount: 5
     ModelType: 5
   - Prefab: {fileID: 5375081890889749920, guid: 1b00acb0c3ba65c40b17f6ba3bd50a45, type: 3}
     InitialCount: 200
     ModelType: 6
   - Prefab: {fileID: 2636643037605036638, guid: d23d4d3078e821644af7ec3b74ab3bef, type: 3}
-    InitialCount: 200
+    InitialCount: 5
     ModelType: 7
   - Prefab: {fileID: 9182276166519975648, guid: 9d1a2a97a8537ca43afd2f1234ec3ef0, type: 3}
-    InitialCount: 200
+    InitialCount: 5
     ModelType: 8
 --- !u!4 &1003808048
 Transform:
@@ -741,7 +741,7 @@ Transform:
   m_GameObject: {fileID: 1003808046}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 45, y: 0, z: -45}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -908,7 +908,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  UnitsToSpawn: 0100000003000000
+  UnitsToSpawn: 01000000
   spawnRate: 1
   Waypoints:
   - {fileID: 403897270}
@@ -961,7 +961,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  UnitsToSpawn: 0400000005000000
+  UnitsToSpawn: 04000000
   spawnRate: 1
   Waypoints:
   - {fileID: 1810817323}
@@ -1408,7 +1408,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  UnitsToSpawn: 0400000005000000
+  UnitsToSpawn: 04000000
   spawnRate: 1
   Waypoints:
   - {fileID: 690835788}
@@ -1461,7 +1461,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  UnitsToSpawn: 070000000600000008000000
+  UnitsToSpawn: 03000000
   spawnRate: 1
   Waypoints:
   - {fileID: 403897270}
@@ -1610,7 +1610,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  UnitsToSpawn: 070000000600000008000000
+  UnitsToSpawn: 03000000
   spawnRate: 1
   Waypoints:
   - {fileID: 1810817323}

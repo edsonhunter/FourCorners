@@ -68,6 +68,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e775b76b56de6764abfa3de1cf858f98, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8709310291968800982}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e775b76b56de6764abfa3de1cf858f98, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -7320445140375287691}
   m_SourcePrefab: {fileID: 100100000, guid: e775b76b56de6764abfa3de1cf858f98, type: 3}
 --- !u!1 &9182276166519975648 stripped
 GameObject:
@@ -296,3 +299,15 @@ MonoBehaviour:
     Tag05: 0
     Tag06: 0
     Tag07: 0
+--- !u!114 &-7320445140375287691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9182276166519975648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring

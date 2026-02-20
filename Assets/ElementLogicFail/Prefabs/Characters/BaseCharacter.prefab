@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 1411776304561787528}
   - component: {fileID: 730305241575790681}
   - component: {fileID: 2024240301029761558}
+  - component: {fileID: 5630664020993592279}
   - component: {fileID: 3193451930714490783}
   - component: {fileID: 2444528056554179433}
   m_Layer: 0
@@ -155,6 +156,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PathAuthoring
   Waypoints: []
+--- !u!114 &5630664020993592279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1791434008262363186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring
 --- !u!114 &3193451930714490783
 MonoBehaviour:
   m_ObjectHideFlags: 0
