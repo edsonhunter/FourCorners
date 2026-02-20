@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using ElementLogicFail.Scripts.Authoring.Bounds;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace ElementLogicFail.Scripts.Controller
@@ -9,12 +10,14 @@ public class CameraController : MonoBehaviour
     private PlayerControl _controls;
     private Vector3 _targetPosition;
     private float _targetZoom;
+    
     [SerializeField]
     private Transform cameraTransform;
+    
     public float moveSpeed = 40f;
     public float moveSmoothing = 10f;
     
-    public float zoomSpeed = 5f;
+    public float zoomSpeed = 2f;
     public float zoomSmoothing = 5f;
     public Vector2 zoomLimits = new Vector2(10f, 50f);
 
@@ -26,6 +29,17 @@ public class CameraController : MonoBehaviour
         _controls = new PlayerControl();
         _targetPosition = transform.position;
         _targetZoom = transform.position.y;
+    }
+
+    private void Start()
+    {
+        // Dynamically find map bounds from authoring component
+        var bounds = Object.FindAnyObjectByType<BoundsAuthoring>();
+        if (bounds != null)
+        {
+            mapLimitX = new Vector2(bounds.min.x, bounds.max.x);
+            mapLimitZ = new Vector2(bounds.min.z, bounds.max.z);
+        }
     }
 
     private void OnEnable()
@@ -47,10 +61,10 @@ public class CameraController : MonoBehaviour
     private void HandleInput()
     {
         Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
-        float zoomInput = _controls.Gameplay.Zoom.ReadValue<float>();
+        float scrollInput = _controls.Gameplay.Zoom.ReadValue<float>();
 
-        if (zoomInput > 0) zoomInput = 1;
-        else if (zoomInput < 0) zoomInput = -1;
+        // Normalize scroll input (New Input System scroll values are often around 120/-120)
+        float zoomInput = Mathf.Clamp(scrollInput, -1f, 1f);
 
         Vector3 moveDir = (Vector3.forward * moveInput.y) + (Vector3.right * moveInput.x);
         
@@ -62,8 +76,10 @@ public class CameraController : MonoBehaviour
         targetMove.x = Mathf.Clamp(targetMove.x, mapLimitX.x, mapLimitX.y);
         targetMove.z = Mathf.Clamp(targetMove.z, mapLimitZ.x, mapLimitZ.y);
         
-        _targetPosition = new Vector3(targetMove.x, _targetPosition.y, targetMove.z);
+        _targetPosition.x = targetMove.x;
+        _targetPosition.z = targetMove.z;
 
+        // Invert zoom delta: scroll up (positive) should decrease Y (zoom in)
         float zoomStep = -zoomInput * zoomSpeed;
         _targetZoom += zoomStep;
         _targetZoom = Mathf.Clamp(_targetZoom, zoomLimits.x, zoomLimits.y);
@@ -72,6 +88,7 @@ public class CameraController : MonoBehaviour
 
     private void MoveRig()
     {
+        // Smooth positioning (includes height/zoom)
         transform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * moveSmoothing);
     }
 }
