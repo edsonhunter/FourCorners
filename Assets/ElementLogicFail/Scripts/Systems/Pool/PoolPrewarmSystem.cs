@@ -12,71 +12,81 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
+            var ecbSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
+            var pooledEntityLookup = state.GetBufferLookup<PooledEntity>(true);
 
-            foreach (var (pool, entity) in SystemAPI.Query<RefRO<ElementPool>>().WithEntityAccess())
+            var elementJob = new ElementPoolPrewarmJob
             {
-                if (state.EntityManager.HasComponent<Prewarmed>(entity))
-                    continue;
+                ECB = ecb,
+                PooledEntityLookup = pooledEntityLookup
+            };
+            state.Dependency = elementJob.ScheduleParallel(state.Dependency);
 
-                if (!state.EntityManager.HasBuffer<PooledEntity>(entity))
-                {
-                    entityCommandBuffer.AddBuffer<PooledEntity>(entity);
-                }
-                
-                for (int i = 0; i < pool.ValueRO.PoolSize; i++)
-                {
-                    var newInstance = entityCommandBuffer.Instantiate( pool.ValueRO.Prefab);
-                    entityCommandBuffer.AddComponent<Disabled>(newInstance);
-                    entityCommandBuffer.AddComponent(newInstance, new SourcePool { PoolEntity = entity });
-                    entityCommandBuffer.AppendToBuffer(entity, new PooledEntity
-                    {
-                        Value = newInstance
-                    });
-                }
-
-                entityCommandBuffer.AddComponent<Prewarmed>(entity);
-            }
-            
-            foreach (var (pool, entity) in SystemAPI.Query<RefRO<ParticlePool>>().WithEntityAccess())
+            var particleJob = new ParticlePoolPrewarmJob
             {
-                if (state.EntityManager.HasComponent<Prewarmed>(entity))
-                    continue;
-
-                if (!state.EntityManager.HasBuffer<PooledEntity>(entity))
-                {
-                    entityCommandBuffer.AddBuffer<PooledEntity>(entity);
-                }
-                
-                for (int i = 0; i < pool.ValueRO.PoolSize; i++)
-                {
-                    var newInstance = entityCommandBuffer.Instantiate( pool.ValueRO.Prefab);
-                    entityCommandBuffer.AddComponent<Disabled>(newInstance);
-                    entityCommandBuffer.AddComponent(newInstance, new ParentPool
-                    {
-                        PoolEntity = entity
-                    });
-                    entityCommandBuffer.AppendToBuffer(entity, new PooledEntity
-                    {
-                        Value = newInstance
-                    });
-                }
-
-                entityCommandBuffer.AddComponent<Prewarmed>(entity);
-            }
-
-            entityCommandBuffer.Playback(state.EntityManager);
-            entityCommandBuffer.Dispose();
+                ECB = ecb,
+                PooledEntityLookup = pooledEntityLookup
+            };
+            state.Dependency = particleJob.ScheduleParallel(state.Dependency);
         }
 
         [BurstCompile]
-        public void OnDestroy(ref SystemState state)
+        [WithNone(typeof(Prewarmed))]
+        public partial struct ElementPoolPrewarmJob : IJobEntity
         {
+            public EntityCommandBuffer.ParallelWriter ECB;
+            [ReadOnly] public BufferLookup<PooledEntity> PooledEntityLookup;
+
+            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ElementPool pool)
+            {
+                if (!PooledEntityLookup.HasBuffer(entity))
+                {
+                    ECB.AddBuffer<PooledEntity>(sortKey, entity);
+                }
+                
+                for (int i = 0; i < pool.PoolSize; i++)
+                {
+                    var newInstance = ECB.Instantiate(sortKey, pool.Prefab);
+                    ECB.AddComponent<Disabled>(sortKey, newInstance);
+                    ECB.AddComponent(sortKey, newInstance, new SourcePool { PoolEntity = entity });
+                    ECB.AppendToBuffer(sortKey, entity, new PooledEntity { Value = newInstance });
+                }
+
+                ECB.AddComponent<Prewarmed>(sortKey, entity);
+            }
+        }
+
+        [BurstCompile]
+        [WithNone(typeof(Prewarmed))]
+        public partial struct ParticlePoolPrewarmJob : IJobEntity
+        {
+            public EntityCommandBuffer.ParallelWriter ECB;
+            [ReadOnly] public BufferLookup<PooledEntity> PooledEntityLookup;
+
+            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ParticlePool pool)
+            {
+                if (!PooledEntityLookup.HasBuffer(entity))
+                {
+                    ECB.AddBuffer<PooledEntity>(sortKey, entity);
+                }
+                
+                for (int i = 0; i < pool.PoolSize; i++)
+                {
+                    var newInstance = ECB.Instantiate(sortKey, pool.Prefab);
+                    ECB.AddComponent<Disabled>(sortKey, newInstance);
+                    ECB.AddComponent(sortKey, newInstance, new ParentPool { PoolEntity = entity });
+                    ECB.AppendToBuffer(sortKey, entity, new PooledEntity { Value = newInstance });
+                }
+
+                ECB.AddComponent<Prewarmed>(sortKey, entity);
+            }
         }
     }
 }
