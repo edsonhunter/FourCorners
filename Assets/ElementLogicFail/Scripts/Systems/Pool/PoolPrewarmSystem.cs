@@ -9,30 +9,34 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial struct PoolPrewarmSystem : ISystem
     {
+        private BufferLookup<PooledEntity> _pooledEntityLookup;
+
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
+            _pooledEntityLookup = state.GetBufferLookup<PooledEntity>(true);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            _pooledEntityLookup.Update(ref state);
+            
             var ecbSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
-            var pooledEntityLookup = state.GetBufferLookup<PooledEntity>(true);
 
             var elementJob = new ElementPoolPrewarmJob
             {
                 ECB = ecb,
-                PooledEntityLookup = pooledEntityLookup
+                PooledEntityLookup = _pooledEntityLookup
             };
             state.Dependency = elementJob.ScheduleParallel(state.Dependency);
 
             var particleJob = new ParticlePoolPrewarmJob
             {
                 ECB = ecb,
-                PooledEntityLookup = pooledEntityLookup
+                PooledEntityLookup = _pooledEntityLookup
             };
             state.Dependency = particleJob.ScheduleParallel(state.Dependency);
         }
@@ -51,6 +55,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                     ECB.AddBuffer<PooledEntity>(sortKey, entity);
                 }
                 
+                ECB.AddComponent<Prefab>(sortKey, pool.Prefab);
+
                 for (int i = 0; i < pool.PoolSize; i++)
                 {
                     var newInstance = ECB.Instantiate(sortKey, pool.Prefab);
@@ -77,6 +83,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                     ECB.AddBuffer<PooledEntity>(sortKey, entity);
                 }
                 
+                ECB.AddComponent<Prefab>(sortKey, pool.Prefab);
+
                 for (int i = 0; i < pool.PoolSize; i++)
                 {
                     var newInstance = ECB.Instantiate(sortKey, pool.Prefab);
