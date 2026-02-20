@@ -65,7 +65,7 @@ namespace ElementLogicFail.Scripts.Tests
             entityManager.SetComponentData(entity, new Spawner
             {
                 Team = Team.Player1,
-                SpawnRate = spawnRate,
+                SpawnInterval = spawnRate,
                 Timer = timer
             });
             entityManager.SetComponentData(entity, LocalTransform.FromPosition(float3.zero));
