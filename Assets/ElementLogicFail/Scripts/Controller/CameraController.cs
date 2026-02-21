@@ -7,7 +7,7 @@ namespace ElementLogicFail.Scripts.Controller
         private PlayerControl _controls;
         private Vector3 _targetPosition;
         private float _targetZoom;
-        private Camera _cam;
+        private Camera _camera;
 
         [SerializeField]
         private Transform cameraTransform;
@@ -15,17 +15,17 @@ namespace ElementLogicFail.Scripts.Controller
         [SerializeField]
         private float mapPadding = 50f;
 
-        private float moveSpeed = 40f;
-        private float moveSmoothing = 10f;
-        private float zoomSpeed = 2f;
-        private float zoomSmoothing = 5f;
-        private Vector2 zoomLimits = new Vector2(3f, 15f);
-        private Vector2 mapLimitX = Vector2.zero;
-        private Vector2 mapLimitZ = Vector2.zero;
+        private float _moveSpeed = 40f;
+        private float _moveSmoothing = 10f;
+        private float _zoomSpeed = 2f;
+        private float _zoomSmoothing = 5f;
+        private Vector2 _zoomLimits = new Vector2(3f, 15f);
+        private Vector2 _mapLimitX = Vector2.zero;
+        private Vector2 _mapLimitZ = Vector2.zero;
         private Vector3 _baseMin;
         private Vector3 _baseMax;
         private float _groundY;
-        private bool _isInitialized = false;
+        private bool _isInitialized;
 
         public void Setup()
         {
@@ -33,12 +33,12 @@ namespace ElementLogicFail.Scripts.Controller
             _targetPosition = transform.position;
 
             if (cameraTransform != null)
-                _cam = cameraTransform.GetComponent<Camera>();
+                _camera = cameraTransform.GetComponent<Camera>();
 
             // Setup initial zoom target based on projection
-            if (_cam != null && _cam.orthographic)
+            if (_camera != null && _camera.orthographic)
             {
-                _targetZoom = _cam.orthographicSize;
+                _targetZoom = _camera.orthographicSize;
             }
             else
             {
@@ -52,16 +52,18 @@ namespace ElementLogicFail.Scripts.Controller
             _baseMax = max;
             _groundY = (min.y + max.y) * 0.5f;
             _isInitialized = true;
+            
+            SetActiveControls(true);
         }
 
         private void OnEnable()
         {
-            _controls.Enable();
+            SetActiveControls(true);
         }
 
         private void OnDisable()
         {
-            _controls.Disable();
+            SetActiveControls(false);
         }
 
         private void Update()
@@ -87,53 +89,53 @@ namespace ElementLogicFail.Scripts.Controller
 
             // Determine factor for dynamic panning speed depending on projection type
             float heightFactor;
-            if (_cam != null && _cam.orthographic)
+            if (_camera != null && _camera.orthographic)
             {
-                heightFactor = Mathf.InverseLerp(zoomLimits.x, zoomLimits.y, _targetZoom);
+                heightFactor = Mathf.InverseLerp(_zoomLimits.x, _zoomLimits.y, _targetZoom);
             }
             else
             {
-                heightFactor = Mathf.InverseLerp(zoomLimits.x, zoomLimits.y, Mathf.Abs(_targetZoom));
+                heightFactor = Mathf.InverseLerp(_zoomLimits.x, _zoomLimits.y, Mathf.Abs(_targetZoom));
             }
 
-            float currentSpeed = moveSpeed * (0.5f + heightFactor);
+            float currentSpeed = _moveSpeed * (0.5f + heightFactor);
 
             Vector3 targetMove = _targetPosition + (moveDir * currentSpeed * Time.deltaTime);
 
-            targetMove.x = Mathf.Clamp(targetMove.x, mapLimitX.x, mapLimitX.y);
-            targetMove.z = Mathf.Clamp(targetMove.z, mapLimitZ.x, mapLimitZ.y);
+            targetMove.x = Mathf.Clamp(targetMove.x, _mapLimitX.x, _mapLimitX.y);
+            targetMove.z = Mathf.Clamp(targetMove.z, _mapLimitZ.x, _mapLimitZ.y);
 
             _targetPosition.x = targetMove.x;
             _targetPosition.z = targetMove.z;
 
             // Handle zooming
-            if (_cam != null && _cam.orthographic)
+            if (_camera != null && _camera.orthographic)
             {
                 // Orthographic size: Smaller = zoomed in. Scroll up (positive) = zoom in (decrease size)
-                float zoomStep = -zoomInput * zoomSpeed;
+                float zoomStep = -zoomInput * _zoomSpeed;
                 _targetZoom += zoomStep;
-                _targetZoom = Mathf.Clamp(_targetZoom, zoomLimits.x, zoomLimits.y);
+                _targetZoom = Mathf.Clamp(_targetZoom, _zoomLimits.x, _zoomLimits.y);
             }
             else
             {
                 // Perspective local Z: Typically negative. Scroll up (positive) = zoom in (move towards 0)
-                float zoomStep = zoomInput * zoomSpeed;
+                float zoomStep = zoomInput * _zoomSpeed;
                 _targetZoom += zoomStep;
-                _targetZoom = Mathf.Clamp(_targetZoom, -zoomLimits.y, -zoomLimits.x);
+                _targetZoom = Mathf.Clamp(_targetZoom, -_zoomLimits.y, -_zoomLimits.x);
             }
         }
 
         private void CalculateDynamicBounds()
         {
-            if (_cam == null || cameraTransform == null) return;
+            if (_camera == null || cameraTransform == null) return;
 
             Plane groundPlane = new Plane(Vector3.up, new Vector3(0, _groundY, 0));
 
-            Ray centerRay = _cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            Ray centerRay = _camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             if (!groundPlane.Raycast(centerRay, out float dCenter) || dCenter < 0)
             {
-                mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
-                mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
+                _mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
+                _mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
                 return;
             }
 
@@ -152,7 +154,7 @@ namespace ElementLogicFail.Scripts.Controller
 
             foreach (var corner in viewportCorners)
             {
-                Ray cornerRay = _cam.ViewportPointToRay(corner);
+                Ray cornerRay = _camera.ViewportPointToRay(corner);
                 if (groundPlane.Raycast(cornerRay, out float dCorner) && dCorner > 0)
                 {
                     Vector3 hit = cornerRay.GetPoint(dCorner);
@@ -165,8 +167,8 @@ namespace ElementLogicFail.Scripts.Controller
 
             if (minViewX == float.MaxValue)
             {
-                mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
-                mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
+                _mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
+                _mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
                 return;
             }
 
@@ -183,19 +185,19 @@ namespace ElementLogicFail.Scripts.Controller
             if (minCenterX > maxCenterX) { float mid = (minCenterX + maxCenterX) * 0.5f; minCenterX = mid; maxCenterX = mid; }
             if (minCenterZ > maxCenterZ) { float mid = (minCenterZ + maxCenterZ) * 0.5f; minCenterZ = mid; maxCenterZ = mid; }
 
-            mapLimitX = new Vector2(minCenterX - rigToCenter.x, maxCenterX - rigToCenter.x);
-            mapLimitZ = new Vector2(minCenterZ - rigToCenter.y, maxCenterZ - rigToCenter.y);
+            _mapLimitX = new Vector2(minCenterX - rigToCenter.x, maxCenterX - rigToCenter.x);
+            _mapLimitZ = new Vector2(minCenterZ - rigToCenter.y, maxCenterZ - rigToCenter.y);
         }
 
         private void MoveRig()
         {
             // Smooth horizontal positioning
-            transform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * moveSmoothing);
+            transform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * _moveSmoothing);
 
             // Smooth zooming
-            if (_cam != null && _cam.orthographic)
+            if (_camera != null && _camera.orthographic)
             {
-                _cam.orthographicSize = Mathf.Lerp(_cam.orthographicSize, _targetZoom, Time.deltaTime * zoomSmoothing);
+                _camera.orthographicSize = Mathf.Lerp(_camera.orthographicSize, _targetZoom, Time.deltaTime * _zoomSmoothing);
             }
             else if (cameraTransform != null)
             {
@@ -205,8 +207,25 @@ namespace ElementLogicFail.Scripts.Controller
                 cameraTransform.localPosition = Vector3.Lerp(
                     cameraTransform.localPosition, 
                     targetLocalPos, 
-                    Time.deltaTime * zoomSmoothing
+                    Time.deltaTime * _zoomSmoothing
                 );
+            }
+        }
+
+        private void SetActiveControls(bool isActive)
+        {
+            if (!_isInitialized)
+            {
+                return;
+            }
+            
+            if (isActive)
+            {
+                _controls.Enable();
+            }
+            else
+            {
+                _controls.Disable();
             }
         }
     }
