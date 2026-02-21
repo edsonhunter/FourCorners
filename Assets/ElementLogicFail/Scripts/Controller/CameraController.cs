@@ -1,78 +1,232 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace ElementLogicFail.Scripts.Controller
 {
-
-public class CameraController : MonoBehaviour
-{
-    private PlayerControl _controls;
-    private Vector3 _targetPosition;
-    private float _targetZoom;
-    [SerializeField]
-    private Transform cameraTransform;
-    public float moveSpeed = 40f;
-    public float moveSmoothing = 10f;
-    
-    public float zoomSpeed = 5f;
-    public float zoomSmoothing = 5f;
-    public Vector2 zoomLimits = new Vector2(10f, 50f);
-
-    public Vector2 mapLimitX = new Vector2(-50f, 50f);
-    public Vector2 mapLimitZ = new Vector2(-50f, 50f);
-
-    private void Awake()
+    public class CameraController : MonoBehaviour
     {
-        _controls = new PlayerControl();
-        _targetPosition = transform.position;
-        _targetZoom = transform.position.y;
-    }
+        private PlayerControl _controls;
+        private Vector3 _targetPosition;
+        private float _targetZoom;
+        private Camera _camera;
 
-    private void OnEnable()
-    {
-        _controls.Enable();
-    }
+        [SerializeField]
+        private Transform cameraTransform;
 
-    private void OnDisable()
-    {
-        _controls.Disable();
-    }
+        [SerializeField]
+        private float mapPadding = 50f;
 
-    private void Update()
-    {
-        HandleInput();
-        MoveRig();
-    }
+        private float _moveSpeed = 40f;
+        private float _moveSmoothing = 10f;
+        private float _zoomSpeed = 2f;
+        private float _zoomSmoothing = 5f;
+        private Vector2 _zoomLimits = new Vector2(3f, 15f);
+        private Vector2 _mapLimitX = Vector2.zero;
+        private Vector2 _mapLimitZ = Vector2.zero;
+        private Vector3 _baseMin;
+        private Vector3 _baseMax;
+        private float _groundY;
+        private bool _isInitialized;
 
-    private void HandleInput()
-    {
-        Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
-        float zoomInput = _controls.Gameplay.Zoom.ReadValue<float>();
+        public void Setup()
+        {
+            _controls = new PlayerControl();
+            _targetPosition = transform.position;
 
-        if (zoomInput > 0) zoomInput = 1;
-        else if (zoomInput < 0) zoomInput = -1;
+            if (cameraTransform != null)
+                _camera = cameraTransform.GetComponent<Camera>();
 
-        Vector3 moveDir = (Vector3.forward * moveInput.y) + (Vector3.right * moveInput.x);
+            // Setup initial zoom target based on projection
+            if (_camera != null && _camera.orthographic)
+            {
+                _targetZoom = _camera.orthographicSize;
+            }
+            else
+            {
+                _targetZoom = cameraTransform != null ? cameraTransform.localPosition.z : 0f;
+            }
+        }
         
-        float heightFactor = transform.position.y / zoomLimits.y; 
-        float currentSpeed = moveSpeed * (0.5f + heightFactor); 
+        public void Init(Vector3 min, Vector3 max)
+        {
+            _baseMin = min;
+            _baseMax = max;
+            _groundY = (min.y + max.y) * 0.5f;
+            _isInitialized = true;
+            
+            SetActiveControls(true);
+        }
 
-        Vector3 targetMove = _targetPosition + (moveDir * currentSpeed * Time.deltaTime);
+        private void OnEnable()
+        {
+            SetActiveControls(true);
+        }
 
-        targetMove.x = Mathf.Clamp(targetMove.x, mapLimitX.x, mapLimitX.y);
-        targetMove.z = Mathf.Clamp(targetMove.z, mapLimitZ.x, mapLimitZ.y);
-        
-        _targetPosition = new Vector3(targetMove.x, _targetPosition.y, targetMove.z);
+        private void OnDisable()
+        {
+            SetActiveControls(false);
+        }
 
-        float zoomStep = -zoomInput * zoomSpeed;
-        _targetZoom += zoomStep;
-        _targetZoom = Mathf.Clamp(_targetZoom, zoomLimits.x, zoomLimits.y);
-        _targetPosition.y = _targetZoom;
+        private void Update()
+        {
+            HandleInput();
+            MoveRig();
+        }
+
+        private void HandleInput()
+        {
+            if (!_isInitialized)
+                return;
+
+            CalculateDynamicBounds();
+
+            Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
+            float scrollInput = _controls.Gameplay.Zoom.ReadValue<float>();
+
+            // Normalize scroll input
+            float zoomInput = Mathf.Clamp(scrollInput, -1f, 1f);
+
+            Vector3 moveDir = (Vector3.forward * moveInput.y) + (Vector3.right * moveInput.x);
+
+            // Determine factor for dynamic panning speed depending on projection type
+            float heightFactor;
+            if (_camera != null && _camera.orthographic)
+            {
+                heightFactor = Mathf.InverseLerp(_zoomLimits.x, _zoomLimits.y, _targetZoom);
+            }
+            else
+            {
+                heightFactor = Mathf.InverseLerp(_zoomLimits.x, _zoomLimits.y, Mathf.Abs(_targetZoom));
+            }
+
+            float currentSpeed = _moveSpeed * (0.5f + heightFactor);
+
+            Vector3 targetMove = _targetPosition + (moveDir * currentSpeed * Time.deltaTime);
+
+            targetMove.x = Mathf.Clamp(targetMove.x, _mapLimitX.x, _mapLimitX.y);
+            targetMove.z = Mathf.Clamp(targetMove.z, _mapLimitZ.x, _mapLimitZ.y);
+
+            _targetPosition.x = targetMove.x;
+            _targetPosition.z = targetMove.z;
+
+            // Handle zooming
+            if (_camera != null && _camera.orthographic)
+            {
+                // Orthographic size: Smaller = zoomed in. Scroll up (positive) = zoom in (decrease size)
+                float zoomStep = -zoomInput * _zoomSpeed;
+                _targetZoom += zoomStep;
+                _targetZoom = Mathf.Clamp(_targetZoom, _zoomLimits.x, _zoomLimits.y);
+            }
+            else
+            {
+                // Perspective local Z: Typically negative. Scroll up (positive) = zoom in (move towards 0)
+                float zoomStep = zoomInput * _zoomSpeed;
+                _targetZoom += zoomStep;
+                _targetZoom = Mathf.Clamp(_targetZoom, -_zoomLimits.y, -_zoomLimits.x);
+            }
+        }
+
+        private void CalculateDynamicBounds()
+        {
+            if (_camera == null || cameraTransform == null) return;
+
+            Plane groundPlane = new Plane(Vector3.up, new Vector3(0, _groundY, 0));
+
+            Ray centerRay = _camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            if (!groundPlane.Raycast(centerRay, out float dCenter) || dCenter < 0)
+            {
+                _mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
+                _mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
+                return;
+            }
+
+            Vector3 centerHit = centerRay.GetPoint(dCenter);
+            Vector2 rigToCenter = new Vector2(centerHit.x - transform.position.x, centerHit.z - transform.position.z);
+
+            Vector3[] viewportCorners = {
+                new Vector3(0f, 0f, 0f), 
+                new Vector3(1f, 0f, 0f), 
+                new Vector3(0f, 1f, 0f), 
+                new Vector3(1f, 1f, 0f)  
+            };
+
+            float minViewX = float.MaxValue, maxViewX = float.MinValue;
+            float minViewZ = float.MaxValue, maxViewZ = float.MinValue;
+
+            foreach (var corner in viewportCorners)
+            {
+                Ray cornerRay = _camera.ViewportPointToRay(corner);
+                if (groundPlane.Raycast(cornerRay, out float dCorner) && dCorner > 0)
+                {
+                    Vector3 hit = cornerRay.GetPoint(dCorner);
+                    if (hit.x < minViewX) minViewX = hit.x;
+                    if (hit.x > maxViewX) maxViewX = hit.x;
+                    if (hit.z < minViewZ) minViewZ = hit.z;
+                    if (hit.z > maxViewZ) maxViewZ = hit.z;
+                }
+            }
+
+            if (minViewX == float.MaxValue)
+            {
+                _mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
+                _mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
+                return;
+            }
+
+            float spanLeft = centerHit.x - minViewX;
+            float spanRight = maxViewX - centerHit.x;
+            float spanDown = centerHit.z - minViewZ;
+            float spanUp = maxViewZ - centerHit.z;
+
+            float minCenterX = _baseMin.x - mapPadding + spanLeft;
+            float maxCenterX = _baseMax.x + mapPadding - spanRight;
+            float minCenterZ = _baseMin.z - mapPadding + spanDown;
+            float maxCenterZ = _baseMax.z + mapPadding - spanUp;
+
+            if (minCenterX > maxCenterX) { float mid = (minCenterX + maxCenterX) * 0.5f; minCenterX = mid; maxCenterX = mid; }
+            if (minCenterZ > maxCenterZ) { float mid = (minCenterZ + maxCenterZ) * 0.5f; minCenterZ = mid; maxCenterZ = mid; }
+
+            _mapLimitX = new Vector2(minCenterX - rigToCenter.x, maxCenterX - rigToCenter.x);
+            _mapLimitZ = new Vector2(minCenterZ - rigToCenter.y, maxCenterZ - rigToCenter.y);
+        }
+
+        private void MoveRig()
+        {
+            // Smooth horizontal positioning
+            transform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * _moveSmoothing);
+
+            // Smooth zooming
+            if (_camera != null && _camera.orthographic)
+            {
+                _camera.orthographicSize = Mathf.Lerp(_camera.orthographicSize, _targetZoom, Time.deltaTime * _zoomSmoothing);
+            }
+            else if (cameraTransform != null)
+            {
+                Vector3 targetLocalPos = cameraTransform.localPosition;
+                targetLocalPos.z = _targetZoom;
+                
+                cameraTransform.localPosition = Vector3.Lerp(
+                    cameraTransform.localPosition, 
+                    targetLocalPos, 
+                    Time.deltaTime * _zoomSmoothing
+                );
+            }
+        }
+
+        private void SetActiveControls(bool isActive)
+        {
+            if (!_isInitialized)
+            {
+                return;
+            }
+            
+            if (isActive)
+            {
+                _controls.Enable();
+            }
+            else
+            {
+                _controls.Disable();
+            }
+        }
     }
-
-    private void MoveRig()
-    {
-        transform.position = Vector3.Lerp(transform.position, _targetPosition, Time.deltaTime * moveSmoothing);
-    }
-}
 }
