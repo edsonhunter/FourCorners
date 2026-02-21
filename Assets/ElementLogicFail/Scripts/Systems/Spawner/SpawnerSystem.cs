@@ -68,24 +68,22 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 return;
             }
             
-            if (!(spawner.Timer >= spawner.SpawnInterval))
+            while (spawner.Timer >= spawner.SpawnInterval)
             {
-                return;
-            }
-            
-            spawner.Timer = 0f;
-                    
-            for (int i = 0; i < spawner.SpawnAmount; i++)
-            {
-                var prefabIndex = random.NextInt(0, prefabs.Length);
-                var modelType = prefabs[prefabIndex].ModelType;
+                spawner.Timer -= spawner.SpawnInterval;
                         
-                Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                for (int i = 0; i < spawner.SpawnAmount; i++)
                 {
-                    Type = spawner.Team,
-                    Position = transform.ValueRO.Position,
-                    ModelType = modelType
-                });
+                    var prefabIndex = random.NextInt(0, prefabs.Length);
+                    var modelType = prefabs[prefabIndex].ModelType;
+                            
+                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    {
+                        Type = spawner.Team,
+                        Position = transform.ValueRO.Position,
+                        ModelType = modelType
+                    });
+                }
             }
         }
     }
