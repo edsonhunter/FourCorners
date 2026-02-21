@@ -27,6 +27,12 @@ namespace ElementLogicFail.Scripts.Controller
         private float _groundY;
         private bool _isInitialized;
 
+        // Caching for Optimization
+        private float _lastZoomCache = -999f;
+        private int _lastScreenWidth = -1;
+        private int _lastScreenHeight = -1;
+        private float _lastMapPaddingCache = -1f;
+
         public void Setup()
         {
             _controls = new PlayerControl();
@@ -128,6 +134,21 @@ namespace ElementLogicFail.Scripts.Controller
         private void CalculateDynamicBounds()
         {
             if (_camera == null || cameraTransform == null) return;
+
+            float currentRealZoom = _camera.orthographic ? _camera.orthographicSize : cameraTransform.localPosition.z;
+
+            if (Mathf.Approximately(_lastZoomCache, currentRealZoom) && 
+                _lastScreenWidth == Screen.width && 
+                _lastScreenHeight == Screen.height && 
+                Mathf.Approximately(_lastMapPaddingCache, mapPadding))
+            {
+                return;
+            }
+
+            _lastZoomCache = currentRealZoom;
+            _lastScreenWidth = Screen.width;
+            _lastScreenHeight = Screen.height;
+            _lastMapPaddingCache = mapPadding;
 
             Plane groundPlane = new Plane(Vector3.up, new Vector3(0, _groundY, 0));
 
