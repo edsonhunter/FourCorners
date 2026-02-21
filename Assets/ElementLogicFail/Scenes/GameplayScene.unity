@@ -364,10 +364,10 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 3
-  far clip plane: 2000
+  near clip plane: 0
+  far clip plane: 1000
   field of view: 42.98268
-  orthographic: 0
+  orthographic: 1
   orthographic size: 3
   m_Depth: -1
   m_CullingMask:
@@ -780,7 +780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185ec2a6415743d28c9beb7764774dcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Elf.Controller::ElementLogicFail.Scripts.Controller.CameraController
-  camera: {fileID: 330585545}
+  cameraTransform: {fileID: 330585546}
 --- !u!4 &1365089960
 Transform:
   m_ObjectHideFlags: 0

@@ -9,28 +9,34 @@ namespace ElementLogicFail.Scripts.Scenes
     public class GameplaySceneController : BaseScene<GameplayData>
     {
         [SerializeField] private CameraController _cameraController;
+        private (Vector3 min, Vector3 max) _bounds;
 
         protected override Task Loading()
         {
             return WaitAndInitCameraAsync();
         }
 
+        protected override void Loaded()
+        {
+            if (_cameraController != null)
+            {
+                _cameraController.Init(_bounds.min, _bounds.max);
+            }
+        }
+
         private async Task WaitAndInitCameraAsync()
         {
             var service = GetService<ISystemBridgeService>();
-            var bounds = service.GetMapBounds();
+            _bounds = service.GetMapBounds();
             
             // Wait until the ECS EntityManager has created the WanderArea singleton
-            while(bounds.min == Vector3.zero && bounds.max == Vector3.zero)
+            while(_bounds.min == Vector3.zero && _bounds.max == Vector3.zero)
             {
                 await Task.Yield(); 
-                bounds = service.GetMapBounds();
+                _bounds = service.GetMapBounds();
             }
             
-            if (_cameraController != null)
-            {
-                _cameraController.Init(bounds.min, bounds.max);
-            }
+            _cameraController.Setup();
         }
     }
     
