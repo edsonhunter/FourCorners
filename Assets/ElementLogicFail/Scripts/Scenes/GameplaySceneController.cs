@@ -1,4 +1,5 @@
-﻿using ElementLogicFail.Scripts.Controller;
+﻿using System.Threading.Tasks;
+using ElementLogicFail.Scripts.Controller;
 using ElementLogicFail.Scripts.Scenes.Interface;
 using ElementLogicFail.Scripts.Services.Interface;
 using UnityEngine;
@@ -9,14 +10,27 @@ namespace ElementLogicFail.Scripts.Scenes
     {
         [SerializeField] private CameraController _cameraController;
 
-        protected override void Loaded()
+        protected override Task Loading()
         {
-            base.Loaded();
-            
+            return WaitAndInitCameraAsync();
+        }
+
+        private async Task WaitAndInitCameraAsync()
+        {
             var service = GetService<ISystemBridgeService>();
             var bounds = service.GetMapBounds();
             
-            _cameraController.Init(bounds.min, bounds.max);
+            // Wait until the ECS EntityManager has created the WanderArea singleton
+            while(bounds.min == Vector3.zero && bounds.max == Vector3.zero)
+            {
+                await Task.Yield(); 
+                bounds = service.GetMapBounds();
+            }
+            
+            if (_cameraController != null)
+            {
+                _cameraController.Init(bounds.min, bounds.max);
+            }
         }
     }
     
