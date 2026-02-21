@@ -8,7 +8,7 @@ namespace ElementLogicFail.Scripts.Scenes
 {
     public class GameplaySceneController : BaseScene<GameplayData>
     {
-        [SerializeField] private CameraController _cameraController;
+        [SerializeField] private CameraController cameraController;
         private (Vector3 min, Vector3 max) _bounds;
 
         protected override Task Loading()
@@ -18,9 +18,9 @@ namespace ElementLogicFail.Scripts.Scenes
 
         protected override void Loaded()
         {
-            if (_cameraController != null)
+            if (cameraController != null)
             {
-                _cameraController.Init(_bounds.min, _bounds.max);
+                cameraController.Init(_bounds.min, _bounds.max);
             }
         }
 
@@ -36,7 +36,7 @@ namespace ElementLogicFail.Scripts.Scenes
                 _bounds = service.GetMapBounds();
             }
             
-            _cameraController.Setup();
+            cameraController.Setup();
         }
     }
     
