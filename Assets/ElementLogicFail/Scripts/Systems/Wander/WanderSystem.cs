@@ -47,7 +47,7 @@ namespace ElementLogicFail.Scripts.Systems.Wander
 
         private void Execute(ref ElementData element, ref LocalTransform transform)
         {
-            if (math.distance(transform.Position, element.Target) < 0.2f)
+            if (math.distancesq(transform.Position, element.Target) < 0.04f)
             {
                 element.RandomSeed = element.RandomSeed * 1664525u + 1013904223u;
                 var rand = new Unity.Mathematics.Random(element.RandomSeed);
