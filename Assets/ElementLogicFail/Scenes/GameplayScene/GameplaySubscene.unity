@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  UnitsToSpawn: 0400000007000000
+  UnitsToSpawn: 02000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -257,7 +257,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  UnitsToSpawn: 010000000300000002000000
+  UnitsToSpawn: 0100000003000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -472,7 +472,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  UnitsToSpawn: 0600000008000000
+  UnitsToSpawn: 060000000800000007000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -544,7 +544,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  UnitsToSpawn: 010000000300000002000000
+  UnitsToSpawn: 0100000003000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -915,7 +915,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 0
-  UnitsToSpawn: 010000000300000002000000
+  UnitsToSpawn: 0100000003000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -969,7 +969,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  UnitsToSpawn: 0400000007000000
+  UnitsToSpawn: 02000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -1116,7 +1116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 2
-  UnitsToSpawn: 0400000007000000
+  UnitsToSpawn: 02000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -1170,7 +1170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  UnitsToSpawn: 0600000008000000
+  UnitsToSpawn: 060000000800000007000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
@@ -1320,7 +1320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
   type: 3
-  UnitsToSpawn: 0600000008000000
+  UnitsToSpawn: 060000000800000007000000
   spawnAmount: 5
   spawnInterval: 10
   Waypoints:
