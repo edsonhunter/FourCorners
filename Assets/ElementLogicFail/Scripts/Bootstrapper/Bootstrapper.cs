@@ -37,6 +37,7 @@ namespace ElementLogicFail.Scripts.Bootstrapper
         private void SetupServices()
         {
             _applicationManager.RegisterServices<ISystemBridgeService>(new SystemBridgeService());
+            _applicationManager.RegisterServices<IAddressablesService>(new AddressablesService());
         }
 
         private void SetupManagers()
