@@ -47,7 +47,7 @@ namespace ElementLogicFail.Scripts.Systems.Wander
 
         private void Execute(ref ElementData element, ref LocalTransform transform)
         {
-            if (math.distance(transform.Position, element.Target) < 0.2f)
+            if (math.distancesq(transform.Position, element.Target) < 0.04f)
             {
                 element.RandomSeed = element.RandomSeed * 1664525u + 1013904223u;
                 var rand = new Unity.Mathematics.Random(element.RandomSeed);
@@ -59,6 +59,13 @@ namespace ElementLogicFail.Scripts.Systems.Wander
             }
             
             float3 direction = math.normalizesafe(element.Target - transform.Position);
+            
+            // Apply rotation to face movement direction
+            if (math.lengthsq(direction) > 0.001f)
+            {
+                transform.Rotation = quaternion.LookRotationSafe(direction, math.up());
+            }
+
             transform.Position += direction * element.Speed * DeltaTime;
         }
     }

@@ -9,7 +9,8 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
     {
         public Team type;
         public List<UnitModelType> UnitsToSpawn;
-        public float spawnRate;
+        public int spawnAmount = 5;
+        public float spawnInterval = 2.0f;
         public List<Transform> Waypoints;
 
         public class SpawnerAuthoringBaker : Baker<SpawnerAuthoring>
@@ -21,7 +22,8 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
                 AddComponent(entity, new Components.Spawner.Spawner
                 {
                     Team = authoring.type,
-                    SpawnRate = authoring.spawnRate,
+                    SpawnAmount = authoring.spawnAmount,
+                    SpawnInterval = authoring.spawnInterval,
                     Timer = 0
                 });
                 

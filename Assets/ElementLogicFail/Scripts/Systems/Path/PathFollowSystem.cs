@@ -14,10 +14,12 @@ namespace ElementLogicFail.Scripts.Systems.Path
         public void OnUpdate(ref SystemState state)
         {
             var deltaTime = SystemAPI.Time.DeltaTime;
+            var elapsedTime = (float)SystemAPI.Time.ElapsedTime;
 
             var job = new PathFollowJob
             {
-                DeltaTime = deltaTime
+                DeltaTime = deltaTime,
+                ElapsedTime = elapsedTime
             };
             
             state.Dependency = job.ScheduleParallel(state.Dependency);
@@ -28,6 +30,7 @@ namespace ElementLogicFail.Scripts.Systems.Path
     public partial struct PathFollowJob : IJobEntity
     {
         public float DeltaTime;
+        public float ElapsedTime;
 
         private void Execute(RefRW<LocalTransform> transform, RefRW<PathFollower> follower, RefRW<ElementData> element, DynamicBuffer<PathWaypoint> buffer)
         {
@@ -37,12 +40,35 @@ namespace ElementLogicFail.Scripts.Systems.Path
             var currentTarget = buffer[followerRW.CurrentIndex].Position;
             
             element.ValueRW.Target = currentTarget;
-            // Move towards target
-            float3 direction = math.normalizesafe(currentTarget - transform.ValueRO.Position);
-            // Zero out Y movement if purely 2D plane logic is desired, but keeping 3D generally safe
-            direction.y = 0; 
             
-            transform.ValueRW.Position += direction * element.ValueRO.Speed * DeltaTime;
+            float3 forwardDirection = currentTarget - transform.ValueRO.Position;
+            forwardDirection.y = 0;
+            
+            float distanceToTarget = math.length(forwardDirection);
+            if (distanceToTarget > 0.001f)
+            {
+                forwardDirection /= distanceToTarget;
+            }
+            
+            // Calculate a perpendicular Right Vector for the wandering sway
+            float3 rightDirection = math.cross(new float3(0, 1, 0), forwardDirection);
+            
+            // Generate a smooth Perlin Noise value based on the simulation elapsed time and the unit's unique random seed
+            float noiseValue = noise.cnoise(new float2(ElapsedTime * 2f, element.ValueRO.RandomSeed * 0.001f));
+            
+            // Combine Forward and Right directions, scaled by the Noise
+            // This produces a snaking/wandering trajectory while still progressing towards the True Forward line.
+            float wanderStrength = 0.8f; 
+            float3 finalDirection = math.normalizesafe(forwardDirection + (rightDirection * noiseValue * wanderStrength));
+            
+            // Apply rotation to face movement direction
+            if (math.lengthsq(finalDirection) > 0.001f)
+            {
+                transform.ValueRW.Rotation = quaternion.LookRotationSafe(finalDirection, math.up());
+            }
+
+            // Apply drift
+            transform.ValueRW.Position += finalDirection * element.ValueRO.Speed * DeltaTime;
 
             // Check distance
             if (math.distancesq(transform.ValueRO.Position, currentTarget) < 0.2f * 0.2f)
