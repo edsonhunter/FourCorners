@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Scenes;
 
 namespace ElementLogicFail.Scripts.Systems.Pool
 {
@@ -25,6 +26,18 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             var ecbSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
+            var requestJob = new RequestPrefabLoadJob
+            {
+                ECB = ecb
+            };
+            state.Dependency = requestJob.ScheduleParallel(state.Dependency);
+
+            var applyJob = new ApplyLoadedPrefabJob
+            {
+                ECB = ecb
+            };
+            state.Dependency = applyJob.ScheduleParallel(state.Dependency);
+
             var elementJob = new ElementPoolPrewarmJob
             {
                 ECB = ecb,
@@ -38,6 +51,38 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 PooledEntityLookup = _pooledEntityLookup
             };
             state.Dependency = particleJob.ScheduleParallel(state.Dependency);
+        }
+
+        [BurstCompile]
+        [WithNone(typeof(PrefabLoadResult))]
+        [WithNone(typeof(RequestEntityPrefabLoaded))]
+        public partial struct RequestPrefabLoadJob : IJobEntity
+        {
+            public EntityCommandBuffer.ParallelWriter ECB;
+
+            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ElementPool pool)
+            {
+                if (pool.Prefab == Entity.Null)
+                {
+                    ECB.AddComponent(sortKey, entity, new RequestEntityPrefabLoaded { Prefab = pool.PrefabReference });
+                }
+            }
+        }
+
+        [BurstCompile]
+        public partial struct ApplyLoadedPrefabJob : IJobEntity
+        {
+            public EntityCommandBuffer.ParallelWriter ECB;
+
+            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref ElementPool pool, in PrefabLoadResult prefabResult)
+            {
+                if (pool.Prefab == Entity.Null)
+                {
+                    pool.Prefab = prefabResult.PrefabRoot;
+                    ECB.RemoveComponent<RequestEntityPrefabLoaded>(sortKey, entity);
+                    ECB.RemoveComponent<PrefabLoadResult>(sortKey, entity);
+                }
+            }
         }
 
         [BurstCompile]
