@@ -5,6 +5,8 @@ using ElementLogicFail.Scripts.Components.Pool;
 using Unity.Entities;
 using UnityEngine;
 
+using Unity.Entities.Serialization;
+
 namespace ElementLogicFail.Scripts.Authoring
 {
     public class PoolConfigAuthoring : MonoBehaviour
@@ -12,7 +14,7 @@ namespace ElementLogicFail.Scripts.Authoring
         [Serializable]
         public struct PoolDefinition
         {
-            public string AddressableKey;
+            public GameObject Prefab;
             public int InitialCount;
             public UnitModelType ModelType;
         }
@@ -27,14 +29,16 @@ namespace ElementLogicFail.Scripts.Authoring
 
                 foreach (var poolDef in authoring.Pools)
                 {
-                    if (string.IsNullOrEmpty(poolDef.AddressableKey)) continue;
+                    if (poolDef.Prefab == null) continue;
 
                     var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
+
+                    var prefabReference = new EntityPrefabReference(poolDef.Prefab);
 
                     AddComponent(poolEntity, new ElementPool
                     {
                         ModelType = poolDef.ModelType,
-                        AddressableKey = poolDef.AddressableKey,
+                        PrefabReference = prefabReference,
                         PoolSize = poolDef.InitialCount,
                         Prefab = Entity.Null
                     });
