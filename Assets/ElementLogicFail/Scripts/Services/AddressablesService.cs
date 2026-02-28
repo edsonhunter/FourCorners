@@ -20,6 +20,22 @@ namespace ElementLogicFail.Scripts.Services
 
         public async Task PreloadDependenciesAsync(object key)
         {
+            bool keyExists = false;
+            foreach (var locator in Addressables.ResourceLocators)
+            {
+                if (locator.Locate(key, typeof(object), out _))
+                {
+                    keyExists = true;
+                    break;
+                }
+            }
+
+            if (!keyExists)
+            {
+                Debug.LogWarning($"[AddressablesService] Attempting to preload an Addressables key that does not exist in the catalog: '{key}'. Skipping.");
+                return;
+            }
+
             var handle = Addressables.DownloadDependenciesAsync(key, true);
             await handle.Task;
             Addressables.Release(handle);

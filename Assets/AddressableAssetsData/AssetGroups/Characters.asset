@@ -55,6 +55,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a4143681c90b67e45bac6a6c8bd9bee6
+    m_Address: GameplaySubscene
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ca7f57900aa91064398992ea016de566
     m_Address: Scientist Variant
     m_ReadOnly: 0

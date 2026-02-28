@@ -12,7 +12,7 @@ namespace ElementLogicFail.Scripts.Scenes
             var addressablesService = GetService<IAddressablesService>();
             await addressablesService.InitializeAsync();
             
-            // Preload core groups to avoid stuttering later
+            
             await addressablesService.PreloadDependenciesAsync("Characters");
             await addressablesService.PreloadDependenciesAsync("Buildings");
             await addressablesService.PreloadDependenciesAsync("Particles");

@@ -281,9 +281,9 @@ GameObject:
   - component: {fileID: 3179250506126452106}
   - component: {fileID: 4266704770135096882}
   - component: {fileID: 3612829713852556032}
+  - component: {fileID: 3814719451323231369}
   - component: {fileID: 4043424383366591570}
   - component: {fileID: 1618914866539842515}
-  - component: {fileID: 3814719451323231369}
   m_Layer: 0
   m_Name: BaseMonster
   m_TagString: Untagged
@@ -340,6 +340,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PathAuthoring
   Waypoints: []
+--- !u!114 &3814719451323231369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3235638746568561028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring
 --- !u!114 &4043424383366591570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -534,18 +546,6 @@ MonoBehaviour:
     Tag05: 0
     Tag06: 0
     Tag07: 0
---- !u!114 &3814719451323231369
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3235638746568561028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring
 --- !u!1 &4771316860456899942
 GameObject:
   m_ObjectHideFlags: 0
