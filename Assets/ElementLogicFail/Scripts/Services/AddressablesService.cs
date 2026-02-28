@@ -18,6 +18,13 @@ namespace ElementLogicFail.Scripts.Services
             await handle.Task;
         }
 
+        public async Task PreloadDependenciesAsync(object key)
+        {
+            var handle = Addressables.DownloadDependenciesAsync(key, true);
+            await handle.Task;
+            Addressables.Release(handle);
+        }
+
         public async Task<T> LoadAssetAsync<T>(object key)
         {
             if (_handles.TryGetValue(key, out var existingHandle))
