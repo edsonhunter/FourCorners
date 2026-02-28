@@ -33,7 +33,11 @@ namespace ElementLogicFail.Scripts.Authoring
 
                     var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
 
+#if UNITY_EDITOR
                     var prefabReference = new EntityPrefabReference(poolDef.Prefab);
+#else
+                    var prefabReference = default(EntityPrefabReference);
+#endif
 
                     AddComponent(poolEntity, new ElementPool
                     {
