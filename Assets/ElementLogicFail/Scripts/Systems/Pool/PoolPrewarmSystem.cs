@@ -22,7 +22,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         public void OnUpdate(ref SystemState state)
         {
             _pooledEntityLookup.Update(ref state);
-            
             var ecbSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
@@ -50,6 +49,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
             private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ElementPool pool)
             {
+                if (pool.Prefab == Entity.Null) return;
+
                 if (!PooledEntityLookup.HasBuffer(entity))
                 {
                     ECB.AddBuffer<PooledEntity>(sortKey, entity);
@@ -78,6 +79,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
             private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ParticlePool pool)
             {
+                if (pool.Prefab == Entity.Null) return;
+
                 if (!PooledEntityLookup.HasBuffer(entity))
                 {
                     ECB.AddBuffer<PooledEntity>(sortKey, entity);

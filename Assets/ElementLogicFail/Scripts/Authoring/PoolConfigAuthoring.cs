@@ -12,7 +12,7 @@ namespace ElementLogicFail.Scripts.Authoring
         [Serializable]
         public struct PoolDefinition
         {
-            public GameObject Prefab;
+            public string AddressableKey;
             public int InitialCount;
             public UnitModelType ModelType;
         }
@@ -27,22 +27,19 @@ namespace ElementLogicFail.Scripts.Authoring
 
                 foreach (var poolDef in authoring.Pools)
                 {
-                    if (poolDef.Prefab == null) continue;
+                    if (string.IsNullOrEmpty(poolDef.AddressableKey)) continue;
 
-                    var prefabEntity = GetEntity(poolDef.Prefab, TransformUsageFlags.Dynamic);
-
-                    // Create a dedicated Pool Entity for this prefab
-                    // We don't attach this to the Authoring Entity itself to avoid clutter
                     var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
 
                     AddComponent(poolEntity, new ElementPool
                     {
                         ModelType = poolDef.ModelType,
-                        Prefab = prefabEntity,
-                        PoolSize = poolDef.InitialCount
+                        AddressableKey = poolDef.AddressableKey,
+                        PoolSize = poolDef.InitialCount,
+                        Prefab = Entity.Null
                     });
 
-                    // Add the buffer to store the actual pooled entities
+                    // Add buffer to store the actual pooled entities
                     AddBuffer<PooledEntity>(poolEntity);
                 }
             }

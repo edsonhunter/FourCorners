@@ -8,6 +8,7 @@ namespace ElementLogicFail.Scripts.Components.Pool
         public int ElementType;
         public UnitModelType ModelType;
         public Entity Prefab;
+        public Unity.Collections.FixedString64Bytes AddressableKey;
         public int PoolSize;
     }
 }
