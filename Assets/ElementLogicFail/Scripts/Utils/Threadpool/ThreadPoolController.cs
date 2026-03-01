@@ -19,11 +19,6 @@ namespace ElementLogicFail.Scripts.Utils.Threadpool
             name = nameof(ThreadPoolController);
         }
 
-        private void Start()
-        {
-            DontDestroyOnLoad(this);
-        }
-
         internal void Run(TimeSpan delay, Action action)
         {
             var stackFrame = new StackTrace(true).GetFrame(1);
