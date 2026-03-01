@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ElementLogicFail.Scripts.Controller
 {
@@ -78,6 +79,14 @@ namespace ElementLogicFail.Scripts.Controller
             MoveRig();
         }
 
+        [Header("Edge Panning")]
+        [SerializeField] private bool enableEdgePanning = true;
+        [SerializeField] private float edgePanBorderThickness = 20f;
+
+        [Header("Drag Panning")]
+        [SerializeField] private bool enableDragPanning = true;
+        [SerializeField] private float dragSensitivity = 1f;
+
         private void HandleInput()
         {
             if (!_isInitialized)
@@ -88,7 +97,47 @@ namespace ElementLogicFail.Scripts.Controller
             Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
             float scrollInput = _controls.Gameplay.Zoom.ReadValue<float>();
 
-            // Normalize scroll input
+            if (enableEdgePanning && Mouse.current != null)
+            {
+                Vector2 mousePos = Mouse.current.position.ReadValue();
+                if (mousePos.x >= 0 && mousePos.x <= Screen.width && mousePos.y >= 0 && mousePos.y <= Screen.height)
+                {
+                    if (mousePos.y >= Screen.height - edgePanBorderThickness) moveInput.y += 1f;
+                    if (mousePos.y <= edgePanBorderThickness) moveInput.y -= 1f;
+                    if (mousePos.x >= Screen.width - edgePanBorderThickness) moveInput.x += 1f;
+                    if (mousePos.x <= edgePanBorderThickness) moveInput.x -= 1f;
+                }
+            }
+
+            if (enableDragPanning)
+            {
+                Vector2 dragDelta = Vector2.zero;
+                bool isDragging = false;
+
+                if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+                {
+                    dragDelta = Touchscreen.current.primaryTouch.delta.ReadValue();
+                    isDragging = true;
+                }
+                else if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+                {
+                    dragDelta = Mouse.current.delta.ReadValue();
+                    isDragging = true;
+                }
+
+                if (isDragging)
+                {
+                    moveInput.x = -dragDelta.x * dragSensitivity * (1f / Screen.width) * 100f;
+                    moveInput.y = -dragDelta.y * dragSensitivity * (1f / Screen.height) * 100f;
+                }
+            }
+
+            if (moveInput.sqrMagnitude > 1f)
+            {
+                moveInput.Normalize();
+            }
+
+            // Normalize
             float zoomInput = Mathf.Clamp(scrollInput, -1f, 1f);
 
             Vector3 moveDir = (Vector3.forward * moveInput.y) + (Vector3.right * moveInput.x);
