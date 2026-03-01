@@ -79,13 +79,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 if (pool.Prefab == Entity.Null)
                 {
                     pool.Prefab = prefabResult.PrefabRoot;
-                    
-                    // We DO NOT remove PrefabLoadResult so the memory stays alive.
-                    // However, we MUST remove RequestEntityPrefabLoaded so Unity stops trying to load it.
-                    //ECB.RemoveComponent<RequestEntityPrefabLoaded>(sortKey, entity);
-                    
-                    // And we add a custom marker so the prewarm jobs know it's completely safe.
-                    //ECB.AddComponent<PrefabLoadedSuccessfully>(sortKey, entity);
                 }
             }
         }
