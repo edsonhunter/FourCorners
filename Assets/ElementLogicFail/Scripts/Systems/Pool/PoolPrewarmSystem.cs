@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Scenes;
 
 namespace ElementLogicFail.Scripts.Systems.Pool
 {
@@ -22,9 +23,20 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         public void OnUpdate(ref SystemState state)
         {
             _pooledEntityLookup.Update(ref state);
-            
             var ecbSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
+
+            var requestJob = new RequestPrefabLoadJob
+            {
+                ECB = ecb
+            };
+            state.Dependency = requestJob.ScheduleParallel(state.Dependency);
+
+            var applyJob = new ApplyLoadedPrefabJob
+            {
+                ECB = ecb
+            };
+            state.Dependency = applyJob.ScheduleParallel(state.Dependency);
 
             var elementJob = new ElementPoolPrewarmJob
             {
@@ -42,6 +54,36 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         }
 
         [BurstCompile]
+        [WithNone(typeof(PrefabLoadResult))]
+        [WithNone(typeof(RequestEntityPrefabLoaded))]
+        public partial struct RequestPrefabLoadJob : IJobEntity
+        {
+            public EntityCommandBuffer.ParallelWriter ECB;
+
+            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ElementPool pool)
+            {
+                if (pool.Prefab == Entity.Null)
+                {
+                    ECB.AddComponent(sortKey, entity, new RequestEntityPrefabLoaded { Prefab = pool.PrefabReference });
+                }
+            }
+        }
+
+        [BurstCompile]
+        public partial struct ApplyLoadedPrefabJob : IJobEntity
+        {
+            public EntityCommandBuffer.ParallelWriter ECB;
+
+            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref ElementPool pool, in PrefabLoadResult prefabResult)
+            {
+                if (pool.Prefab == Entity.Null)
+                {
+                    pool.Prefab = prefabResult.PrefabRoot;
+                }
+            }
+        }
+
+        [BurstCompile]
         [WithNone(typeof(Prewarmed))]
         public partial struct ElementPoolPrewarmJob : IJobEntity
         {
@@ -50,6 +92,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
             private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ElementPool pool)
             {
+                if (pool.Prefab == Entity.Null) return;
+
                 if (!PooledEntityLookup.HasBuffer(entity))
                 {
                     ECB.AddBuffer<PooledEntity>(sortKey, entity);
@@ -78,6 +122,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
             private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ParticlePool pool)
             {
+                if (pool.Prefab == Entity.Null) return;
+
                 if (!PooledEntityLookup.HasBuffer(entity))
                 {
                     ECB.AddBuffer<PooledEntity>(sortKey, entity);
