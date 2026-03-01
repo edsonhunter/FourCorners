@@ -1,67 +1,89 @@
-How to Play:
-- Open the Bootstrapper Scene
-- Press Play on Unity Editor
-- After the Game Load, press "Play Game" button on the Main Menu
-- After the Gameplay Scene loads check the elements wandering the scene
-- Increase or decrease the spawn rate through the buttons to add more or less elements
-- Check the memory reporter in the middle of the screen
+# ElementalLogicFail: ECS Architecture & Documentation
 
+## Overview
+This project is a high-performance, scalable horde-simulation built leveraging Unity DOTS (Data-Oriented Technology Stack) physics, Burst compilation, and the C# Job System.
 
-12/09
-- Created the project.
-- I've decided to try out the "Projects" feature Github provides to organize tasks
-- Decided some game design stuffs and where should I start coding.
+---
 
-13/09 
-- Create project, folder structures, asmdefs
-- I've added the asmdefs first to ensure all dependencies will be respect from the beginning
-- Add the first interface and domain to create a behavior test
-- With the test up and working, all domains will have tests as part of its creation.
-- I decided to use DOTS/ECS as the base for the first prototype because of the nature of the game
-- I implemented the spawner authoring/baker/system and elements component/authoring/baker
-- I mplemented wandering system
-- Stil has some pendings, will work on them tomorrow
+## How to Play
+1.  **Open the Bootstrapper Scene**
+2.  **Press Play** in the Unity Editor.
+3.  **Load the Game:** After the initial load, press the "Play Game" button on the Main Menu.
+4.  **Observe:** Check the elements wandering the scene.
+5.  **Controls:** Increase or decrease the spawn rate via the UI buttons.
+6.  **Monitor:** Check the memory reporter in the center of the screen.
 
-14/09
-- Today I'll create the collision system and the memory usage analiser.
-- Implemented collision systems.
-- Fixed a lot of things. My collision system used physics event and interated over it. That's not how NativeStream works.
-- Also removed explicit call for LocalTransform to rely only on TransformUsageFlags
-- Now I'll work to remove singletons that are impeding me to use multiple spawners
+---
 
-15/09
-- I fixed a lot of issues with collisions today.
-- Learned how collisions events works for entities
-- imported a custom library with collision data and rigidBody data compoenents for entities
-- Divided the spawner into two separeted systems
-- Learned how systems works under the hood by Unity
-- Leraned how jobs and requests were added to buffer than read from it.
-- I thought I would start the system architecture but instead I played a little longer with DOTS
+## Technical Documentation
 
-16/09
-- Today I finished the entire game flow (spawn elements -> elements wander around the map -> elements collide and destroy eachother or create a new one) using only ECS
-- Also added a very simple GC memory allocator reader.
-- Started doing Unit Tests for the systems
-- Fixed a lot of issues with the wandering system, the exponetial creation of prefabs when two collide and learned how systems interact with each other.
-- After I finish the UnitTests for the systems I'll finally build the core architecture
+### 1. Object Pooling & Lifecycle Management
+High-frequency instantiations and destructions crash garbage collection. The object pooling system guarantees zero-allocation spawning during gameplay.
 
-17/09
-- I have the intention to create the core architecture for the project
-- The main tasks I'll try to reach today will be dependency injector for GameServices, SceneManager, Loader, and everything except the game design.
-- Ended up not doing the main structure for the project.
-- I've tried to add a pooling system to reutilize the objects but the boiler plate + completixy skyrocket.
-- Refactor UnitTest to reflect the changes in Collision and PoolSystem
+*   **Implementation (`PoolPrewarmSystem.cs`, `ReturnToPoolSystem.cs`):** 
+    *   `PoolPrewarmSystem` initializes requested batches (e.g., thousands of Minions) during `InitializationSystemGroup`.
+    *   `ReturnToPoolSystem` uses an ECB to add `Disabled` tags and stores entity references in a `PooledEntity` buffer.
+*   **Performance Optimization:** Caches `BufferLookup<PooledEntity>` in `OnCreate` to prevent expensive lookups during spawn waves.
 
-18/09
-- Add the core structure to the project
-- Create the applicationManager and the dependency injector container
-- Apply more fixes to the pooling system
+### 2. Dynamic Spawner System
+Manages timing and distribution of unit waves using `IJobEntity`.
 
-19/08
-- Finished the main structure for the project
-- Fixed and finalized the PoolSystem for element prefabs
-- Created and finished the particle systems
-- Added more tests to embrace the new systems
-- Finish settings and memory reporter
-- Improve camera and fix a lot of things
-- Added spawning rate controllers
+*   **Dual-Job Paradigm:** 
+    1.  `SpawnerSystem` handles timing and appends `ElementSpawnRequest` to a queue.
+    2.  `PoolSpawningSystem` acts as the dispatcher, popping dormant entities from the pool, re-initializing them, and removing the `Disabled` tag.
+*   **Catch-up Logic:** Uses a `while (timer >= interval)` loop to ensure unit density is maintained even after frame spikes.
+
+### 3. Collision & Physics System
+Uses `ICollisionEventsJob` to process unmanaged physics streams without stalling the main thread.
+
+*   **Resolution:** Hostile collisions tag entities with `ReturnToPool` and trigger particle effects via the `ParticlePool`.
+*   **History & Fixes:** 
+    *   **Ghost Minions:** Fixed by switching to unique sort keys (`BodyIndexA/B`) in the ECB to prevent data races.
+    *   **Scaling:** Replaced `NativeList` with `NativeHashSet` for constant-time (O(1)) collision tracking.
+
+### 4. Organic pathfinding & AI
+Locomotion systems for agent movement.
+
+*   **Wandering:** Uses Perlin noise (`noise.cnoise`) for organic spreading and swarming behavior.
+*   **Optimization:** Uses `math.distancesq()` for arrival checks to bypass expensive square-root calculations in parallel jobs.
+
+### 5. Viewport Camera & Input
+An event-driven system that bridges the ECS world boundaries to a standard camera.
+
+*   **ECS Integration:** Dynamically fetches map boundaries from the `WanderArea` component via a bridging service (`SystemBridgeService.cs`).
+*   **Isometric Symmetry:** Ensures panning feels consistent across all screen edges despite the isometric angle.
+
+### 6. Addressables Integration
+Managing memory through chunking while bridging into unmanaged ECS environments.
+
+*   **Streaming:** Uses `EntityPrefabReference` and `RequestEntityPrefabLoaded` to stream memory directly into the physics engine without GameObject overhead.
+*   **Critical Rules:** Requires SubScene setup, explicit grouping of `.unity` files in Addressables, and careful handling of `PrefabLoadResult` to prevent runtime crashes.
+
+---
+
+## Development Changelog
+
+### 12/09 - 13/09
+- Project creation and task organization via GitHub Projects.
+- Established folder structure and asmdefs.
+- Initial ECS implementation: Spawner, Wandering system, and basic unit tests.
+
+### 14/09 - 15/09
+- Implemented Collision systems and Memory Analyser.
+- Refactored collisions from Physics Events to better handle NativeStreams.
+- Divided Spawner into separate systems and optimized job buffers.
+
+### 16/09
+- Finalized full game flow: Spawn -> Wander -> Collide -> Recycle.
+- Added GC memory allocator reporter.
+- Enhanced wandering logic and prefab creation exponential growth fixes.
+
+### 17/09 - 18/09
+- Created core architecture: Dependency Injection (GameServices), SceneManager, and Loader.
+- Implemented and refined the Object Pooling system.
+- Refactored Unit Tests to reflect pool and collision changes.
+
+### 19/08 (Final Polish)
+- Finalized PoolSystem and Particle systems.
+- Improved camera controls and fixed spawning rate logic.
+- Added final memory reporting and settings.
