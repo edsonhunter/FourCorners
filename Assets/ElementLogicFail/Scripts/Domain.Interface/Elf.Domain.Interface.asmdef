@@ -2,11 +2,7 @@
     "name": "Elf.Domain.Interface",
     "rootNamespace": "",
     "references": [],
-    "includePlatforms": [
-        "Android",
-        "Editor",
-        "iOS"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using ElementLogicFail.Scripts.Manager.Interface;
 using ElementLogicFail.Scripts.Scenes.Interface;
+using ElementLogicFail.Scripts.Services.Interface;
 
 namespace ElementLogicFail.Scripts.Scenes
 {
@@ -8,10 +9,13 @@ namespace ElementLogicFail.Scripts.Scenes
     {
         protected override async Task Loading()
         {
-            await Task.Run(async () =>
-            {
-                await Task.Delay(2);
-            });
+            var addressablesService = GetService<IAddressablesService>();
+            await addressablesService.InitializeAsync();
+            
+            
+            await addressablesService.PreloadDependenciesAsync("Characters");
+            await addressablesService.PreloadDependenciesAsync("Buildings");
+            await addressablesService.PreloadDependenciesAsync("Particles");
         }
 
         protected override void Loaded()

@@ -8,11 +8,7 @@
         "GUID:e0cd26848372d4e5c891c569017e11f1",
         "GUID:8819f35a0fc84499b990e90a4ca1911f"
     ],
-    "includePlatforms": [
-        "Android",
-        "Editor",
-        "iOS"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

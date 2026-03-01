@@ -5,6 +5,8 @@ using ElementLogicFail.Scripts.Components.Pool;
 using Unity.Entities;
 using UnityEngine;
 
+using Unity.Entities.Serialization;
+
 namespace ElementLogicFail.Scripts.Authoring
 {
     public class PoolConfigAuthoring : MonoBehaviour
@@ -29,20 +31,23 @@ namespace ElementLogicFail.Scripts.Authoring
                 {
                     if (poolDef.Prefab == null) continue;
 
-                    var prefabEntity = GetEntity(poolDef.Prefab, TransformUsageFlags.Dynamic);
-
-                    // Create a dedicated Pool Entity for this prefab
-                    // We don't attach this to the Authoring Entity itself to avoid clutter
                     var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
+
+#if UNITY_EDITOR
+                    var prefabReference = new EntityPrefabReference(poolDef.Prefab);
+#else
+                    var prefabReference = default(EntityPrefabReference);
+#endif
 
                     AddComponent(poolEntity, new ElementPool
                     {
                         ModelType = poolDef.ModelType,
-                        Prefab = prefabEntity,
-                        PoolSize = poolDef.InitialCount
+                        PrefabReference = prefabReference,
+                        PoolSize = poolDef.InitialCount,
+                        Prefab = Entity.Null
                     });
 
-                    // Add the buffer to store the actual pooled entities
+                    // Add buffer to store the actual pooled entities
                     AddBuffer<PooledEntity>(poolEntity);
                 }
             }
