@@ -33,7 +33,7 @@ namespace ElementLogicFail.Scripts.Manager.Camera
         {
             Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
 
-#if UNITY_EDITOR || (!UNITY_ANDROID && !UNITY_IOS)
+#if (!UNITY_ANDROID && !UNITY_IOS)
             moveInput = HandleEdgePanning(moveInput);
 #endif
 
@@ -55,7 +55,7 @@ namespace ElementLogicFail.Scripts.Manager.Camera
             return Mathf.Clamp(scrollInput, -1f, 1f);
         }
 
-#if UNITY_EDITOR || (!UNITY_ANDROID && !UNITY_IOS)
+#if (!UNITY_ANDROID && !UNITY_IOS)
         private Vector2 HandleEdgePanning(Vector2 currentInput)
         {
             if (!_enableEdgePanning || Mouse.current == null) return currentInput;
