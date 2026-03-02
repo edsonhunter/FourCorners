@@ -782,6 +782,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Elf.Controller::ElementLogicFail.Scripts.Controller.CameraController
   cameraTransform: {fileID: 330585546}
   mapPadding: 50
+  enableEdgePanning: 0
+  edgePanBorderThickness: 20
+  enableDragPanning: 1
+  dragSensitivity: 1
 --- !u!4 &1365089960
 Transform:
   m_ObjectHideFlags: 0

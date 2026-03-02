@@ -1,4 +1,4 @@
-﻿namespace ElementLogicFail.Scripts.Services.Interface
+﻿namespace ElementLogicFail.Scripts.Manager.Interface
 {
     public interface IManager
     {

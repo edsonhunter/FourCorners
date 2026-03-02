@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using ElementLogicFail.Scripts.Manager.Interface.Camera;
+using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Controller
 {
     public class CameraController : MonoBehaviour
     {
-        private PlayerControl _controls;
+        private ICameraManager _cameraManager;
+
         private Vector3 _targetPosition;
         private float _targetZoom;
         private Camera _camera;
@@ -20,22 +22,11 @@ namespace ElementLogicFail.Scripts.Controller
         private float _zoomSpeed = 2f;
         private float _zoomSmoothing = 5f;
         private Vector2 _zoomLimits = new Vector2(3f, 15f);
-        private Vector2 _mapLimitX = Vector2.zero;
-        private Vector2 _mapLimitZ = Vector2.zero;
-        private Vector3 _baseMin;
-        private Vector3 _baseMax;
-        private float _groundY;
-        private bool _isInitialized;
 
-        // Caching for Optimization
-        private float _lastZoomCache = -999f;
-        private int _lastScreenWidth = -1;
-        private int _lastScreenHeight = -1;
-        private float _lastMapPaddingCache = -1f;
+        private bool _isInitialized;
 
         public void Setup()
         {
-            _controls = new PlayerControl();
             _targetPosition = transform.position;
 
             if (cameraTransform != null)
@@ -52,13 +43,11 @@ namespace ElementLogicFail.Scripts.Controller
             }
         }
         
-        public void Init(Vector3 min, Vector3 max)
+        public void Init(ICameraManager cameraManager, Vector3 min, Vector3 max)
         {
-            _baseMin = min;
-            _baseMax = max;
-            _groundY = (min.y + max.y) * 0.5f;
+            _cameraManager = cameraManager;
+            _cameraManager.Initialize(min, max);
             _isInitialized = true;
-            
             SetActiveControls(true);
         }
 
@@ -74,26 +63,27 @@ namespace ElementLogicFail.Scripts.Controller
 
         private void Update()
         {
-            HandleInput();
+            if (!_isInitialized) return;
+
+            ProcessInput();
             MoveRig();
         }
 
-        private void HandleInput()
+        private void ProcessInput()
         {
-            if (!_isInitialized)
-                return;
+            _cameraManager.BoundsCalculator.CalculateDynamicBounds(_camera, cameraTransform, mapPadding);
 
-            CalculateDynamicBounds();
+            Vector2 moveInput = _cameraManager.InputHandler.GetMoveInput();
+            float zoomInput = _cameraManager.InputHandler.GetZoomInput();
 
-            Vector2 moveInput = _controls.Gameplay.Movement.ReadValue<Vector2>();
-            float scrollInput = _controls.Gameplay.Zoom.ReadValue<float>();
+            HandleTranslation(moveInput);
+            HandleZoom(zoomInput);
+        }
 
-            // Normalize scroll input
-            float zoomInput = Mathf.Clamp(scrollInput, -1f, 1f);
-
+        private void HandleTranslation(Vector2 moveInput)
+        {
             Vector3 moveDir = (Vector3.forward * moveInput.y) + (Vector3.right * moveInput.x);
 
-            // Determine factor for dynamic panning speed depending on projection type
             float heightFactor;
             if (_camera != null && _camera.orthographic)
             {
@@ -108,13 +98,18 @@ namespace ElementLogicFail.Scripts.Controller
 
             Vector3 targetMove = _targetPosition + (moveDir * currentSpeed * Time.deltaTime);
 
-            targetMove.x = Mathf.Clamp(targetMove.x, _mapLimitX.x, _mapLimitX.y);
-            targetMove.z = Mathf.Clamp(targetMove.z, _mapLimitZ.x, _mapLimitZ.y);
+            Vector2 limitX = _cameraManager.BoundsCalculator.MapLimitX;
+            Vector2 limitZ = _cameraManager.BoundsCalculator.MapLimitZ;
+
+            targetMove.x = Mathf.Clamp(targetMove.x, limitX.x, limitX.y);
+            targetMove.z = Mathf.Clamp(targetMove.z, limitZ.x, limitZ.y);
 
             _targetPosition.x = targetMove.x;
             _targetPosition.z = targetMove.z;
+        }
 
-            // Handle zooming
+        private void HandleZoom(float zoomInput)
+        {
             if (_camera != null && _camera.orthographic)
             {
                 // Orthographic size: Smaller = zoomed in. Scroll up (positive) = zoom in (decrease size)
@@ -129,85 +124,6 @@ namespace ElementLogicFail.Scripts.Controller
                 _targetZoom += zoomStep;
                 _targetZoom = Mathf.Clamp(_targetZoom, -_zoomLimits.y, -_zoomLimits.x);
             }
-        }
-
-        private void CalculateDynamicBounds()
-        {
-            if (_camera == null || cameraTransform == null) return;
-
-            float currentRealZoom = _camera.orthographic ? _camera.orthographicSize : cameraTransform.localPosition.z;
-
-            if (Mathf.Approximately(_lastZoomCache, currentRealZoom) && 
-                _lastScreenWidth == Screen.width && 
-                _lastScreenHeight == Screen.height && 
-                Mathf.Approximately(_lastMapPaddingCache, mapPadding))
-            {
-                return;
-            }
-
-            _lastZoomCache = currentRealZoom;
-            _lastScreenWidth = Screen.width;
-            _lastScreenHeight = Screen.height;
-            _lastMapPaddingCache = mapPadding;
-
-            Plane groundPlane = new Plane(Vector3.up, new Vector3(0, _groundY, 0));
-
-            Ray centerRay = _camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-            if (!groundPlane.Raycast(centerRay, out float dCenter) || dCenter < 0)
-            {
-                _mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
-                _mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
-                return;
-            }
-
-            Vector3 centerHit = centerRay.GetPoint(dCenter);
-            Vector2 rigToCenter = new Vector2(centerHit.x - transform.position.x, centerHit.z - transform.position.z);
-
-            Vector3[] viewportCorners = {
-                new Vector3(0f, 0f, 0f), 
-                new Vector3(1f, 0f, 0f), 
-                new Vector3(0f, 1f, 0f), 
-                new Vector3(1f, 1f, 0f)  
-            };
-
-            float minViewX = float.MaxValue, maxViewX = float.MinValue;
-            float minViewZ = float.MaxValue, maxViewZ = float.MinValue;
-
-            foreach (var corner in viewportCorners)
-            {
-                Ray cornerRay = _camera.ViewportPointToRay(corner);
-                if (groundPlane.Raycast(cornerRay, out float dCorner) && dCorner > 0)
-                {
-                    Vector3 hit = cornerRay.GetPoint(dCorner);
-                    if (hit.x < minViewX) minViewX = hit.x;
-                    if (hit.x > maxViewX) maxViewX = hit.x;
-                    if (hit.z < minViewZ) minViewZ = hit.z;
-                    if (hit.z > maxViewZ) maxViewZ = hit.z;
-                }
-            }
-
-            if (minViewX == float.MaxValue)
-            {
-                _mapLimitX = new Vector2(_baseMin.x - mapPadding, _baseMax.x + mapPadding);
-                _mapLimitZ = new Vector2(_baseMin.z - mapPadding, _baseMax.z + mapPadding);
-                return;
-            }
-
-            float spanLeft = centerHit.x - minViewX;
-            float spanRight = maxViewX - centerHit.x;
-            float spanDown = centerHit.z - minViewZ;
-            float spanUp = maxViewZ - centerHit.z;
-
-            float minCenterX = _baseMin.x - mapPadding + spanLeft;
-            float maxCenterX = _baseMax.x + mapPadding - spanRight;
-            float minCenterZ = _baseMin.z - mapPadding + spanDown;
-            float maxCenterZ = _baseMax.z + mapPadding - spanUp;
-
-            if (minCenterX > maxCenterX) { float mid = (minCenterX + maxCenterX) * 0.5f; minCenterX = mid; maxCenterX = mid; }
-            if (minCenterZ > maxCenterZ) { float mid = (minCenterZ + maxCenterZ) * 0.5f; minCenterZ = mid; maxCenterZ = mid; }
-
-            _mapLimitX = new Vector2(minCenterX - rigToCenter.x, maxCenterX - rigToCenter.x);
-            _mapLimitZ = new Vector2(minCenterZ - rigToCenter.y, maxCenterZ - rigToCenter.y);
         }
 
         private void MoveRig()
@@ -235,18 +151,15 @@ namespace ElementLogicFail.Scripts.Controller
 
         private void SetActiveControls(bool isActive)
         {
-            if (!_isInitialized)
-            {
-                return;
-            }
+            if (!_isInitialized) return;
             
             if (isActive)
             {
-                _controls.Enable();
+                _cameraManager.InputHandler?.EnableControls();
             }
             else
             {
-                _controls.Disable();
+                _cameraManager.InputHandler?.DisableControls();
             }
         }
     }
