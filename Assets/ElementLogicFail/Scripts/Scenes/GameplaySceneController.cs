@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ElementLogicFail.Scripts.Controller;
+using ElementLogicFail.Scripts.Manager.Interface.Camera;
 using ElementLogicFail.Scripts.Scenes.Interface;
 using ElementLogicFail.Scripts.Services.Interface;
 using UnityEngine;
@@ -20,7 +21,8 @@ namespace ElementLogicFail.Scripts.Scenes
         {
             if (cameraController != null)
             {
-                cameraController.Init(_bounds.min, _bounds.max);
+                var cameraManager = GetManager<ICameraManager>();
+                cameraController.Init(cameraManager, _bounds.min, _bounds.max);
             }
         }
 

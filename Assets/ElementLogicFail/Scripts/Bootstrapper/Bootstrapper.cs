@@ -1,5 +1,7 @@
 using ElementLogicFail.Scripts.Manager;
+using ElementLogicFail.Scripts.Manager.Camera;
 using ElementLogicFail.Scripts.Manager.Interface;
+using ElementLogicFail.Scripts.Manager.Interface.Camera;
 using ElementLogicFail.Scripts.Scenes;
 using ElementLogicFail.Scripts.Services;
 using ElementLogicFail.Scripts.Services.Interface;
@@ -45,6 +47,7 @@ namespace ElementLogicFail.Scripts.Bootstrapper
             //Register all managers
             
             _applicationManager.RegisterManager<ISceneManager>(new SceneManager(_applicationManager));
+            _applicationManager.RegisterManager<ICameraManager>(new CameraManager());
         }
 
         private void StartGame()
