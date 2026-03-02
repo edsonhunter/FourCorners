@@ -1,6 +1,7 @@
+using ElementLogicFail.Scripts.Controller;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Controller
+namespace ElementLogicFail.Scripts.Manager.Camera
 {
     public class CameraBoundsCalculator : ICameraBoundsCalculator
     {
@@ -26,7 +27,7 @@ namespace ElementLogicFail.Scripts.Controller
             _lastZoomCache = -999f;
         }
 
-        public void CalculateDynamicBounds(Camera camera, Transform cameraTransform, float mapPadding)
+        public void CalculateDynamicBounds(UnityEngine.Camera camera, Transform cameraTransform, float mapPadding)
         {
             if (camera == null || cameraTransform == null) return;
 

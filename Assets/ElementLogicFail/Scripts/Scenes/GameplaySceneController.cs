@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ElementLogicFail.Scripts.Controller;
-using ElementLogicFail.Scripts.Manager.Interface;
+using ElementLogicFail.Scripts.Manager.Interface.Camera;
 using ElementLogicFail.Scripts.Scenes.Interface;
 using ElementLogicFail.Scripts.Services.Interface;
 using UnityEngine;

@@ -1,8 +1,8 @@
 using ElementLogicFail.Scripts.Controller;
-using ElementLogicFail.Scripts.Manager.Interface;
+using ElementLogicFail.Scripts.Manager.Interface.Camera;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Manager
+namespace ElementLogicFail.Scripts.Manager.Camera
 {
     public class CameraManager : ICameraManager
     {

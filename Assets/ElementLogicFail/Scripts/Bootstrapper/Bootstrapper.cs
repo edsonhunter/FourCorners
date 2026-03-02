@@ -1,5 +1,7 @@
 using ElementLogicFail.Scripts.Manager;
+using ElementLogicFail.Scripts.Manager.Camera;
 using ElementLogicFail.Scripts.Manager.Interface;
+using ElementLogicFail.Scripts.Manager.Interface.Camera;
 using ElementLogicFail.Scripts.Scenes;
 using ElementLogicFail.Scripts.Services;
 using ElementLogicFail.Scripts.Services.Interface;

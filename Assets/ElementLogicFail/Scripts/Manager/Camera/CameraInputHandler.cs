@@ -1,7 +1,8 @@
+using ElementLogicFail.Scripts.Controller;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace ElementLogicFail.Scripts.Controller
+namespace ElementLogicFail.Scripts.Manager.Camera
 {
     public class CameraInputHandler : ICameraInputHandler
     {

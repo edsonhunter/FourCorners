@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface;
+﻿using ElementLogicFail.Scripts.Manager.Interface.Camera;
 using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Controller
