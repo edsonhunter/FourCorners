@@ -27,6 +27,15 @@ namespace ElementLogicFail.Scripts.Controller
         private Vector3 _baseMax;
         private float _groundY;
         private bool _isInitialized;
+        
+        [Header("Edge Panning")]
+        [SerializeField] private bool enableEdgePanning = true;
+        [SerializeField] private float edgePanBorderThickness = 20f;
+
+        [Header("Drag Panning")]
+        [SerializeField] private bool enableDragPanning = true;
+        [SerializeField] private float dragSensitivity = 1f;
+
 
         // Caching for Optimization
         private float _lastZoomCache = -999f;
@@ -78,14 +87,6 @@ namespace ElementLogicFail.Scripts.Controller
             HandleInput();
             MoveRig();
         }
-
-        [Header("Edge Panning")]
-        [SerializeField] private bool enableEdgePanning = true;
-        [SerializeField] private float edgePanBorderThickness = 20f;
-
-        [Header("Drag Panning")]
-        [SerializeField] private bool enableDragPanning = true;
-        [SerializeField] private float dragSensitivity = 1f;
 
         private void HandleInput()
         {
