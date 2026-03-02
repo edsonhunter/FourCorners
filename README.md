@@ -48,8 +48,10 @@ Locomotion systems for agent movement.
 *   **Optimization:** Uses `math.distancesq()` for arrival checks to bypass expensive square-root calculations in parallel jobs.
 
 ### 5. Viewport Camera & Input
-An event-driven system that bridges the ECS world boundaries to a standard camera.
+An event-driven system that bridges the ECS world boundaries to a standard camera, utilizing a robust Dependency Injection (DI) Manager architecture.
 
+*   **Architecture & DI Integration:** The camera logic relies on a pure C# `ICameraManager` injected via the `ApplicationManager`'s DI container. This manager fully decouples the `CameraInputHandler` and `CameraBoundsCalculator` from `MonoBehaviour`, enforcing the Single Responsibility Principle and keeping the `CameraController` focused solely on rig transformation.
+*   **Platform-Specific Inputs:** Uses preprocessor directives (`#if`) within the Input Handler to cleanly segregate desktop Edge Panning from mobile Drag Panning without runtime overhead.
 *   **ECS Integration:** Dynamically fetches map boundaries from the `WanderArea` component via a bridging service (`SystemBridgeService.cs`).
 *   **Isometric Symmetry:** Ensures panning feels consistent across all screen edges despite the isometric angle.
 
@@ -83,7 +85,46 @@ Managing memory through chunking while bridging into unmanaged ECS environments.
 - Implemented and refined the Object Pooling system.
 - Refactored Unit Tests to reflect pool and collision changes.
 
-### 19/08 (Final Polish)
+### 19/08
 - Finalized PoolSystem and Particle systems.
 - Improved camera controls and fixed spawning rate logic.
 - Added final memory reporting and settings.
+
+### 15/02
+- Jobified `SpawnerSystem`, `ReturnToPoolSystem`, and `PoolSpawningSystem`.
+- Restructured paths: paths are now defined via a Path System utilizing spawner origin rather than character authoring directly.
+
+### 16/02
+- Extended jobification to `PathfollowSystem` and `ParticleSystem` preventing main-thread bottlenecks.
+- Revamped spawner structures to hold arrays of prefabs with individual internal seeds.
+- Imported and implemented visual characters models.
+
+### 17/02
+- Reflowed pooling so all spawners share the same pool; reused source pool for destroyed entities.
+- Jobified `WanderSystem` and improved spawner structure handling.
+- Bumped Unity version to 6.3.8f1.
+
+### 19/02
+- Added base framework for camera control.
+
+### 20/02
+- Adapted camera initialization to project architecture. Created `SystemBridgeService` to bridge pure ECS data.
+- Optimized physics/ECS performance: changed NativeList to HashSet, bypassed root evaluations.
+- Improved spawning to operate as minion waves, creating logic for organic noise movement.
+- Fixed entities lingering on scene using `LinkedEntityGroupAuthoring`.
+- Jobified `PoolPrewarmSystem`.
+
+### 25/02
+- Uploaded new environment assets, objects, and unit models to the scene.
+
+### 27/02
+- Constructed `AddressablesService` and integrated environmental prefabs.
+
+### 28/02
+- Fixed Addressables error loading entityPrefabReference and corrected asmdefs.
+- Refactored config and built Addressables, creating preload jobs for `LoadingScene`.
+
+### 02/03
+- Upgraded camera controller to an event-driven setup.
+- Fully transitioned camera handling to a Manager-based DI pattern applying SOLID principles.
+- Safely separated Mobile Drag Panning from Desktop Edge Panning using preprocessor directives without runtime overhead.
