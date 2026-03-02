@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Controller
 {
-    public class CameraBoundsCalculator : MonoBehaviour, ICameraBoundsCalculator
+    public class CameraBoundsCalculator : ICameraBoundsCalculator
     {
         private float _lastZoomCache = -999f;
         private int _lastScreenWidth = -1;
@@ -56,7 +56,7 @@ namespace ElementLogicFail.Scripts.Controller
             }
 
             Vector3 centerHit = centerRay.GetPoint(dCenter);
-            Vector2 rigToCenter = new Vector2(centerHit.x - transform.position.x, centerHit.z - transform.position.z);
+            Vector2 rigToCenter = new Vector2(centerHit.x - cameraTransform.position.x, centerHit.z - cameraTransform.position.z);
 
             Vector3[] viewportCorners = {
                 new Vector3(0f, 0f, 0f), 

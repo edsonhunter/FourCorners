@@ -3,19 +3,17 @@ using UnityEngine.InputSystem;
 
 namespace ElementLogicFail.Scripts.Controller
 {
-    public class CameraInputHandler : MonoBehaviour, ICameraInputHandler
+    public class CameraInputHandler : ICameraInputHandler
     {
         private PlayerControl _controls;
 
-        [Header("Edge Panning")]
-        [SerializeField] private bool enableEdgePanning = true;
-        [SerializeField] private float edgePanBorderThickness = 20f;
+        private bool _enableEdgePanning = true;
+        private float _edgePanBorderThickness = 20f;
 
-        [Header("Drag Panning")]
-        [SerializeField] private bool enableDragPanning = true;
-        [SerializeField] private float dragSensitivity = 1f;
+        private bool _enableDragPanning = true;
+        private float _dragSensitivity = 1f;
 
-        private void Awake()
+        public CameraInputHandler()
         {
             _controls = new PlayerControl();
         }
@@ -59,15 +57,15 @@ namespace ElementLogicFail.Scripts.Controller
 #if UNITY_EDITOR || (!UNITY_ANDROID && !UNITY_IOS)
         private Vector2 HandleEdgePanning(Vector2 currentInput)
         {
-            if (!enableEdgePanning || Mouse.current == null) return currentInput;
+            if (!_enableEdgePanning || Mouse.current == null) return currentInput;
 
             Vector2 mousePos = Mouse.current.position.ReadValue();
             if (mousePos.x >= 0 && mousePos.x <= Screen.width && mousePos.y >= 0 && mousePos.y <= Screen.height)
             {
-                if (mousePos.y >= Screen.height - edgePanBorderThickness) currentInput.y += 1f;
-                if (mousePos.y <= edgePanBorderThickness) currentInput.y -= 1f;
-                if (mousePos.x >= Screen.width - edgePanBorderThickness) currentInput.x += 1f;
-                if (mousePos.x <= edgePanBorderThickness) currentInput.x -= 1f;
+                if (mousePos.y >= Screen.height - _edgePanBorderThickness) currentInput.y += 1f;
+                if (mousePos.y <= _edgePanBorderThickness) currentInput.y -= 1f;
+                if (mousePos.x >= Screen.width - _edgePanBorderThickness) currentInput.x += 1f;
+                if (mousePos.x <= _edgePanBorderThickness) currentInput.x -= 1f;
             }
 
             return currentInput;
@@ -77,7 +75,7 @@ namespace ElementLogicFail.Scripts.Controller
 #if UNITY_EDITOR || UNITY_ANDROID || UNITY_IOS
         private Vector2 HandleDragPanning(Vector2 currentInput)
         {
-            if (!enableDragPanning) return currentInput;
+            if (!_enableDragPanning) return currentInput;
 
             Vector2 dragDelta = Vector2.zero;
             bool isDragging = false;
@@ -95,8 +93,8 @@ namespace ElementLogicFail.Scripts.Controller
 
             if (isDragging)
             {
-                currentInput.x = -dragDelta.x * dragSensitivity * (1f / Screen.width) * 100f;
-                currentInput.y = -dragDelta.y * dragSensitivity * (1f / Screen.height) * 100f;
+                currentInput.x = -dragDelta.x * _dragSensitivity * (1f / Screen.width) * 100f;
+                currentInput.y = -dragDelta.y * _dragSensitivity * (1f / Screen.height) * 100f;
             }
 
             return currentInput;

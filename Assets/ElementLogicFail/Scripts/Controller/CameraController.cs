@@ -1,13 +1,11 @@
-﻿using UnityEngine;
+﻿using ElementLogicFail.Scripts.Manager.Interface;
+using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Controller
 {
-    [RequireComponent(typeof(ICameraInputHandler))]
-    [RequireComponent(typeof(ICameraBoundsCalculator))]
     public class CameraController : MonoBehaviour
     {
-        private ICameraInputHandler _inputHandler;
-        private ICameraBoundsCalculator _boundsCalculator;
+        private ICameraManager _cameraManager;
 
         private Vector3 _targetPosition;
         private float _targetZoom;
@@ -27,12 +25,6 @@ namespace ElementLogicFail.Scripts.Controller
 
         private bool _isInitialized;
 
-        private void Awake()
-        {
-            _inputHandler = GetComponent<ICameraInputHandler>();
-            _boundsCalculator = GetComponent<ICameraBoundsCalculator>();
-        }
-
         public void Setup()
         {
             _targetPosition = transform.position;
@@ -51,9 +43,10 @@ namespace ElementLogicFail.Scripts.Controller
             }
         }
         
-        public void Init(Vector3 min, Vector3 max)
+        public void Init(ICameraManager cameraManager, Vector3 min, Vector3 max)
         {
-            _boundsCalculator.Initialize(min, max);
+            _cameraManager = cameraManager;
+            _cameraManager.Initialize(min, max);
             _isInitialized = true;
             SetActiveControls(true);
         }
@@ -78,10 +71,10 @@ namespace ElementLogicFail.Scripts.Controller
 
         private void ProcessInput()
         {
-            _boundsCalculator.CalculateDynamicBounds(_camera, cameraTransform, mapPadding);
+            _cameraManager.BoundsCalculator.CalculateDynamicBounds(_camera, cameraTransform, mapPadding);
 
-            Vector2 moveInput = _inputHandler.GetMoveInput();
-            float zoomInput = _inputHandler.GetZoomInput();
+            Vector2 moveInput = _cameraManager.InputHandler.GetMoveInput();
+            float zoomInput = _cameraManager.InputHandler.GetZoomInput();
 
             HandleTranslation(moveInput);
             HandleZoom(zoomInput);
@@ -105,8 +98,8 @@ namespace ElementLogicFail.Scripts.Controller
 
             Vector3 targetMove = _targetPosition + (moveDir * currentSpeed * Time.deltaTime);
 
-            Vector2 limitX = _boundsCalculator.MapLimitX;
-            Vector2 limitZ = _boundsCalculator.MapLimitZ;
+            Vector2 limitX = _cameraManager.BoundsCalculator.MapLimitX;
+            Vector2 limitZ = _cameraManager.BoundsCalculator.MapLimitZ;
 
             targetMove.x = Mathf.Clamp(targetMove.x, limitX.x, limitX.y);
             targetMove.z = Mathf.Clamp(targetMove.z, limitZ.x, limitZ.y);
@@ -162,11 +155,11 @@ namespace ElementLogicFail.Scripts.Controller
             
             if (isActive)
             {
-                _inputHandler?.EnableControls();
+                _cameraManager.InputHandler?.EnableControls();
             }
             else
             {
-                _inputHandler?.DisableControls();
+                _cameraManager.InputHandler?.DisableControls();
             }
         }
     }
