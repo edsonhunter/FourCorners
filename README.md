@@ -1,4 +1,4 @@
-# ElementalLogicFail: ECS Architecture & Documentation
+# Four Corners: ECS Architecture & Documentation
 
 ## Overview
 This project is a high-performance, scalable horde-simulation built leveraging Unity DOTS (Data-Oriented Technology Stack) physics, Burst compilation, and the C# Job System.
