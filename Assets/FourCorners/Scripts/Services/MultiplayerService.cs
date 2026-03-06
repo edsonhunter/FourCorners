@@ -10,6 +10,7 @@ using UnityEngine;
 using Unity.Networking.Transport;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
+using Unity.Entities;
 
 namespace ElementLogicFail.Scripts.Services
 {
@@ -47,16 +48,30 @@ namespace ElementLogicFail.Scripts.Services
                 Debug.Log($"[Matchmaking] Lobby created. Join Code: {joinCode}");
 
                 var relayServerData = new RelayServerData(allocation, "dtls");
+                var relayClientData = new RelayServerData();
+                var driverStore = new NetworkDriverStore();
+                var relayConstructor = new RelayDriverConstructor(relayServerData, relayClientData, true);
 
                 var serverWorld = ClientServerBootstrap.ServerWorld;
-                var serverEntity = serverWorld.EntityManager.CreateEntity();
-                serverWorld.EntityManager.AddComponentData(serverEntity, relayServerData);
-                serverWorld.EntityManager.AddComponentData(serverEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
+                var serverNetDebug = serverWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
+                relayConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
+                
+                var serverDriverQuery = serverWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
+                serverDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(serverWorld.Unmanaged, ref driverStore);
+
+                var serverListenEntity = serverWorld.EntityManager.CreateEntity();
+                serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
 
                 var clientWorld = ClientServerBootstrap.ClientWorld;
-                var clientEntity = clientWorld.EntityManager.CreateEntity();
-                clientWorld.EntityManager.AddComponentData(clientEntity, relayServerData);
-                clientWorld.EntityManager.AddComponentData(clientEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
+                var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
+                var clientDriverStore = new NetworkDriverStore();
+                relayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
+
+                var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
+                clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
+
+                var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.LoopbackIpv4 });
 
                 return joinCode;
             }
@@ -81,9 +96,17 @@ namespace ElementLogicFail.Scripts.Services
                 }
 
                 var clientWorld = ClientServerBootstrap.ClientWorld;
-                var clientEntity = clientWorld.EntityManager.CreateEntity();
-                clientWorld.EntityManager.AddComponentData(clientEntity, relayServerData);
-                clientWorld.EntityManager.AddComponentData(clientEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
+                var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
+                
+                var relayConstructor = new RelayDriverConstructor(new RelayServerData(), relayServerData, false);
+                var clientDriverStore = new NetworkDriverStore();
+                relayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
+                
+                var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
+                clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
+
+                var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
 
                 Debug.Log($"[Matchmaking] Joined Game with Code: {joinCode}");
             }
