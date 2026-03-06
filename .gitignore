@@ -52,6 +52,7 @@ sysinfo.txt
 /Assets/StreamingAssets/buildtime.txt.meta
 
 .idea/
+.utmp/
 
 !**/M2Mqtt/*.csproj
 !**/Best HTTP (Pro)/*.csproj
