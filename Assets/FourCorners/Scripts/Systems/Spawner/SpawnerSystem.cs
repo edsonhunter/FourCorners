@@ -58,31 +58,16 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
         private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform, DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
         {
-            var random = Random.CreateFromIndex(BaseSeed + (uint)sortKey);
-
-            spawner.Timer += DeltaTime;
-
-            if (!(spawner.SpawnInterval > 0f) || spawner.SpawnAmount <= 0 || prefabs.Length <= 0 || !spawner.IsActive)
+            if (spawner.SpawnInterval <= 0f || spawner.SpawnAmount <= 0 || prefabs.Length <= 0 || !spawner.IsActive)
             {
                 return;
             }
+
+            spawner.Timer += DeltaTime;
             
-            while (spawner.Timer >= spawner.SpawnInterval)
+            if (spawner.Timer > spawner.SpawnInterval)
             {
-                spawner.Timer -= spawner.SpawnInterval;
-                        
-                for (int i = 0; i < spawner.SpawnAmount; i++)
-                {
-                    var prefabIndex = random.NextInt(0, prefabs.Length);
-                    var modelType = prefabs[prefabIndex].ModelType;
-                            
-                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
-                    {
-                        Type = spawner.Team,
-                        Position = transform.ValueRO.Position,
-                        ModelType = modelType
-                    });
-                }
+                spawner.Timer = spawner.SpawnInterval;
             }
         }
     }
