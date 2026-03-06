@@ -8,6 +8,7 @@ using Unity.Transforms;
 namespace ElementLogicFail.Scripts.Systems.Path
 {
     [BurstCompile]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct PathFollowSystem : ISystem
     {
         [BurstCompile]

@@ -1,5 +1,6 @@
 ﻿using ElementLogicFail.Scripts.Components.Element;
 using Unity.Entities;
+using Unity.NetCode;
 
 namespace ElementLogicFail.Scripts.Components.Spawner
 {
@@ -9,5 +10,7 @@ namespace ElementLogicFail.Scripts.Components.Spawner
         public int SpawnAmount;
         public float SpawnInterval;
         public float Timer;
+        [GhostField] public int NetworkId;
+        [GhostField] public bool IsActive;
     }
 }

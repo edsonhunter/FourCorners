@@ -1,7 +1,5 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
-using ElementLogicFail.Scripts.Components.Request;
+﻿using ElementLogicFail.Scripts.Components.Request;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics.Systems;
 using Unity.Transforms;
@@ -10,6 +8,7 @@ using Unity.Mathematics;
 namespace ElementLogicFail.Scripts.Systems.Spawner
 {
     [BurstCompile]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     public partial struct SpawnerSystem : ISystem
     {
@@ -63,7 +62,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             spawner.Timer += DeltaTime;
 
-            if (!(spawner.SpawnInterval > 0f) || spawner.SpawnAmount <= 0 || prefabs.Length <= 0)
+            if (!(spawner.SpawnInterval > 0f) || spawner.SpawnAmount <= 0 || prefabs.Length <= 0 || !spawner.IsActive)
             {
                 return;
             }
