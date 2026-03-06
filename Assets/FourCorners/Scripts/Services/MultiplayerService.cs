@@ -49,13 +49,14 @@ namespace ElementLogicFail.Scripts.Services
                 var relayServerData = new RelayServerData(allocation, "dtls");
 
                 var serverWorld = ClientServerBootstrap.ServerWorld;
-                var serverNetworkEntity = serverWorld.EntityManager.CreateEntity(typeof(NetworkStreamRequestListen));
-                serverWorld.EntityManager.SetComponentData(serverNetworkEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
-                // Unity 1.0+ Netcode handles relay via RelayServerData component (defined inside Unity.NetCode or we can use generic endpoints)
-                
+                var serverEntity = serverWorld.EntityManager.CreateEntity();
+                serverWorld.EntityManager.AddComponentData(serverEntity, relayServerData);
+                serverWorld.EntityManager.AddComponentData(serverEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
+
                 var clientWorld = ClientServerBootstrap.ClientWorld;
-                var clientNetworkEntity = clientWorld.EntityManager.CreateEntity(typeof(NetworkStreamRequestConnect));
-                clientWorld.EntityManager.SetComponentData(clientNetworkEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.LoopbackIpv4 });
+                var clientEntity = clientWorld.EntityManager.CreateEntity();
+                clientWorld.EntityManager.AddComponentData(clientEntity, relayServerData);
+                clientWorld.EntityManager.AddComponentData(clientEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
 
                 return joinCode;
             }
@@ -80,8 +81,9 @@ namespace ElementLogicFail.Scripts.Services
                 }
 
                 var clientWorld = ClientServerBootstrap.ClientWorld;
-                var clientNetworkEntity = clientWorld.EntityManager.CreateEntity(typeof(NetworkStreamRequestConnect));
-                clientWorld.EntityManager.SetComponentData(clientNetworkEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
+                var clientEntity = clientWorld.EntityManager.CreateEntity();
+                clientWorld.EntityManager.AddComponentData(clientEntity, relayServerData);
+                clientWorld.EntityManager.AddComponentData(clientEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
 
                 Debug.Log($"[Matchmaking] Joined Game with Code: {joinCode}");
             }
