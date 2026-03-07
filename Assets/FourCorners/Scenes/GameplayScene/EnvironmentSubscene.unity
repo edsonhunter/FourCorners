@@ -475,8 +475,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 245943915857071752, guid: b435539f03b3e504e8a191bb9c323436, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3997631421065333926}
   m_SourcePrefab: {fileID: 100100000, guid: b435539f03b3e504e8a191bb9c323436, type: 3}
+--- !u!1 &3997631421065333925 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 245943915857071752, guid: b435539f03b3e504e8a191bb9c323436, type: 3}
+  m_PrefabInstance: {fileID: 3997631421065333924}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3997631421065333926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3997631421065333925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
+  Team: 3
 --- !u!1001 &6392618851777743471
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -532,8 +553,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 872533802398351220, guid: 8a86f6804c6f65f4e9c57e51c49ac8a5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6392618851777743473}
   m_SourcePrefab: {fileID: 100100000, guid: 8a86f6804c6f65f4e9c57e51c49ac8a5, type: 3}
+--- !u!1 &6392618851777743472 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 872533802398351220, guid: 8a86f6804c6f65f4e9c57e51c49ac8a5, type: 3}
+  m_PrefabInstance: {fileID: 6392618851777743471}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6392618851777743473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6392618851777743472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
+  Team: 2
 --- !u!1001 &6981284260363866967
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -589,8 +631,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7421998863507303705, guid: 7babea5314921bb429fc25d7dc075a50, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6981284260363866969}
   m_SourcePrefab: {fileID: 100100000, guid: 7babea5314921bb429fc25d7dc075a50, type: 3}
+--- !u!1 &6981284260363866968 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7421998863507303705, guid: 7babea5314921bb429fc25d7dc075a50, type: 3}
+  m_PrefabInstance: {fileID: 6981284260363866967}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6981284260363866969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6981284260363866968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
+  Team: 1
 --- !u!1001 &8683879414758109632
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -646,14 +709,35 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1249734415175119542, guid: fc550f429980f0748836d38b14ddf166, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8683879414758109634}
   m_SourcePrefab: {fileID: 100100000, guid: fc550f429980f0748836d38b14ddf166, type: 3}
+--- !u!1 &8683879414758109633 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1249734415175119542, guid: fc550f429980f0748836d38b14ddf166, type: 3}
+  m_PrefabInstance: {fileID: 8683879414758109632}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8683879414758109634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8683879414758109633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
+  Team: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1412271720}
+  - {fileID: 8683879414758109632}
+  - {fileID: 6981284260363866967}
   - {fileID: 6392618851777743471}
   - {fileID: 3997631421065333924}
-  - {fileID: 6981284260363866967}
-  - {fileID: 8683879414758109632}
