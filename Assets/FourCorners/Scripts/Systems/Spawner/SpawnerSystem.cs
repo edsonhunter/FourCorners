@@ -65,9 +65,20 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             spawner.Timer += DeltaTime;
             
-            if (spawner.Timer > spawner.SpawnInterval)
+            if (spawner.Timer >= spawner.SpawnInterval)
             {
-                spawner.Timer = spawner.SpawnInterval;
+                spawner.Timer -= spawner.SpawnInterval;
+                
+                var prefabType = prefabs[0].ModelType;
+                for (int i = 0; i < spawner.SpawnAmount; i++)
+                {
+                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    {
+                        Type = spawner.Team,
+                        ModelType = prefabType,
+                        Position = transform.ValueRO.Position
+                    });
+                }
             }
         }
     }
