@@ -33,18 +33,14 @@ namespace ElementLogicFail.Scripts.Authoring
 
                     var poolEntity = CreateAdditionalEntity(TransformUsageFlags.None);
 
-#if UNITY_EDITOR
-                    var prefabReference = new EntityPrefabReference(poolDef.Prefab);
-#else
-                    var prefabReference = default(EntityPrefabReference);
-#endif
+                    var bakedPrefab = GetEntity(poolDef.Prefab, TransformUsageFlags.Dynamic);
 
                     AddComponent(poolEntity, new ElementPool
                     {
                         ModelType = poolDef.ModelType,
-                        PrefabReference = prefabReference,
+                        PrefabReference = default,
                         PoolSize = poolDef.InitialCount,
-                        Prefab = Entity.Null
+                        Prefab = bakedPrefab
                     });
 
                     // Add buffer to store the actual pooled entities

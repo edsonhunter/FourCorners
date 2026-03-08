@@ -60,7 +60,7 @@ namespace ElementLogicFail.Scripts.Services
                 serverDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(serverWorld.Unmanaged, ref driverStore);
 
                 var serverListenEntity = serverWorld.EntityManager.CreateEntity();
-                serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4.WithPort(7777) });
+                serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
 
                 var clientWorld = ClientServerBootstrap.ClientWorld;
                 var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
@@ -106,7 +106,7 @@ namespace ElementLogicFail.Scripts.Services
                 clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
 
                 var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
-                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4.WithPort(7777) });
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.LoopbackIpv4.WithPort(7777) });
 
                 Debug.Log($"[Matchmaking] Joined Game with Code: {joinCode}");
             }

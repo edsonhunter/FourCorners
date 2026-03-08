@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7073620221481722404}
   - component: {fileID: 3163221068023640580}
   - component: {fileID: -3548279774773435754}
+  - component: {fileID: 8352634311236807050}
   m_Layer: 0
   m_Name: OrcBase
   m_TagString: Untagged
@@ -63,13 +64,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.NetCode.Authoring.Hybrid::Unity.NetCode.GhostAuthoringComponent
-  DefaultGhostMode: 2
-  SupportedGhostModes: 3
-  OptimizationMode: 0
+  DefaultGhostMode: 0
+  SupportedGhostModes: 1
+  OptimizationMode: 1
   Importance: 1
   MaxSendRate: 0
   prefabId: 7babea5314921bb429fc25d7dc075a50
-  HasOwner: 1
+  HasOwner: 0
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
   GhostGroup: 0
@@ -77,6 +78,19 @@ MonoBehaviour:
   UseSingleBaseline: 0
   RollbackPredictedSpawnedGhostState: 0
   RollbackPredictionOnStructuralChanges: 1
+--- !u!114 &8352634311236807050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7421998863507303705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
+  Team: 1
 --- !u!1001 &52635877603495754
 PrefabInstance:
   m_ObjectHideFlags: 0

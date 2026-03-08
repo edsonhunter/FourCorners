@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3081610292856259922}
   - component: {fileID: 6119635248658409275}
   - component: {fileID: 4995590743394842663}
+  - component: {fileID: 663626454138798110}
   m_Layer: 0
   m_Name: HumanBase
   m_TagString: Untagged
@@ -64,13 +65,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.NetCode.Authoring.Hybrid::Unity.NetCode.GhostAuthoringComponent
-  DefaultGhostMode: 2
-  SupportedGhostModes: 3
-  OptimizationMode: 0
+  DefaultGhostMode: 0
+  SupportedGhostModes: 1
+  OptimizationMode: 1
   Importance: 1
   MaxSendRate: 0
   prefabId: fc550f429980f0748836d38b14ddf166
-  HasOwner: 1
+  HasOwner: 0
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
   GhostGroup: 0
@@ -78,6 +79,19 @@ MonoBehaviour:
   UseSingleBaseline: 0
   RollbackPredictedSpawnedGhostState: 0
   RollbackPredictionOnStructuralChanges: 1
+--- !u!114 &663626454138798110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1249734415175119542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
+  Team: 0
 --- !u!1001 &971899450217388081
 PrefabInstance:
   m_ObjectHideFlags: 0
