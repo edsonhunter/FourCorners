@@ -20,7 +20,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     {
         private ComponentLookup<ElementData> _elementLookup;
         private ComponentLookup<LocalTransform> _localTransformLookup;
-        private ComponentLookup<SourcePool> _sourcePoolLookup;
         private NativeHashSet<Entity> _processedEntities;
         
         [BurstCompile]
@@ -31,7 +30,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             
             _elementLookup = SystemAPI.GetComponentLookup<ElementData>(true);
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
-            _sourcePoolLookup = SystemAPI.GetComponentLookup<SourcePool>(true);
             _processedEntities = new NativeHashSet<Entity>(128, Allocator.Persistent);
         }
 
@@ -40,7 +38,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         {
             _elementLookup.Update(ref state);
             _localTransformLookup.Update(ref state);
-            _sourcePoolLookup.Update(ref state);
 
             _processedEntities.Clear();
 
@@ -59,7 +56,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 ParticleManagerEntity = particleManagerEntity,
                 HasParticle = hasParticles,
                 EntityCommandBuffer = parallelWriter,
-                SourcePoolLookup = _sourcePoolLookup,
                 ProcessedEntities = _processedEntities
             };
             
@@ -81,7 +77,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
-        [ReadOnly] public ComponentLookup<SourcePool> SourcePoolLookup;
         public NativeHashSet<Entity> ProcessedEntities;
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
 
@@ -133,9 +128,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         private void AppendEntityRequest(Entity entity, int sortKey)
         {
             ProcessedEntities.Add(entity);
-            var poolEntity = SourcePoolLookup[entity].PoolEntity;
-            EntityCommandBuffer.AddComponent<Disabled>(sortKey, entity);
-            EntityCommandBuffer.AppendToBuffer(sortKey, poolEntity, new PooledEntity { Value = entity });
+            EntityCommandBuffer.DestroyEntity(sortKey, entity);
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position, int sortKey)

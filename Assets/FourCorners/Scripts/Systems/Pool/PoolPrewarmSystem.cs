@@ -101,14 +101,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 
                 ECB.AddComponent<Prefab>(sortKey, pool.Prefab);
 
-                for (int i = 0; i < pool.PoolSize; i++)
-                {
-                    var newInstance = ECB.Instantiate(sortKey, pool.Prefab);
-                    ECB.AddComponent<Disabled>(sortKey, newInstance);
-                    ECB.AddComponent(sortKey, newInstance, new SourcePool { PoolEntity = entity });
-                    ECB.AppendToBuffer(sortKey, entity, new PooledEntity { Value = newInstance });
-                }
-
                 ECB.AddComponent<Prewarmed>(sortKey, entity);
             }
         }

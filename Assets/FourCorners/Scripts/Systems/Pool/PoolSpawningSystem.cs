@@ -18,6 +18,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(CollisionSystem))]
     [UpdateAfter(typeof(SpawnerSystem))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct PoolSpawningSystem : ISystem
     {
         private NativeParallelHashMap<int, Entity> _modelTypeToPool;
@@ -48,7 +49,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             };
             state.Dependency = buildMapJob.Schedule(state.Dependency);
 
-            var poolLookup = SystemAPI.GetBufferLookup<PooledEntity>();
+            var poolLookup = SystemAPI.GetComponentLookup<ElementPool>(true);
             var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
             var jobRandom = new Random(_random.NextUInt());
 
@@ -100,7 +101,7 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     public partial struct ProcessSpawningJob : IJobEntity
     {
         [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPool;
-        public BufferLookup<PooledEntity> PoolLookup;
+        [ReadOnly] public ComponentLookup<ElementPool> PoolLookup;
         [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
         public EntityCommandBuffer Ecb;
         public WanderArea Area;
@@ -117,12 +118,11 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 
                 if (ModelTypeToPool.TryGetValue((int)request.ModelType, out var poolEntity))
                 {
-                    if (PoolLookup.TryGetBuffer(poolEntity, out var pooledBuffer))
+                    if (PoolLookup.TryGetComponent(poolEntity, out var poolComponent))
                     {
-                        if (pooledBuffer.Length > 0)
+                        if (poolComponent.Prefab != Entity.Null)
                         {
-                            Entity instance = pooledBuffer[pooledBuffer.Length - 1].Value;
-                            pooledBuffer.RemoveAt(pooledBuffer.Length - 1);
+                            Entity instance = Ecb.Instantiate(poolComponent.Prefab);
 
                             if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
                             {
@@ -144,8 +144,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                                 RandomSeed = Random.NextUInt(),
                                 Cooldown = 2f
                             });
-
-                            Ecb.RemoveComponent<Disabled>(instance);
                         }
                     }
                 }

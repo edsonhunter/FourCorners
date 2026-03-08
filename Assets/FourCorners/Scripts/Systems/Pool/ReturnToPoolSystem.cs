@@ -9,6 +9,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
 {
     
     [BurstCompile]
+    [DisableAutoCreation]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     public partial struct ReturnToPoolSystem : ISystem
     {
@@ -44,17 +46,9 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     {
         public EntityCommandBuffer.ParallelWriter Ecb;
 
-        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ElementData> data, RefRO<ReturnToPool> returnTag, RefRO<SourcePool> sourcePool)
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ElementData> data, RefRO<ReturnToPool> returnTag)
         {
-            var poolEntity = sourcePool.ValueRO.PoolEntity;
-            
-            Ecb.AddComponent<Disabled>(sortKey, entity);
-            Ecb.AppendToBuffer(sortKey, poolEntity, new PooledEntity
-            {
-                Value = entity
-            });
-            
-            Ecb.RemoveComponent<ReturnToPool>(sortKey, entity);
+            Ecb.DestroyEntity(sortKey, entity);
         }
     }
 }
