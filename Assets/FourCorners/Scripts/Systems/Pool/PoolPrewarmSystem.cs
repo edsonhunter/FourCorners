@@ -2,10 +2,13 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Scenes;
 
 namespace ElementLogicFail.Scripts.Systems.Pool
 {
+    /// <summary>
+    /// Pre-warms only Particle pools. Minion (Ghost) entities are baked directly
+    /// and managed by Netcode — they must NOT be pre-warmed here.
+    /// </summary>
     [BurstCompile]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial struct PoolPrewarmSystem : ISystem
@@ -26,16 +29,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             var ecbSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            // Only request Addressable loading when PrefabReference is explicitly valid.
-            // Pools whose Prefab was baked directly (PrefabReference == default) skip this entirely.
-            var requestJob = new RequestPrefabLoadJob { ECB = ecb };
-            state.Dependency = requestJob.ScheduleParallel(state.Dependency);
-
-            var applyJob = new ApplyLoadedPrefabJob { ECB = ecb };
-            state.Dependency = applyJob.ScheduleParallel(state.Dependency);
-
-            // Only particle pools are pre-warmed (instantiating disabled copies upfront).
-            // Minion (Ghost) entities are managed by Netcode -- never pre-warm them here.
             var particleJob = new ParticlePoolPrewarmJob
             {
                 ECB = ecb,
@@ -44,43 +37,6 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             state.Dependency = particleJob.ScheduleParallel(state.Dependency);
         }
 
-        /// <summary>
-        /// Requests Addressable loading ONLY when there is no directly-baked prefab AND a valid PrefabReference exists.
-        /// </summary>
-        [BurstCompile]
-        [WithNone(typeof(PrefabLoadResult))]
-        [WithNone(typeof(RequestEntityPrefabLoaded))]
-        public partial struct RequestPrefabLoadJob : IJobEntity
-        {
-            public EntityCommandBuffer.ParallelWriter ECB;
-
-            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, in ElementPool pool)
-            {
-                if (pool.Prefab == Entity.Null && pool.PrefabReference.IsReferenceValid)
-                {
-                    ECB.AddComponent(sortKey, entity, new RequestEntityPrefabLoaded { Prefab = pool.PrefabReference });
-                }
-            }
-        }
-
-        [BurstCompile]
-        public partial struct ApplyLoadedPrefabJob : IJobEntity
-        {
-            public EntityCommandBuffer.ParallelWriter ECB;
-
-            private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref ElementPool pool, in PrefabLoadResult prefabResult)
-            {
-                if (pool.Prefab == Entity.Null)
-                {
-                    pool.Prefab = prefabResult.PrefabRoot;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Pre-warms ONLY particle pools by pre-instantiating disabled copies.
-        /// Do NOT pre-warm Minion Ghost entities — Netcode owns their lifecycle.
-        /// </summary>
         [BurstCompile]
         [WithNone(typeof(Prewarmed))]
         public partial struct ParticlePoolPrewarmJob : IJobEntity
