@@ -32,9 +32,11 @@ namespace ElementLogicFail.Scripts.Services
         {
             try
             {
+                // 1. Create relay allocation for the server
                 var allocation = await RelayService.Instance.CreateAllocationAsync(maxPlayers - 1);
                 var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
+                // 2. Create lobby so others can discover the game
                 var options = new CreateLobbyOptions
                 {
                     IsPrivate = false,
@@ -43,29 +45,36 @@ namespace ElementLogicFail.Scripts.Services
                         { "JoinCode", new DataObject(DataObject.VisibilityOptions.Public, joinCode) }
                     }
                 };
-
                 await LobbyService.Instance.CreateLobbyAsync("FourCornersLobby", maxPlayers, options);
                 Debug.Log($"[Matchmaking] Lobby created. Join Code: {joinCode}");
 
-                var relayServerData = allocation.ToRelayServerData("dtls");
-                var relayClientData = default(Unity.Networking.Transport.Relay.RelayServerData);
-                var driverStore = new NetworkDriverStore();
-                var relayConstructor = new RelayDriverConstructor(relayServerData, relayClientData, true);
+                // 3. Server uses the allocation relay data to LISTEN
+                var serverRelayData = allocation.ToRelayServerData("dtls");
 
+                // 4. The host's own local Client must JOIN its own relay via the join code.
+                //    Without this, clientRelayData is empty and the client can never route to the server.
+                var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
+                var clientRelayData = joinAllocation.ToRelayServerData("dtls");
+
+                // 5. Set up Server driver with server relay data
                 var serverWorld = ClientServerBootstrap.ServerWorld;
                 var serverNetDebug = serverWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
-                relayConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
-                
+                var driverStore = new NetworkDriverStore();
+                var serverRelayConstructor = new RelayDriverConstructor(serverRelayData, default, false);
+                serverRelayConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
+
                 var serverDriverQuery = serverWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
                 serverDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(serverWorld.Unmanaged, ref driverStore);
 
                 var serverListenEntity = serverWorld.EntityManager.CreateEntity();
                 serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
 
+                // 6. Set up Client driver with CLIENT relay data (the join allocation)
                 var clientWorld = ClientServerBootstrap.ClientWorld;
                 var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 var clientDriverStore = new NetworkDriverStore();
-                relayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
+                var clientRelayConstructor = new RelayDriverConstructor(default, clientRelayData, false);
+                clientRelayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
 
                 var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
                 clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
@@ -81,6 +90,7 @@ namespace ElementLogicFail.Scripts.Services
                 return string.Empty;
             }
         }
+
 
         public async Task JoinGameAsync(string joinCode)
         {

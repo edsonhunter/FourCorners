@@ -1,3 +1,4 @@
+using ElementLogicFail.Scripts.Systems.Connection;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -14,7 +15,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         private ComponentLookup<Components.Spawner.PlayerBase> _playerBaseLookup;
         private ComponentLookup<Components.Spawner.Spawner> _spawnerLookup;
         private EntityQuery _unassignedBasesQuery;
-        private EntityQuery _newPlayersQuery;
+        private EntityQuery _goInGameRequestsQuery;
         private EntityQuery _allSpawnersQuery;
 
         [BurstCompile]
@@ -29,11 +30,10 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             _allSpawnersQuery = state.GetEntityQuery(new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<Components.Spawner.Spawner>());
 
-            _newPlayersQuery = state.GetEntityQuery(new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<NetworkId>()
-                .WithNone<NetworkStreamInGame>());
+            _goInGameRequestsQuery = state.GetEntityQuery(new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<GoInGameRequest, ReceiveRpcCommandRequest>());
             
-            state.RequireForUpdate(_newPlayersQuery);
+            state.RequireForUpdate(_goInGameRequestsQuery);
         }
 
         [BurstCompile]
@@ -42,7 +42,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             _playerBaseLookup.Update(ref state);
             _spawnerLookup.Update(ref state);
 
-            var newPlayers = _newPlayersQuery.ToEntityArray(Allocator.TempJob);
+            var newRequests = _goInGameRequestsQuery.ToEntityArray(Allocator.TempJob);
             var unassignedBases = _unassignedBasesQuery.ToEntityArray(Allocator.TempJob);
             var allSpawners = _allSpawnersQuery.ToEntityArray(Allocator.TempJob);
 
@@ -50,21 +50,22 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             var job = new BaseAllocationJob
             {
-                NewPlayers = newPlayers,
+                NewRequests = newRequests,
                 UnassignedBases = unassignedBases,
                 AllSpawners = allSpawners,
+                RpcReceiveLookup = SystemAPI.GetComponentLookup<ReceiveRpcCommandRequest>(true),
                 NetworkIdLookup = SystemAPI.GetComponentLookup<NetworkId>(true),
                 PlayerBaseLookup = _playerBaseLookup,
                 SpawnerLookup = _spawnerLookup,
                 Ecb = ecb
             };
 
-            job.Run();
+            job.Schedule(state.Dependency).Complete();
 
             ecb.Playback(state.EntityManager);
             
             ecb.Dispose();
-            newPlayers.Dispose();
+            newRequests.Dispose();
             unassignedBases.Dispose();
             allSpawners.Dispose();
         }
@@ -73,10 +74,11 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     [BurstCompile]
     public struct BaseAllocationJob : IJob
     {
-        [ReadOnly] public NativeArray<Entity> NewPlayers;
+        [ReadOnly] public NativeArray<Entity> NewRequests;
         [ReadOnly] public NativeArray<Entity> UnassignedBases;
         [ReadOnly] public NativeArray<Entity> AllSpawners;
 
+        [ReadOnly] public ComponentLookup<ReceiveRpcCommandRequest> RpcReceiveLookup;
         [ReadOnly] public ComponentLookup<NetworkId> NetworkIdLookup;
         public ComponentLookup<Components.Spawner.PlayerBase> PlayerBaseLookup;
         public ComponentLookup<Components.Spawner.Spawner> SpawnerLookup;
@@ -87,10 +89,18 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         {
             int baseIndex = 0;
 
-            for (int i = 0; i < NewPlayers.Length; i++)
+            for (int i = 0; i < NewRequests.Length; i++)
             {
-                var playerEntity = NewPlayers[i];
-                var networkId = NetworkIdLookup[playerEntity];
+                var requestEntity = NewRequests[i];
+                var sourceConnection = RpcReceiveLookup[requestEntity].SourceConnection;
+
+                if (!NetworkIdLookup.HasComponent(sourceConnection))
+                {
+                    Ecb.DestroyEntity(requestEntity);
+                    continue;
+                }
+
+                var networkId = NetworkIdLookup[sourceConnection].Value;
 
                 for (; baseIndex < UnassignedBases.Length; baseIndex++)
                 {
@@ -100,15 +110,8 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     if (!baseData.IsActive)
                     {
                         baseData.IsActive = true;
-                        baseData.NetworkId = networkId.Value;
+                        baseData.NetworkId = networkId;
                         PlayerBaseLookup[baseEntity] = baseData;
-
-                        /*// Use FixedString for Burst-compatible string logging
-                        var logMsg = new FixedString128Bytes("[Server] Assigned Base ");
-                        logMsg.Append((int)baseData.Team);
-                        logMsg.Append(" to Player ");
-                        logMsg.Append(networkId.Value);
-                        UnityEngine.Debug.Log(logMsg);*/
 
                         for (int j = 0; j < AllSpawners.Length; j++)
                         {
@@ -117,17 +120,21 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                             if (spawnerData.Team == baseData.Team)
                             {
                                 spawnerData.IsActive = true;
-                                spawnerData.NetworkId = networkId.Value;
+                                spawnerData.NetworkId = networkId;
                                 SpawnerLookup[spawnerEntity] = spawnerData;
                             }
                         }
 
-                        Ecb.AddComponent<NetworkStreamInGame>(playerEntity);
+                        // Mark the connection as In-Game so Netcode starts ghost synchronization
+                        Ecb.AddComponent<NetworkStreamInGame>(sourceConnection);
                         
                         baseIndex++;
                         break;
                     }
                 }
+                
+                // Always destroy the handled RPC
+                Ecb.DestroyEntity(requestEntity);
             }
         }
     }
