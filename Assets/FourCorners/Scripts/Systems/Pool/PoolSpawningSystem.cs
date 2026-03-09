@@ -3,20 +3,17 @@ using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Pool;
 using ElementLogicFail.Scripts.Components.Path;
 using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Systems.Collision;
 using ElementLogicFail.Scripts.Systems.Spawner;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics.Systems;
 using Unity.Transforms;
 
 namespace ElementLogicFail.Scripts.Systems.Pool
 {
     [BurstCompile]
-    [UpdateInGroup(typeof(PhysicsSystemGroup))]
-    [UpdateAfter(typeof(CollisionSystem))]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(SpawnerSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct PoolSpawningSystem : ISystem

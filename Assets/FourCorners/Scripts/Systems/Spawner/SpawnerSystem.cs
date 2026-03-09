@@ -1,78 +1,68 @@
 ﻿using ElementLogicFail.Scripts.Components.Request;
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Physics.Systems;
 using Unity.Transforms;
-using Unity.Mathematics;
 
 namespace ElementLogicFail.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    [UpdateInGroup(typeof(PhysicsSystemGroup))]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public partial struct SpawnerSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            state.RequireForUpdate<Components.Spawner.Spawner>();
-            state.RequireForUpdate<ElementSpawnRequest>();
+            // Require at least one spawner entity with SpawnerPrefab;
+            // ElementSpawnRequest is a DynamicBuffer and must NOT be used in RequireForUpdate.
+            var builder = new EntityQueryBuilder(Unity.Collections.Allocator.Temp)
+                .WithAll<Components.Spawner.Spawner, Components.Spawner.SpawnerPrefab>();
+            state.RequireForUpdate(state.GetEntityQuery(builder));
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var deltaTime = SystemAPI.Time.DeltaTime;
-            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            var seed = (uint)SystemAPI.Time.ElapsedTime + 1;
-            
-            //The source generator, which automatically writes the boilerplate code for IJobEntity,
-            //sometimes fails when a job is initialized and scheduled in the same line.
-            //It creates a unique key for the job based on the code text,
-            //and if the initialization block is complex,
-            //it can accidentally try to add the same key twice to its internal database.
-            var job = new SpawnerJob
-            {
-                DeltaTime = deltaTime,
-                Ecb = ecb,
-                BaseSeed = seed
-            };
-            state.Dependency = job.ScheduleParallel(state.Dependency);
+            // Write spawn requests DIRECTLY into the DynamicBuffer — NOT via ECB.
+            // If we used an ECB with EndSimulationEntityCommandBufferSystem, the buffer
+            // would only get populated AFTER PoolSpawningSystem already ran (same frame),
+            // causing PoolSpawningSystem to always read an empty buffer.
+            var job = new SpawnerJob { DeltaTime = deltaTime };
+            // Use Schedule (not ScheduleParallel) — DynamicBuffer write with ScheduleParallel
+            // can silently fail safety checks when ref DynamicBuffer is involved.
+            state.Dependency = job.Schedule(state.Dependency);
         }
 
         [BurstCompile]
-        public void OnDestroy(ref SystemState state)
-        {
-        }
+        public void OnDestroy(ref SystemState state) { }
     }
 
     [BurstCompile]
     public partial struct SpawnerJob : IJobEntity
     {
         public float DeltaTime;
-        public EntityCommandBuffer.ParallelWriter Ecb;
-        public uint BaseSeed;
 
-        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, ref Components.Spawner.Spawner spawner, RefRO<LocalTransform> transform, DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
+        private void Execute(
+            ref Components.Spawner.Spawner spawner,
+            RefRO<LocalTransform> transform,
+            DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs,
+            ref DynamicBuffer<ElementSpawnRequest> spawnRequests)
         {
             if (spawner.SpawnInterval <= 0f || spawner.SpawnAmount <= 0 || prefabs.Length <= 0 || !spawner.IsActive)
-            {
                 return;
-            }
 
             spawner.Timer += DeltaTime;
-            
+
             if (spawner.Timer >= spawner.SpawnInterval)
             {
                 spawner.Timer -= spawner.SpawnInterval;
-                
+
                 var prefabType = prefabs[0].ModelType;
                 for (int i = 0; i < spawner.SpawnAmount; i++)
                 {
-                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    spawnRequests.Add(new ElementSpawnRequest
                     {
                         Type = spawner.Team,
                         ModelType = prefabType,
