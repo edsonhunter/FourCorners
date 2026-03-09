@@ -282,7 +282,6 @@ GameObject:
   - component: {fileID: 4266704770135096882}
   - component: {fileID: 3612829713852556032}
   - component: {fileID: 3814719451323231369}
-  - component: {fileID: 8356508881897726004}
   - component: {fileID: 4043424383366591570}
   - component: {fileID: 1618914866539842515}
   m_Layer: 0
@@ -353,32 +352,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring
---- !u!114 &8356508881897726004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3235638746568561028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.NetCode.Authoring.Hybrid::Unity.NetCode.GhostAuthoringComponent
-  DefaultGhostMode: 0
-  SupportedGhostModes: 1
-  OptimizationMode: 0
-  Importance: 1
-  MaxSendRate: 0
-  prefabId: 9f1abdb401185184d85929b819870f56
-  HasOwner: 0
-  SupportAutoCommandTarget: 1
-  TrackInterpolationDelay: 0
-  GhostGroup: 0
-  UsePreSerialization: 0
-  UseSingleBaseline: 0
-  RollbackPredictedSpawnedGhostState: 0
-  RollbackPredictionOnStructuralChanges: 1
 --- !u!114 &4043424383366591570
 MonoBehaviour:
   m_ObjectHideFlags: 0
