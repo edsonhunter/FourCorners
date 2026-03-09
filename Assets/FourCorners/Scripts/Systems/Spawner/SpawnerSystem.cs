@@ -46,7 +46,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
         private void Execute(
             ref Components.Spawner.Spawner spawner,
-            RefRO<LocalTransform> transform,
+            RefRO<LocalToWorld> worldTransform,  // LocalToWorld = world-space position after parent hierarchy
             DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs,
             ref DynamicBuffer<ElementSpawnRequest> spawnRequests)
         {
@@ -66,7 +66,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     {
                         Type = spawner.Team,
                         ModelType = prefabType,
-                        Position = transform.ValueRO.Position
+                        Position = worldTransform.ValueRO.Position
                     });
                 }
             }
