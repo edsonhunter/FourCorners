@@ -15,9 +15,14 @@ namespace ElementLogicFail.Scripts.MonoBridge
                 if (world.IsClient())
                 {
                     var em = world.EntityManager;
+                    var networkQuery = em.CreateEntityQuery(typeof(NetworkId), typeof(NetworkStreamInGame));
+                    if (networkQuery.IsEmpty) break;
+                    
+                    var targetConnection = networkQuery.GetSingletonEntity();
+
                     var rpcEntity = em.CreateEntity();
                     em.AddComponentData(rpcEntity, new SpawnMinionRpc { ModelType = (UnitModelType)modelTypeIndex });
-                    em.AddComponentData(rpcEntity, new SendRpcCommandRequest());
+                    em.AddComponentData(rpcEntity, new SendRpcCommandRequest { TargetConnection = targetConnection });
                     break;
                 }
             }
