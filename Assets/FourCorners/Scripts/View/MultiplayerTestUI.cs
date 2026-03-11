@@ -1,5 +1,5 @@
-using ElementLogicFail.Scripts.Manager;
-using ElementLogicFail.Scripts.Services.Interface;
+using System;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,48 +12,64 @@ namespace ElementLogicFail.Scripts.MonoBridge
         public TextMeshProUGUI StatusText;
         public Button HostButton;
         public Button JoinButton;
+        private Func<int, Task<string>> _hostRelayGameAsync;
+        private Func<string, Task<bool>> _joinRelayGameAsync;
+        
 
-        private IMultiplayerService _multiplayerService;
-
-        private async void Start()
+        public async void Init(Task authenticateAsync, Func<int, Task<string>> hostRelayGameAsync, Func<string, Task<bool>> joinRelayGameAsync)
         {
-            var appManager = FindFirstObjectByType<ApplicationManager>();
-            if (appManager == null)
+            try
             {
-                Debug.LogError("No ApplicationManager found!");
-                return;
+                _hostRelayGameAsync = hostRelayGameAsync;
+                _joinRelayGameAsync = joinRelayGameAsync;
+            
+                StatusText.text = "Authenticating...";
+                await authenticateAsync;
+                StatusText.text = "Authenticated. Ready to Host or Join.";
+            
+                HostButton.onClick.AddListener(HostGame);
+                JoinButton.onClick.AddListener(JoinGame);
             }
-
-            _multiplayerService = appManager.GetService<IMultiplayerService>();
-            
-            StatusText.text = "Authenticating...";
-            await _multiplayerService.AuthenticateAsync();
-            StatusText.text = "Authenticated. Ready to Host or Join.";
-            
-            HostButton.onClick.AddListener(HostGame);
-            JoinButton.onClick.AddListener(JoinGame);
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
 
-        public async void HostGame()
+        private async void HostGame()
         {
-            StatusText.text = "Hosting...";
-            string code = await _multiplayerService.HostGameAsync(4);
-            StatusText.text = $"Hosted! Join Code: {code}";
-            Debug.Log($"Join Code: {code}");
-            GUIUtility.systemCopyBuffer = code;
+            try
+            {
+                StatusText.text = "Hosting...";
+                string code = await _hostRelayGameAsync(4);
+                StatusText.text = $"Hosted! Join Code: {code}";
+                Debug.Log($"Join Code: {code}");
+                GUIUtility.systemCopyBuffer = code;
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
 
-        public async void JoinGame()
+        private async void JoinGame()
         {
-            if (string.IsNullOrEmpty(JoinCodeInput.text))
+            try
             {
-                StatusText.text = "Enter a Join Code first!";
-                return;
-            }
+                if (string.IsNullOrEmpty(JoinCodeInput.text))
+                {
+                    StatusText.text = "Enter a Join Code first!";
+                    return;
+                }
 
-            StatusText.text = "Joining...";
-            await _multiplayerService.JoinGameAsync(JoinCodeInput.text);
-            StatusText.text = "Joined!";
+                StatusText.text = "Joining...";
+                await _joinRelayGameAsync(JoinCodeInput.text);
+                StatusText.text = "Joined!";
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
     }
 }

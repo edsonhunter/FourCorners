@@ -28,7 +28,7 @@ namespace ElementLogicFail.Scripts.Services
             }
         }
 
-        public async Task<string> HostGameAsync(int maxPlayers)
+        public async Task<string> HostRelayGameAsync(int maxPlayers)
         {
             try
             {
@@ -92,7 +92,7 @@ namespace ElementLogicFail.Scripts.Services
         }
 
 
-        public async Task JoinGameAsync(string joinCode)
+        public async Task<bool> JoinRelayGameAsync(string joinCode)
         {
             try
             {
@@ -119,10 +119,92 @@ namespace ElementLogicFail.Scripts.Services
                 clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
 
                 Debug.Log($"[Matchmaking] Joined Game with Code: {joinCode}");
+                return true;
             }
             catch (Exception e)
             {
                 Debug.LogError($"[Matchmaking] Failed to Join Game: {e.Message}");
+                return false;
+            }
+        }
+        public Task<bool> HostDirectGameAsync(ushort port)
+        {
+            try
+            {
+                var serverWorld = ClientServerBootstrap.ServerWorld;
+                var serverNetDebug = serverWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
+                var driverStore = new NetworkDriverStore();
+                
+                // We use standard driver for direct ip
+                var serverConstructor = new IPCAndSocketDriverConstructor();
+                serverConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
+
+                var serverDriverQuery = serverWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
+                serverDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(serverWorld.Unmanaged, ref driverStore);
+
+                var serverListenEntity = serverWorld.EntityManager.CreateEntity();
+                serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4.WithPort(port) });
+
+
+                var clientWorld = ClientServerBootstrap.ClientWorld;
+                var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
+                var clientDriverStore = new NetworkDriverStore();
+                
+                var clientConstructor = new IPCAndSocketDriverConstructor();
+                clientConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
+
+                var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
+                clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
+
+                var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
+                // Client must connect to its own server's IP directly (loopback works since it's host-only right now).
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.LoopbackIpv4.WithPort(port) });
+
+                Debug.Log($"[Matchmaking] Hosted Direct Game on Port: {port}");
+                return Task.FromResult(true);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Matchmaking] Failed to Host Direct Game: {e.Message}");
+                return Task.FromResult(false);
+            }
+        }
+
+        public Task<bool> JoinDirectGameAsync(string ip, ushort port)
+        {
+            try
+            {
+                if (!NetworkEndpoint.TryParse(ip, port, out NetworkEndpoint endpoint))
+                {
+                    Debug.LogError($"[Matchmaking] Invalid IP/Port: {ip}:{port}");
+                    return Task.FromResult(false);
+                }
+
+                if (ClientServerBootstrap.ServerWorld != null && ClientServerBootstrap.ServerWorld.IsCreated)
+                {
+                    ClientServerBootstrap.ServerWorld.Dispose();
+                }
+
+                var clientWorld = ClientServerBootstrap.ClientWorld;
+                var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
+                var clientDriverStore = new NetworkDriverStore();
+                
+                var clientConstructor = new IPCAndSocketDriverConstructor();
+                clientConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
+
+                var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
+                clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
+
+                var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = endpoint });
+
+                Debug.Log($"[Matchmaking] Requesting Direct Join to {endpoint}");
+                return Task.FromResult(true);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[Matchmaking] Failed to Join Direct Game: {e.Message}");
+                return Task.FromResult(false);
             }
         }
     }

@@ -267,6 +267,7 @@ GameObject:
   - component: {fileID: 238368420}
   - component: {fileID: 238368422}
   - component: {fileID: 238368421}
+  - component: {fileID: 238368423}
   m_Layer: 5
   m_Name: Menu
   m_TagString: Untagged
@@ -286,6 +287,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1294264215}
   - {fileID: 977474740}
   - {fileID: 563555090}
   - {fileID: 548106246}
@@ -336,6 +338,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 238368419}
   m_CullTransparentMesh: 1
+--- !u!114 &238368423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 238368419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d13f8a0f79948b94a9bec7b60d54c8fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Corner.View::ElementLogicFail.Scripts.MonoBridge.MultiplayerTestUI
+  JoinCodeInput: {fileID: 368466668}
+  StatusText: {fileID: 585063494}
+  HostButton: {fileID: 563555091}
+  JoinButton: {fileID: 548106247}
 --- !u!1 &368466666
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,7 +784,6 @@ GameObject:
   m_Component:
   - component: {fileID: 581248220}
   - component: {fileID: 581248219}
-  - component: {fileID: 581248221}
   m_Layer: 0
   m_Name: ConfigScene
   m_TagString: Untagged
@@ -787,6 +804,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Elf.Scenes::ElementLogicFail.Scripts.Scenes.ConfigScene
   backButton: {fileID: 977474741}
+  multiplayerTestUI: {fileID: 238368423}
 --- !u!4 &581248220
 Transform:
   m_ObjectHideFlags: 0
@@ -802,22 +820,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &581248221
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 581248218}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d13f8a0f79948b94a9bec7b60d54c8fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.MonoBridge.MultiplayerTestUI
-  JoinCodeInput: {fileID: 368466668}
-  StatusText: {fileID: 585063494}
-  HostButton: {fileID: 563555091}
-  JoinButton: {fileID: 548106247}
 --- !u!1 &585063491
 GameObject:
   m_ObjectHideFlags: 0
@@ -1323,7 +1325,6 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1294264215}
   - {fileID: 238368420}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1636,12 +1637,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1294264214}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 724385793}
+  m_Father: {fileID: 238368420}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -1879,5 +1880,5 @@ CanvasRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 724385793}
   - {fileID: 581248220}
+  - {fileID: 724385793}

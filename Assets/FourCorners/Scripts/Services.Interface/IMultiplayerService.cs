@@ -5,7 +5,13 @@ namespace ElementLogicFail.Scripts.Services.Interface
     public interface IMultiplayerService : IService
     {
         Task AuthenticateAsync();
-        Task<string> HostGameAsync(int maxPlayers);
-        Task JoinGameAsync(string joinCode);
+        
+        // Direct IP/Port
+        Task<bool> HostDirectGameAsync(ushort port);
+        Task<bool> JoinDirectGameAsync(string ip, ushort port);
+
+        // Unity Relay
+        Task<string> HostRelayGameAsync(int maxPlayers);
+        Task<bool> JoinRelayGameAsync(string joinCode);
     }
 }
