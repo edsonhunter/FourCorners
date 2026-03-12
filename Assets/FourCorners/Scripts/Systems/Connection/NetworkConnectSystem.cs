@@ -1,31 +1,58 @@
+using System.Linq;
 using ElementLogicFail.Scripts.Components.Spawner;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Scenes;
 
 namespace ElementLogicFail.Scripts.Systems.Connection
 {
     // Client system: fires once when our NetworkId appears. Marks client as InGame
     // locally and sends GoInGameRequest RPC to server.
-    [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct ClientRequestGameSystem : ISystem
     {
-        [BurstCompile]
+        private EntityQuery _connectionQuery;
+        private EntityQuery _sceneQuery;
+
         public void OnCreate(ref SystemState state)
         {
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<NetworkId>()
                 .WithNone<NetworkStreamInGame>();
-            state.RequireForUpdate(state.GetEntityQuery(builder));
+            _connectionQuery = state.GetEntityQuery(builder);
+            state.RequireForUpdate(_connectionQuery);
+
+            _sceneQuery = state.GetEntityQuery(ComponentType.ReadOnly<SceneReference>());
         }
 
-        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            // If the subscene hasn't even been registered in the ECS world yet
+            // (due to async Unity Scene loading), we must wait here!
+            if (_sceneQuery.IsEmptyIgnoreFilter)
+                return;
+
+            // Wait for all registered scenes and subscenes to be fully loaded and resolved.
+            bool allScenesLoaded = true;
+            using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
+            
+            foreach (var sceneEntity in sceneEntities)
+            {
+                if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity))
+                {
+                    allScenesLoaded = false;
+                    break;
+                }
+            }
+            
+            if (!allScenesLoaded)
+                return;
+
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            foreach (var (id, entity) in SystemAPI.Query<RefRO<NetworkId>>().WithNone<NetworkStreamInGame>().WithEntityAccess())
+            using var connectionEntities = _connectionQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in connectionEntities)
             {
                 // Mark client-side connection as InGame immediately
                 ecb.AddComponent<NetworkStreamInGame>(entity);
