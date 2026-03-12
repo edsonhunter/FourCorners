@@ -17,30 +17,50 @@ namespace ElementLogicFail.Scripts.Systems.Connection
         private EntityQuery _connectionQuery;
         private EntityQuery _sceneQuery;
         private float _waitTimer;
+        private bool _requestSent;
 
         public void OnCreate(ref SystemState state)
         {
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<NetworkId>()
                 .WithNone<NetworkStreamInGame>();
+            
             _connectionQuery = state.GetEntityQuery(builder);
-            state.RequireForUpdate(_connectionQuery);
-
             _sceneQuery = state.GetEntityQuery(ComponentType.ReadOnly<SceneReference>());
             _waitTimer = 0;
+            _requestSent = false;
         }
 
         public void OnUpdate(ref SystemState state)
         {
+            if (_connectionQuery.IsEmptyIgnoreFilter)
+            {
+                // Either not connected, or already marked as InGame by server
+                return;
+            }
+
             _waitTimer += SystemAPI.Time.DeltaTime;
 
-            // Wait for all registered scenes and subscenes to be fully loaded and resolved.
+            // Step 1: Send the request as soon as we have a connection
+            if (!_requestSent)
+            {
+                var ecb = new EntityCommandBuffer(Allocator.Temp);
+                using var connectionEntities = _connectionQuery.ToEntityArray(Allocator.Temp);
+                foreach (var entity in connectionEntities)
+                {
+                    UnityEngine.Debug.Log($"[ClientRequestGameSystem] Sending GoInGameRequest for connection {entity}");
+                    var req = ecb.CreateEntity();
+                    ecb.AddComponent<GoInGameRequest>(req);
+                    ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = entity });
+                }
+                ecb.Playback(state.EntityManager);
+                _requestSent = true;
+            }
+
+            // Step 2: Normally we'd wait for the server to add NetworkStreamInGame.
+            // However, we still check scene loading here to log if we are stalled.
             bool allScenesLoaded = true;
-            int sceneCount = 0;
-
             using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
-            sceneCount = sceneEntities.Length;
-
             foreach (var sceneEntity in sceneEntities)
             {
                 if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity))
@@ -50,38 +70,10 @@ namespace ElementLogicFail.Scripts.Systems.Connection
                 }
             }
 
-            // If we have no scenes yet, we wait up to 2 seconds just in case subscenes 
-            // are being loaded asynchronously as entities. Afterward, we proceed.
-            if (sceneCount == 0 && _waitTimer < 2.0f)
+            if (!allScenesLoaded && UnityEngine.Time.frameCount % 120 == 0)
             {
-                return;
+                UnityEngine.Debug.Log($"[ClientRequestGameSystem] Pending scene loading...");
             }
-            
-            if (!allScenesLoaded)
-            {
-                if (UnityEngine.Time.frameCount % 60 == 0)
-                {
-                    UnityEngine.Debug.Log($"[ClientRequestGameSystem] Waiting for {sceneCount} scenes to load...");
-                }
-                return;
-            }
-
-            UnityEngine.Debug.Log($"[ClientRequestGameSystem] All {sceneCount} scenes loaded (or skipped after timeout). Sending GoInGameRequest.");
-
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
-            using var connectionEntities = _connectionQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in connectionEntities)
-            {
-                // Mark client-side connection as InGame immediately
-                ecb.AddComponent<NetworkStreamInGame>(entity);
-
-                // Send RPC to server requesting to enter the game
-                var req = ecb.CreateEntity();
-                ecb.AddComponent<GoInGameRequest>(req);
-                ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = entity });
-            }
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 

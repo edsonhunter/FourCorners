@@ -52,7 +52,6 @@ namespace ElementLogicFail.Scripts.Services
                 var serverRelayData = allocation.ToRelayServerData("dtls");
 
                 // 4. The host's own local Client must JOIN its own relay via the join code.
-                //    Without this, clientRelayData is empty and the client can never route to the server.
                 var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
                 var clientRelayData = joinAllocation.ToRelayServerData("dtls");
 
@@ -60,7 +59,7 @@ namespace ElementLogicFail.Scripts.Services
                 var serverWorld = ClientServerBootstrap.ServerWorld;
                 var serverNetDebug = serverWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 var driverStore = new NetworkDriverStore();
-                var serverRelayConstructor = new RelayDriverConstructor(serverRelayData, default, false);
+                var serverRelayConstructor = new RelayDriverConstructor(serverRelayData, clientRelayData, false);
                 serverRelayConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
 
                 var serverDriverQuery = serverWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
@@ -69,18 +68,18 @@ namespace ElementLogicFail.Scripts.Services
                 var serverListenEntity = serverWorld.EntityManager.CreateEntity();
                 serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4 });
 
-                // 6. Set up Client driver with CLIENT relay data (the join allocation)
+                // 6. Set up Client driver with CLIENT relay data
                 var clientWorld = ClientServerBootstrap.ClientWorld;
                 var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 var clientDriverStore = new NetworkDriverStore();
-                var clientRelayConstructor = new RelayDriverConstructor(default, clientRelayData, false);
+                var clientRelayConstructor = new RelayDriverConstructor(serverRelayData, clientRelayData, false);
                 clientRelayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
 
                 var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
                 clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
 
                 var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
-                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = clientRelayData.Endpoint });
 
                 return joinCode;
             }
@@ -99,7 +98,6 @@ namespace ElementLogicFail.Scripts.Services
                 var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
                 var relayServerData = joinAllocation.ToRelayServerData("dtls");
 
-                // Assuming we want to discard ServerWorld in joiners
                 if (ClientServerBootstrap.ServerWorld != null && ClientServerBootstrap.ServerWorld.IsCreated)
                 {
                     ClientServerBootstrap.ServerWorld.Dispose();
@@ -108,7 +106,7 @@ namespace ElementLogicFail.Scripts.Services
                 var clientWorld = ClientServerBootstrap.ClientWorld;
                 var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 
-                var relayConstructor = new RelayDriverConstructor(default(Unity.Networking.Transport.Relay.RelayServerData), relayServerData, false);
+                var relayConstructor = new RelayDriverConstructor(default, relayServerData, false);
                 var clientDriverStore = new NetworkDriverStore();
                 relayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
                 
@@ -116,7 +114,7 @@ namespace ElementLogicFail.Scripts.Services
                 clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
 
                 var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
-                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.AnyIpv4 });
+                clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = relayServerData.Endpoint });
 
                 Debug.Log($"[Matchmaking] Joined Game with Code: {joinCode}");
                 return true;
@@ -127,6 +125,7 @@ namespace ElementLogicFail.Scripts.Services
                 return false;
             }
         }
+
         public Task<bool> HostDirectGameAsync(ushort port)
         {
             try
@@ -135,7 +134,6 @@ namespace ElementLogicFail.Scripts.Services
                 var serverNetDebug = serverWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 var driverStore = new NetworkDriverStore();
                 
-                // We use standard driver for direct ip
                 var serverConstructor = new IPCAndSocketDriverConstructor();
                 serverConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
 
@@ -144,7 +142,6 @@ namespace ElementLogicFail.Scripts.Services
 
                 var serverListenEntity = serverWorld.EntityManager.CreateEntity();
                 serverWorld.EntityManager.AddComponentData(serverListenEntity, new NetworkStreamRequestListen { Endpoint = NetworkEndpoint.AnyIpv4.WithPort(port) });
-
 
                 var clientWorld = ClientServerBootstrap.ClientWorld;
                 var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
@@ -157,7 +154,6 @@ namespace ElementLogicFail.Scripts.Services
                 clientDriverQuery.GetSingletonRW<NetworkStreamDriver>().ValueRW.ResetDriverStore(clientWorld.Unmanaged, ref clientDriverStore);
 
                 var clientConnectEntity = clientWorld.EntityManager.CreateEntity();
-                // Client must connect to its own server's IP directly (loopback works since it's host-only right now).
                 clientWorld.EntityManager.AddComponentData(clientConnectEntity, new NetworkStreamRequestConnect { Endpoint = NetworkEndpoint.LoopbackIpv4.WithPort(port) });
 
                 Debug.Log($"[Matchmaking] Hosted Direct Game on Port: {port}");

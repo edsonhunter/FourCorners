@@ -19,6 +19,9 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     public partial struct BaseAllocationSystem : ISystem
     {
+        private EntityQuery _baseQuery;
+        private EntityQuery _spawnerQuery;
+
         public void OnCreate(ref SystemState state)
         {
             // Requires at least one connection waiting for a base
@@ -27,20 +30,16 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             state.RequireForUpdate(state.GetEntityQuery(builder));
 
             // Also require PlayerBase entities to exist (they become active after NetworkStreamInGame is set)
-            var basesBuilder = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<PlayerBase>();
-            state.RequireForUpdate(state.GetEntityQuery(basesBuilder));
+            _baseQuery = state.GetEntityQuery(ComponentType.ReadWrite<PlayerBase>());
+            state.RequireForUpdate(_baseQuery);
+
+            _spawnerQuery = state.GetEntityQuery(ComponentType.ReadWrite<Components.Spawner.Spawner>());
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            state.Dependency.Complete();
-
-            var baseQuery = state.EntityManager.CreateEntityQuery(ComponentType.ReadWrite<PlayerBase>());
-            var spawnerQuery = state.EntityManager.CreateEntityQuery(ComponentType.ReadWrite<Components.Spawner.Spawner>());
-
-            var bases = baseQuery.ToEntityArray(Allocator.Temp);
-            var spawners = spawnerQuery.ToEntityArray(Allocator.Temp);
+            var bases = _baseQuery.ToEntityArray(Allocator.Temp);
+            var spawners = _spawnerQuery.ToEntityArray(Allocator.Temp);
 
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
@@ -97,8 +96,6 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             ecb.Dispose();
             bases.Dispose();
             spawners.Dispose();
-            baseQuery.Dispose();
-            spawnerQuery.Dispose();
         }
     }
 }
