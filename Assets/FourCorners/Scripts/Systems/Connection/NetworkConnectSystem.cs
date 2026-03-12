@@ -1,5 +1,6 @@
 using System.Linq;
 using ElementLogicFail.Scripts.Components.Spawner;
+using ElementLogicFail.Scripts.Components.Request;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -15,6 +16,7 @@ namespace ElementLogicFail.Scripts.Systems.Connection
     {
         private EntityQuery _connectionQuery;
         private EntityQuery _sceneQuery;
+        private float _waitTimer;
 
         public void OnCreate(ref SystemState state)
         {
@@ -25,19 +27,20 @@ namespace ElementLogicFail.Scripts.Systems.Connection
             state.RequireForUpdate(_connectionQuery);
 
             _sceneQuery = state.GetEntityQuery(ComponentType.ReadOnly<SceneReference>());
+            _waitTimer = 0;
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            // If the subscene hasn't even been registered in the ECS world yet
-            // (due to async Unity Scene loading), we must wait here!
-            if (_sceneQuery.IsEmptyIgnoreFilter)
-                return;
+            _waitTimer += SystemAPI.Time.DeltaTime;
 
             // Wait for all registered scenes and subscenes to be fully loaded and resolved.
             bool allScenesLoaded = true;
+            int sceneCount = 0;
+
             using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
-            
+            sceneCount = sceneEntities.Length;
+
             foreach (var sceneEntity in sceneEntities)
             {
                 if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity))
@@ -46,9 +49,24 @@ namespace ElementLogicFail.Scripts.Systems.Connection
                     break;
                 }
             }
+
+            // If we have no scenes yet, we wait up to 2 seconds just in case subscenes 
+            // are being loaded asynchronously as entities. Afterward, we proceed.
+            if (sceneCount == 0 && _waitTimer < 2.0f)
+            {
+                return;
+            }
             
             if (!allScenesLoaded)
+            {
+                if (UnityEngine.Time.frameCount % 60 == 0)
+                {
+                    UnityEngine.Debug.Log($"[ClientRequestGameSystem] Waiting for {sceneCount} scenes to load...");
+                }
                 return;
+            }
+
+            UnityEngine.Debug.Log($"[ClientRequestGameSystem] All {sceneCount} scenes loaded (or skipped after timeout). Sending GoInGameRequest.");
 
             var ecb = new EntityCommandBuffer(Allocator.Temp);
             using var connectionEntities = _connectionQuery.ToEntityArray(Allocator.Temp);
@@ -67,26 +85,33 @@ namespace ElementLogicFail.Scripts.Systems.Connection
         }
     }
 
-    // RPC payload sent from client to server
-    public struct GoInGameRequest : IRpcCommand { }
-
     // Server system: receives GoInGameRequest, immediately adds NetworkStreamInGame to
     // the connection entity (which triggers Netcode to activate prespawned ghosts),
     // and tags the connection with PendingBaseAllocation for the next frame.
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct ServerAcceptGameSystem : ISystem
     {
+        private EntityQuery _rpcQuery;
+        private EntityQuery _allRequestsQuery;
+
         public void OnCreate(ref SystemState state)
         {
-            var builder = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<GoInGameRequest, ReceiveRpcCommandRequest>();
-            state.RequireForUpdate(state.GetEntityQuery(builder));
+            _rpcQuery = state.GetEntityQuery(ComponentType.ReadOnly<GoInGameRequest>(), ComponentType.ReadOnly<ReceiveRpcCommandRequest>());
+            _allRequestsQuery = state.GetEntityQuery(ComponentType.ReadOnly<GoInGameRequest>());
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            // Complete all pending Netcode jobs before touching connection entities
-            state.Dependency.Complete();
+            if (!_allRequestsQuery.IsEmptyIgnoreFilter)
+            {
+                if (UnityEngine.Time.frameCount % 30 == 0)
+                {
+                    UnityEngine.Debug.Log($"[ServerAcceptGameSystem] Found {_allRequestsQuery.CalculateEntityCount()} GoInGameRequest entities.");
+                }
+            }
+
+            if (_rpcQuery.IsEmptyIgnoreFilter)
+                return;
 
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
@@ -96,13 +121,22 @@ namespace ElementLogicFail.Scripts.Systems.Connection
             {
                 var sourceConnection = receive.ValueRO.SourceConnection;
 
-                // Step 1: Add NetworkStreamInGame. Netcode will now activate prespawned
-                // ghosts for this connection (removing their Disabled tag) on next frame.
-                ecb.AddComponent<NetworkStreamInGame>(sourceConnection);
+                if (state.EntityManager.Exists(sourceConnection))
+                {
+                    UnityEngine.Debug.Log($"[ServerAcceptGameSystem] Accepting GoInGameRequest for connection {sourceConnection}");
 
-                // Step 2: Tag the connection so BaseAllocationSystem assigns a base
-                // on the NEXT frame, after prespawned ghosts are fully activated.
-                ecb.AddComponent<PendingBaseAllocation>(sourceConnection);
+                    // Step 1: Add NetworkStreamInGame. Netcode will now activate prespawned
+                    // ghosts for this connection (removing their Disabled tag) on next frame.
+                    ecb.AddComponent<NetworkStreamInGame>(sourceConnection);
+
+                    // Step 2: Tag the connection so BaseAllocationSystem assigns a base
+                    // on the NEXT frame, after prespawned ghosts are fully activated.
+                    ecb.AddComponent<PendingBaseAllocation>(sourceConnection);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning($"[ServerAcceptGameSystem] Received GoInGameRequest but connection {sourceConnection} does not exist!");
+                }
 
                 ecb.DestroyEntity(rpcEntity);
             }
