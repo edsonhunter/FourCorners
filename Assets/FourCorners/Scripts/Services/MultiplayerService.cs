@@ -32,6 +32,24 @@ namespace ElementLogicFail.Scripts.Services
         {
             try
             {
+                // Local fallback path for single-player or host-only mode:
+                // If maxPlayers < 2, don't create a Relay allocation. Instead, start a local direct game
+                // using IPC/Socket and return a sentinel indicating local host mode.
+                if (maxPlayers < 2)
+                {
+                    Debug.Log("[Matchmaking] Starting local direct game as fallback (no Relay).");
+                    // Choose a default port for local IPC/Socket host
+                    const ushort localPort = 7777;
+                    bool localHostStarted = await HostDirectGameAsync(localPort);
+                    if (!localHostStarted)
+                    {
+                        Debug.LogError("[Matchmaking] Failed to start local direct game fallback.");
+                        return string.Empty;
+                    }
+                    // Sentinel to indicate local direct host was started. Client side should handle accordingly.
+                    return "LOCAL_DIRECT";
+                }
+
                 // 1. Create relay allocation for the server
                 var allocation = await RelayService.Instance.CreateAllocationAsync(maxPlayers - 1);
                 var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
