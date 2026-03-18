@@ -53,6 +53,7 @@ sysinfo.txt
 
 .idea/
 .utmp/
+.agent[s]/
 
 !**/M2Mqtt/*.csproj
 !**/Best HTTP (Pro)/*.csproj

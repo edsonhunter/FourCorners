@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Bounds;
+using ElementLogicFail.Scripts.Components.Bounds;
 using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Pool;
 using ElementLogicFail.Scripts.Components.Path;
@@ -10,15 +10,15 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Pool
+namespace ElementLogicFail.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(SpawnerSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct PoolSpawningSystem : ISystem
+    public partial struct ElementSpawningSystem : ISystem
     {
-        private NativeParallelHashMap<int, Entity> _modelTypeToPool;
+        private NativeParallelHashMap<int, Entity> _modelTypeToPrefab;
         private Random _random;
 
         [BurstCompile]
@@ -27,33 +27,33 @@ namespace ElementLogicFail.Scripts.Systems.Pool
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<WanderArea>();
 
-            _modelTypeToPool = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
+            _modelTypeToPrefab = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
             _random = Random.CreateFromIndex(1234);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            _modelTypeToPool.Clear();
+            _modelTypeToPrefab.Clear();
             
             var area = SystemAPI.GetSingleton<WanderArea>();
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
-            var buildMapJob = new BuildPoolMapJob
+            var buildMapJob = new BuildPrefabMapJob
             {
-                ModelTypeToPool = _modelTypeToPool
+                ModelTypeToPrefab = _modelTypeToPrefab
             };
             state.Dependency = buildMapJob.Schedule(state.Dependency);
 
-            var poolLookup = SystemAPI.GetComponentLookup<ElementPool>(true);
+            var prefabLookup = SystemAPI.GetComponentLookup<ElementPrefabDescriptor>(true);
             var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
             var jobRandom = new Random(_random.NextUInt());
 
             var spawnJob = new ProcessSpawningJob
             {
-                ModelTypeToPool = _modelTypeToPool,
-                PoolLookup = poolLookup,
+                ModelTypeToPrefab = _modelTypeToPrefab,
+                PrefabLookup = prefabLookup,
                 PathLookup = pathLookup,
                 Ecb = ecb,
                 Area = area,
@@ -68,27 +68,25 @@ namespace ElementLogicFail.Scripts.Systems.Pool
         [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            if (_modelTypeToPool.IsCreated)
+            if (_modelTypeToPrefab.IsCreated)
             {
-                _modelTypeToPool.Dispose();
+                _modelTypeToPrefab.Dispose();
             }
         }
     }
 
     [BurstCompile]
-    public partial struct BuildPoolMapJob : IJobEntity
+    public partial struct BuildPrefabMapJob : IJobEntity
     {
-        public NativeParallelHashMap<int, Entity> ModelTypeToPool;
+        public NativeParallelHashMap<int, Entity> ModelTypeToPrefab;
 
-        private void Execute(Entity entity, RefRO<ElementPool> pool)
+        private void Execute(Entity entity, RefRO<ElementPrefabDescriptor> prefabDesc)
         {
-            if (pool.ValueRO.ModelType != UnitModelType.None)
+            if (prefabDesc.ValueRO.ModelType != UnitModelType.None)
             {
-                // NativeParallelHashMap is generally not safe for parallel writing unless using MultiHashMap or ParallelWriter.
-                // Since we Schedule() this job and not Parallel, it is safe.
-                if (!ModelTypeToPool.ContainsKey((int)pool.ValueRO.ModelType))
+                if (!ModelTypeToPrefab.ContainsKey((int)prefabDesc.ValueRO.ModelType))
                 {
-                    ModelTypeToPool.Add((int)pool.ValueRO.ModelType, entity);
+                    ModelTypeToPrefab.Add((int)prefabDesc.ValueRO.ModelType, entity);
                 }
             }
         }
@@ -97,8 +95,8 @@ namespace ElementLogicFail.Scripts.Systems.Pool
     [BurstCompile]
     public partial struct ProcessSpawningJob : IJobEntity
     {
-        [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPool;
-        [ReadOnly] public ComponentLookup<ElementPool> PoolLookup;
+        [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPrefab;
+        [ReadOnly] public ComponentLookup<ElementPrefabDescriptor> PrefabLookup;
         [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
         public EntityCommandBuffer Ecb;
         public WanderArea Area;
@@ -113,13 +111,13 @@ namespace ElementLogicFail.Scripts.Systems.Pool
                 var request = requestBuffer[i];
                 if (request.Type != spawner.ValueRO.Team) continue;
 
-                if (ModelTypeToPool.TryGetValue((int)request.ModelType, out var poolEntity))
+                if (ModelTypeToPrefab.TryGetValue((int)request.ModelType, out var prefabEntity))
                 {
-                    if (PoolLookup.TryGetComponent(poolEntity, out var poolComponent))
+                    if (PrefabLookup.TryGetComponent(prefabEntity, out var prefabComponent))
                     {
-                        if (poolComponent.Prefab != Entity.Null)
+                        if (prefabComponent.Prefab != Entity.Null)
                         {
-                            Entity instance = Ecb.Instantiate(poolComponent.Prefab);
+                            Entity instance = Ecb.Instantiate(prefabComponent.Prefab);
 
                             if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
                             {

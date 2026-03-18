@@ -28,35 +28,41 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
+            // Pre-build a map of NetworkId -> Spawner entity to avoid O(N*M) iteration
+            var spawnerMap = new NativeParallelHashMap<int, Entity>(8, Allocator.Temp);
+            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.Spawner>>().WithEntityAccess())
+            {
+                if (spawner.ValueRO.IsActive)
+                {
+                    spawnerMap.TryAdd(spawner.ValueRO.NetworkId, entity);
+                }
+            }
+
             foreach (var (reqSrc, reqRpc, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, SpawnMinionRpc>().WithEntityAccess())
             {
                 if (SystemAPI.HasComponent<NetworkId>(reqSrc.SourceConnection))
                 {
                     var networkId = SystemAPI.GetComponent<NetworkId>(reqSrc.SourceConnection);
 
-                    // Find the spawner belonging to this player
-                    foreach (var (spawner, spawnerEntity) in SystemAPI.Query<RefRW<Components.Spawner.Spawner>>().WithEntityAccess())
+                    if (spawnerMap.TryGetValue(networkId.Value, out var spawnerEntity))
                     {
-                        if (spawner.ValueRO.IsActive && spawner.ValueRO.NetworkId == networkId.Value)
+                        var spawner = SystemAPI.GetComponentRW<Components.Spawner.Spawner>(spawnerEntity);
+                        
+                        if (spawner.ValueRO.Timer >= spawner.ValueRO.SpawnInterval && spawner.ValueRO.SpawnAmount > 0)
                         {
-                            if (spawner.ValueRO.Timer >= spawner.ValueRO.SpawnInterval && spawner.ValueRO.SpawnAmount > 0)
+                            spawner.ValueRW.Timer = 0; // Reset Cooldown
+                            
+                            var position = SystemAPI.GetComponent<LocalTransform>(spawnerEntity).Position;
+
+                            for (int i = 0; i < spawner.ValueRO.SpawnAmount; i++)
                             {
-                                spawner.ValueRW.Timer = 0; // Reset Cooldown
-                                
-                                var position = SystemAPI.GetComponent<LocalTransform>(spawnerEntity).Position;
-
-                                for (int i = 0; i < spawner.ValueRO.SpawnAmount; i++)
+                                ecb.AppendToBuffer(spawnerEntity, new ElementSpawnRequest
                                 {
-                                    ecb.AppendToBuffer(spawnerEntity, new ElementSpawnRequest
-                                    {
-                                        Type = spawner.ValueRO.Team,
-                                        ModelType = reqRpc.ModelType,
-                                        Position = position
-                                    });
-                                }
+                                    Type = spawner.ValueRO.Team,
+                                    ModelType = reqRpc.ModelType,
+                                    Position = position
+                                });
                             }
-
-                            break;
                         }
                     }
                 }
@@ -66,6 +72,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             ecb.Playback(state.EntityManager);
             ecb.Dispose();
+            spawnerMap.Dispose();
         }
     }
 }
