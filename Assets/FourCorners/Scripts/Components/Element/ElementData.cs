@@ -1,15 +1,16 @@
-﻿using Unity.Entities;
+using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 
 namespace ElementLogicFail.Scripts.Components.Element
 {
     public struct ElementData : IComponentData
     {
-        public Team Team;
-        public TeamColor TeamColor;
-        public float Speed;
-        public float3 Target;
-        public uint RandomSeed;
+        [GhostField] public Team Team;
+        [GhostField] public TeamColor TeamColor;
+        [GhostField] public float Speed;
+        [GhostField] public float3 Target;
+        [GhostField] public uint RandomSeed;
         public float Cooldown;
     }
 }

@@ -28,21 +28,31 @@ namespace ElementLogicFail.Scripts.Controller
         private ProfilerRecorder _totalReservedMemoryRecorder;
         private ProfilerRecorder _gcReservedMemoryRecorder;
 
+        private World _cachedWorld;
+
         void Start()
         {
-            _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            _cachedWorld = World.DefaultGameObjectInjectionWorld;
+            if (_cachedWorld != null && _cachedWorld.IsCreated)
+            {
+                _entityManager = _cachedWorld.EntityManager;
+                CreateQueries();
+            }
 
-            _totalElementsQuery = _entityManager.CreateEntityQuery(typeof(ElementData));
-            _activeElementsQuery = _entityManager.CreateEntityQuery(
-                ComponentType.ReadOnly<ElementData>(),
-                ComponentType.Exclude<Disabled>() 
-            );
-            
             _style = new GUIStyle
             {
                 fontSize = 20,
                 normal = { textColor = Color.white }
             };
+        }
+
+        private void CreateQueries()
+        {
+            _totalElementsQuery = _entityManager.CreateEntityQuery(typeof(ElementData));
+            _activeElementsQuery = _entityManager.CreateEntityQuery(
+                ComponentType.ReadOnly<ElementData>(),
+                ComponentType.Exclude<Disabled>() 
+            );
         }
 
         void OnEnable()
@@ -59,7 +69,21 @@ namespace ElementLogicFail.Scripts.Controller
 
         void Update()
         {
-            _totalEntityCount = _entityManager.GetAllEntities(Allocator.Temp).Length;
+            if (_cachedWorld == null || !_cachedWorld.IsCreated || _cachedWorld != World.DefaultGameObjectInjectionWorld)
+            {
+                _cachedWorld = World.DefaultGameObjectInjectionWorld;
+                if (_cachedWorld != null && _cachedWorld.IsCreated)
+                {
+                    _entityManager = _cachedWorld.EntityManager;
+                    CreateQueries();
+                }
+                else return; // Wait for world to be ready
+            }
+
+            // Using EntityManager.Debug.EntityCount gets the true count without allocating a NativeArray like GetAllEntities does!
+#if UNITY_EDITOR
+            _totalEntityCount = _entityManager.Debug.EntityCount;
+#endif
             int totalElementCount = _totalElementsQuery.CalculateEntityCount();
             _activeElementCount = _activeElementsQuery.CalculateEntityCount();
             _pooledElementCount = totalElementCount - _activeElementCount;

@@ -25,11 +25,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0617ce7ed85d2d54d8a543f8ec16b47b
-    m_Address: Ghost Variant
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2622608273fda304d8d4045002b4bcd3
     m_Address: Mage Variant
     m_ReadOnly: 0

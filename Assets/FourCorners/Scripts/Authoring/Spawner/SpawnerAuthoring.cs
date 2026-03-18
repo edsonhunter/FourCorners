@@ -24,7 +24,8 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
                     Team = authoring.type,
                     SpawnAmount = authoring.spawnAmount,
                     SpawnInterval = authoring.spawnInterval,
-                    Timer = 0
+                    Timer = 0,
+                    IsActive = false
                 });
                 
                 // Add Unit Types to Spawn

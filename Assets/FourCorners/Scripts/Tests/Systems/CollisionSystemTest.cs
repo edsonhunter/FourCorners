@@ -80,8 +80,8 @@ namespace ElementLogicFail.Scripts.Tests.Systems
             World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>().Update();
 
             var particleBuffer = EntityManager.GetBuffer<ParticleSpawnRequest>(_particleManager);
-            Assert.IsTrue(EntityManager.HasComponent<ReturnToPool>(entityA), "Entity A should have ReturnToPool component.");
-            Assert.IsTrue(EntityManager.HasComponent<ReturnToPool>(entityB), "Entity B should have ReturnToPool component.");
+            Assert.IsFalse(EntityManager.Exists(entityA), "Entity A should be destroyed.");
+            Assert.IsFalse(EntityManager.Exists(entityB), "Entity B should be destroyed.");
             Assert.AreEqual(1, particleBuffer.Length, "Should create one particle spawn request for explosion.");
         }
     }

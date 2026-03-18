@@ -40,6 +40,7 @@ namespace ElementLogicFail.Scripts.Bootstrapper
         {
             _applicationManager.RegisterServices<ISystemBridgeService>(new SystemBridgeService());
             _applicationManager.RegisterServices<IAddressablesService>(new AddressablesService());
+            _applicationManager.RegisterServices<IMultiplayerService>(new MultiplayerService());
         }
 
         private void SetupManagers()
