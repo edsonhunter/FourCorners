@@ -2,25 +2,24 @@ using ElementLogicFail.Scripts.Components.Element;
 using ElementLogicFail.Scripts.Components.Particles;
 using ElementLogicFail.Scripts.Components.Pool;
 using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Components.Spawner;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
-using Unity.Physics.Systems;
 using Unity.Transforms;
+using Unity.Physics.Systems;
 
 namespace ElementLogicFail.Scripts.Systems.Collision
 {
     [BurstCompile]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial struct CollisionSystem : ISystem
     {
         private ComponentLookup<ElementData> _elementLookup;
         private ComponentLookup<LocalTransform> _localTransformLookup;
-        private ComponentLookup<SourcePool> _sourcePoolLookup;
         private NativeHashSet<Entity> _processedEntities;
         
         [BurstCompile]
@@ -31,7 +30,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             
             _elementLookup = SystemAPI.GetComponentLookup<ElementData>(true);
             _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
-            _sourcePoolLookup = SystemAPI.GetComponentLookup<SourcePool>(true);
             _processedEntities = new NativeHashSet<Entity>(128, Allocator.Persistent);
         }
 
@@ -40,7 +38,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         {
             _elementLookup.Update(ref state);
             _localTransformLookup.Update(ref state);
-            _sourcePoolLookup.Update(ref state);
 
             _processedEntities.Clear();
 
@@ -59,7 +56,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
                 ParticleManagerEntity = particleManagerEntity,
                 HasParticle = hasParticles,
                 EntityCommandBuffer = parallelWriter,
-                SourcePoolLookup = _sourcePoolLookup,
                 ProcessedEntities = _processedEntities
             };
             
@@ -81,7 +77,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
         [ReadOnly] public Entity ParticleManagerEntity;
         [ReadOnly] public bool HasParticle;
-        [ReadOnly] public ComponentLookup<SourcePool> SourcePoolLookup;
         public NativeHashSet<Entity> ProcessedEntities;
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
 
@@ -133,9 +128,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         private void AppendEntityRequest(Entity entity, int sortKey)
         {
             ProcessedEntities.Add(entity);
-            var poolEntity = SourcePoolLookup[entity].PoolEntity;
-            EntityCommandBuffer.AddComponent<Disabled>(sortKey, entity);
-            EntityCommandBuffer.AppendToBuffer(sortKey, poolEntity, new PooledEntity { Value = entity });
+            EntityCommandBuffer.DestroyEntity(sortKey, entity);
         }
 
         private void AppendParticleRequest(Entity particlePrefab, float3 position, int sortKey)

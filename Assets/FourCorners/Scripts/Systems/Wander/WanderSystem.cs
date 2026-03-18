@@ -4,11 +4,11 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using Random = Unity.Mathematics.Random;
 
 namespace ElementLogicFail.Scripts.Systems.Wander
 {
     [BurstCompile]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct WanderSystem : ISystem
     {
         [BurstCompile]
@@ -50,7 +50,7 @@ namespace ElementLogicFail.Scripts.Systems.Wander
             if (math.distancesq(transform.Position, element.Target) < 0.04f)
             {
                 element.RandomSeed = element.RandomSeed * 1664525u + 1013904223u;
-                var rand = new Unity.Mathematics.Random(element.RandomSeed);
+                var rand = new Random(element.RandomSeed);
                 element.Target = new float3(
                     rand.NextFloat(Area.MinArea.x, Area.MaxArea.x),
                     0,

@@ -61,14 +61,20 @@ namespace ElementLogicFail.Scripts.Tests
         
         public static Entity CreateTestSpawner(EntityManager entityManager, float spawnRate, float timer)
         {
-            Entity entity = entityManager.CreateEntity(typeof(Spawner), typeof(LocalTransform), typeof(ElementSpawnRequest));
+            Entity entity = entityManager.CreateEntity(typeof(Spawner), typeof(LocalTransform), typeof(ElementSpawnRequest), typeof(SpawnerPrefab));
             entityManager.SetComponentData(entity, new Spawner
             {
                 Team = Team.Player1,
                 SpawnInterval = spawnRate,
-                Timer = timer
+                Timer = timer,
+                IsActive = true,
+                SpawnAmount = 1
             });
             entityManager.SetComponentData(entity, LocalTransform.FromPosition(float3.zero));
+            
+            var prefabs = entityManager.GetBuffer<SpawnerPrefab>(entity);
+            prefabs.Add(new SpawnerPrefab { ModelType = UnitModelType.Warrior });
+            
             return entity;
         }
     }
