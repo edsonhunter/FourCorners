@@ -194,31 +194,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbd5cef85363b4d4e8a867320fb97401, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.PoolConfigAuthoring
-  Pools:
+  Prefabs:
   - Prefab: {fileID: 4036081636672898341, guid: 005a6c4a66e1cb64ea3d9181c1c5ec15, type: 3}
-    InitialCount: 100
+    InitialCount: 20
     ModelType: 1
   - Prefab: {fileID: 2981157077527548589, guid: 27c1643188e20f9428146adfcce38722, type: 3}
-    InitialCount: 100
+    InitialCount: 20
     ModelType: 2
   - Prefab: {fileID: 7307109365850241512, guid: 2622608273fda304d8d4045002b4bcd3, type: 3}
-    InitialCount: 100
+    InitialCount: 20
     ModelType: 3
-  - Prefab: {fileID: 2513294134061946814, guid: ca7f57900aa91064398992ea016de566, type: 3}
-    InitialCount: 100
-    ModelType: 4
   - Prefab: {fileID: 28070048135596434, guid: 2af51f89a8c345048940a6b52d6a1e0f, type: 3}
-    InitialCount: 100
+    InitialCount: 20
     ModelType: 5
-  - Prefab: {fileID: 4458253762238066539, guid: 0617ce7ed85d2d54d8a543f8ec16b47b, type: 3}
-    InitialCount: 100
-    ModelType: 6
-  - Prefab: {fileID: 4322852324393453219, guid: 6d00aaaa102f8004c92521899940dd1b, type: 3}
-    InitialCount: 100
-    ModelType: 7
   - Prefab: {fileID: 1893928174618307843, guid: 0130a9760b379a64196f66d1e28847ed, type: 3}
-    InitialCount: 100
+    InitialCount: 20
+    ModelType: 6
+  - Prefab: {fileID: 4458253762238066539, guid: 0617ce7ed85d2d54d8a543f8ec16b47b, type: 3}
+    InitialCount: 20
     ModelType: 8
+  - Prefab: {fileID: 4322852324393453219, guid: 6d00aaaa102f8004c92521899940dd1b, type: 3}
+    InitialCount: 20
+    ModelType: 7
 --- !u!4 &1003808048
 Transform:
   m_ObjectHideFlags: 0
