@@ -20,6 +20,8 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     {
         private NativeParallelHashMap<int, Entity> _modelTypeToPrefab;
         private Random _random;
+        private EntityQuery _prefabQuery;
+        private int _lastPrefabCount;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -29,22 +31,27 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             _modelTypeToPrefab = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
             _random = Random.CreateFromIndex(1234);
+            _prefabQuery = state.GetEntityQuery(ComponentType.ReadOnly<ElementPrefabDescriptor>());
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            _modelTypeToPrefab.Clear();
-            
             var area = SystemAPI.GetSingleton<WanderArea>();
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            var buildMapJob = new BuildPrefabMapJob
+            int currentPrefabCount = _prefabQuery.CalculateEntityCount();
+            if (currentPrefabCount != _lastPrefabCount)
             {
-                ModelTypeToPrefab = _modelTypeToPrefab
-            };
-            state.Dependency = buildMapJob.Schedule(state.Dependency);
+                _modelTypeToPrefab.Clear();
+                var buildMapJob = new BuildPrefabMapJob
+                {
+                    ModelTypeToPrefab = _modelTypeToPrefab
+                };
+                buildMapJob.Run();
+                _lastPrefabCount = currentPrefabCount;
+            }
 
             var prefabLookup = SystemAPI.GetComponentLookup<ElementPrefabDescriptor>(true);
             var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
@@ -57,10 +64,10 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 PathLookup = pathLookup,
                 Ecb = ecb,
                 Area = area,
-                Random = jobRandom
+                Seed = _random.NextUInt()
             };
             
-            state.Dependency = spawnJob.Schedule(state.Dependency);
+            state.Dependency = spawnJob.ScheduleParallel(state.Dependency);
             
             _random.NextUInt(); 
         }
@@ -98,13 +105,15 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPrefab;
         [ReadOnly] public ComponentLookup<ElementPrefabDescriptor> PrefabLookup;
         [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
-        public EntityCommandBuffer Ecb;
+        public EntityCommandBuffer.ParallelWriter Ecb;
         public WanderArea Area;
-        public Random Random;
+        public uint Seed;
 
-        private void Execute(Entity spawnerEntity, DynamicBuffer<ElementSpawnRequest> requestBuffer, RefRO<Components.Spawner.Spawner> spawner)
+        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey, DynamicBuffer<ElementSpawnRequest> requestBuffer, RefRO<Components.Spawner.Spawner> spawner)
         {
             if (requestBuffer.IsEmpty) return;
+
+            var random = Random.CreateFromIndex(Seed + (uint)sortKey);
 
             for (int i = 0; i < requestBuffer.Length; i++)
             {
@@ -117,26 +126,26 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     {
                         if (prefabComponent.Prefab != Entity.Null)
                         {
-                            Entity instance = Ecb.Instantiate(prefabComponent.Prefab);
+                            Entity instance = Ecb.Instantiate(sortKey, prefabComponent.Prefab);
 
                             if (PathLookup.TryGetBuffer(spawnerEntity, out var spawnerPath))
                             {
-                                var instancePath = Ecb.SetBuffer<PathWaypoint>(instance);
+                                var instancePath = Ecb.SetBuffer<PathWaypoint>(sortKey, instance);
                                 instancePath.AddRange(spawnerPath.AsNativeArray());
-                                Ecb.SetComponent(instance, new PathFollower { CurrentIndex = 0 });
+                                Ecb.SetComponent(sortKey, instance, new PathFollower { CurrentIndex = 0 });
                             }
 
-                            Ecb.SetComponent(instance, LocalTransform.FromPosition(request.Position));
-                            Ecb.SetComponent(instance, new ElementData
+                            Ecb.SetComponent(sortKey, instance, LocalTransform.FromPosition(request.Position));
+                            Ecb.SetComponent(sortKey, instance, new ElementData
                             {
                                 Team = request.Type,
                                 TeamColor = (TeamColor)request.Type,
                                 Speed = 2f,
                                 Target = new float3(
-                                    Random.NextFloat(Area.MinArea.x, Area.MaxArea.x),
+                                    random.NextFloat(Area.MinArea.x, Area.MaxArea.x),
                                     0,
-                                    Random.NextFloat(Area.MinArea.z, Area.MaxArea.z)),
-                                RandomSeed = Random.NextUInt(),
+                                    random.NextFloat(Area.MinArea.z, Area.MaxArea.z)),
+                                RandomSeed = random.NextUInt(),
                                 Cooldown = 2f
                             });
                         }
