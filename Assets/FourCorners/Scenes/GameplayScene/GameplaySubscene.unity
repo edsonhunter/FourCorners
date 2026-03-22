@@ -119,52 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &641491441
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 641491443}
-  - component: {fileID: 641491442}
-  m_Layer: 0
-  m_Name: ParticleManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &641491442
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 641491441}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7f3ea3fbb06444096c0c676416d50f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Elf.Authoring::ElementLogicFail.Scripts.Authoring.Particles.ParticleAuthoring
-  particlePrefab: {fileID: 4041738926360207625, guid: c3859e9cd8843b84ab7f2455a52dc544, type: 3}
-  poolSize: 256
---- !u!4 &641491443
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 641491441}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1003808046
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,13 +161,13 @@ MonoBehaviour:
   - Prefab: {fileID: 28070048135596434, guid: 2af51f89a8c345048940a6b52d6a1e0f, type: 3}
     InitialCount: 20
     ModelType: 5
-  - Prefab: {fileID: 1893928174618307843, guid: 0130a9760b379a64196f66d1e28847ed, type: 3}
+  - Prefab: {fileID: 3941283983971403623, guid: 0130a9760b379a64196f66d1e28847ed, type: 3}
     InitialCount: 20
     ModelType: 6
-  - Prefab: {fileID: 4458253762238066539, guid: 0617ce7ed85d2d54d8a543f8ec16b47b, type: 3}
+  - Prefab: {fileID: 743687214949120655, guid: 6d00aaaa102f8004c92521899940dd1b, type: 3}
     InitialCount: 20
     ModelType: 8
-  - Prefab: {fileID: 4322852324393453219, guid: 6d00aaaa102f8004c92521899940dd1b, type: 3}
+  - Prefab: {fileID: 1471599021970926966, guid: c7bd826c3f187dd4bad9d7dd49abe12a, type: 3}
     InitialCount: 20
     ModelType: 7
 --- !u!4 &1003808048
@@ -770,4 +724,3 @@ SceneRoots:
   - {fileID: 6981284260363866967}
   - {fileID: 6392618851777743471}
   - {fileID: 3997631421065333924}
-  - {fileID: 641491443}

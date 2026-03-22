@@ -79,39 +79,5 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3235638746568561028, guid: 9f1abdb401185184d85929b819870f56, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2015855328691494133}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f1abdb401185184d85929b819870f56, type: 3}
---- !u!1 &743687214949120655 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3235638746568561028, guid: 9f1abdb401185184d85929b819870f56, type: 3}
-  m_PrefabInstance: {fileID: 2789232159812954891}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2015855328691494133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743687214949120655}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.NetCode.Authoring.Hybrid::Unity.NetCode.GhostAuthoringComponent
-  DefaultGhostMode: 0
-  SupportedGhostModes: 1
-  OptimizationMode: 0
-  Importance: 1
-  MaxSendRate: 0
-  prefabId: 6d00aaaa102f8004c92521899940dd1b
-  HasOwner: 0
-  SupportAutoCommandTarget: 1
-  TrackInterpolationDelay: 0
-  GhostGroup: 0
-  UsePreSerialization: 0
-  UseSingleBaseline: 0
-  RollbackPredictedSpawnedGhostState: 0
-  RollbackPredictionOnStructuralChanges: 1
