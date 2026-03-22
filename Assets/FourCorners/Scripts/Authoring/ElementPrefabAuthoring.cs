@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ElementLogicFail.Scripts.Components.Element;
-using ElementLogicFail.Scripts.Components.Pool;
 using Unity.Entities;
 using UnityEngine;
-
-using Unity.Entities.Serialization;
 
 namespace ElementLogicFail.Scripts.Authoring
 {

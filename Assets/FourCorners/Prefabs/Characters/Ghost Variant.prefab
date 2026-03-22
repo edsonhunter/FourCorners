@@ -85,9 +85,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3235638746568561028, guid: 9f1abdb401185184d85929b819870f56, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6706886784487297862}
-    - targetCorrespondingSourceObject: {fileID: 3235638746568561028, guid: 9f1abdb401185184d85929b819870f56, type: 3}
-      insertIndex: -1
       addedObject: {fileID: -3376190761264568663}
   m_SourcePrefab: {fileID: 100100000, guid: 9f1abdb401185184d85929b819870f56, type: 3}
 --- !u!1 &4458253762238066539 stripped
@@ -95,19 +92,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3235638746568561028, guid: 9f1abdb401185184d85929b819870f56, type: 3}
   m_PrefabInstance: {fileID: 1241210531508535023}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6706886784487297862
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4458253762238066539}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfdaa6c06fe64fbda2b16e07a4ee0b25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.NetCode.Authoring.Hybrid::Unity.NetCode.GhostAuthoringInspectionComponent
-  ComponentOverrides: []
 --- !u!114 &-3376190761264568663
 MonoBehaviour:
   m_ObjectHideFlags: 0

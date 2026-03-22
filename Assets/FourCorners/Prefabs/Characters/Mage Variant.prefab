@@ -14,15 +14,15 @@ PrefabInstance:
       objectReference: {fileID: -1793059242609255079, guid: 3dcd9b5d84cacd549ad087207017e9dd, type: 3}
     - target: {fileID: 1411776304561787528, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 38.399
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1411776304561787528, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.043
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1411776304561787528, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -135.76163
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1411776304561787528, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
       propertyPath: m_LocalRotation.w
@@ -78,9 +78,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -5662468306555612589}
-    - targetCorrespondingSourceObject: {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 5374706785216654721}
   m_SourcePrefab: {fileID: 100100000, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
 --- !u!1 &7307109365850241512 stripped
@@ -88,19 +85,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1791434008262363186, guid: c641fc27823701a4bb10d34b85ef7c98, type: 3}
   m_PrefabInstance: {fileID: 9057973592861880794}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &-5662468306555612589
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7307109365850241512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfdaa6c06fe64fbda2b16e07a4ee0b25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.NetCode.Authoring.Hybrid::Unity.NetCode.GhostAuthoringInspectionComponent
-  ComponentOverrides: []
 --- !u!114 &5374706785216654721
 MonoBehaviour:
   m_ObjectHideFlags: 0

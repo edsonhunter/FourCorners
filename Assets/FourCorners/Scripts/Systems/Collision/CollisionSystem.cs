@@ -1,7 +1,4 @@
 using ElementLogicFail.Scripts.Components.Element;
-using ElementLogicFail.Scripts.Components.Particles;
-using ElementLogicFail.Scripts.Components.Pool;
-using ElementLogicFail.Scripts.Components.Request;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -40,9 +37,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             _localTransformLookup.Update(ref state);
 
             _processedEntities.Clear();
-
-            bool hasParticles = SystemAPI.TryGetSingletonEntity<ParticlePrefabs>(out var particleManagerEntity);
-            var particlePrefabLookup = SystemAPI.GetComponentLookup<ParticlePrefabs>(true);
             
             SimulationSingleton simulation = SystemAPI.GetSingleton<SimulationSingleton>();
             EndSimulationEntityCommandBufferSystem.Singleton endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
@@ -52,9 +46,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             {
                 ElementLookup = _elementLookup,
                 LocalTransformLookup = _localTransformLookup,
-                ParticlePrefabLookup = particlePrefabLookup,
-                ParticleManagerEntity = particleManagerEntity,
-                HasParticle = hasParticles,
                 EntityCommandBuffer = parallelWriter,
                 ProcessedEntities = _processedEntities
             };
@@ -74,9 +65,6 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     {
         [ReadOnly] public ComponentLookup<ElementData> ElementLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
-        [ReadOnly] public ComponentLookup<ParticlePrefabs> ParticlePrefabLookup;
-        [ReadOnly] public Entity ParticleManagerEntity;
-        [ReadOnly] public bool HasParticle;
         public NativeHashSet<Entity> ProcessedEntities;
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
 
@@ -117,27 +105,12 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             {
                 AppendEntityRequest(b, collisionEvent.BodyIndexB);
             }
-            
-            if (HasParticle)
-            {
-                var particlePrefabs = ParticlePrefabLookup[ParticleManagerEntity];
-                AppendParticleRequest(particlePrefabs.ParticlePrefab, position, collisionEvent.BodyIndexA);
-            }
         }
 
         private void AppendEntityRequest(Entity entity, int sortKey)
         {
             ProcessedEntities.Add(entity);
             EntityCommandBuffer.DestroyEntity(sortKey, entity);
-        }
-
-        private void AppendParticleRequest(Entity particlePrefab, float3 position, int sortKey)
-        {
-            EntityCommandBuffer.AppendToBuffer(sortKey, ParticleManagerEntity, new ParticleSpawnRequest
-            {
-                Prefab = particlePrefab,
-                Position = position,
-            });
         }
     }
 }

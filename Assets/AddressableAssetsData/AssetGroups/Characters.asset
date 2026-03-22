@@ -40,11 +40,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6639aad46ffb9d443a45da857e0399ea
-    m_Address: Vampire Variant
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6d00aaaa102f8004c92521899940dd1b
     m_Address: Zombie Variant
     m_ReadOnly: 0
