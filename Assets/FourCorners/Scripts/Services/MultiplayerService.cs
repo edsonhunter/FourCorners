@@ -77,7 +77,7 @@ namespace ElementLogicFail.Scripts.Services
                 var serverWorld = ClientServerBootstrap.ServerWorld;
                 var serverNetDebug = serverWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 var driverStore = new NetworkDriverStore();
-                var serverRelayConstructor = new RelayDriverConstructor(serverRelayData, clientRelayData, false);
+                var serverRelayConstructor = new RelayDriverConstructor(serverRelayData, default, false);
                 serverRelayConstructor.CreateServerDriver(serverWorld, ref driverStore, serverNetDebug);
 
                 var serverDriverQuery = serverWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));
@@ -90,7 +90,7 @@ namespace ElementLogicFail.Scripts.Services
                 var clientWorld = ClientServerBootstrap.ClientWorld;
                 var clientNetDebug = clientWorld.EntityManager.CreateEntityQuery(typeof(NetDebug)).GetSingleton<NetDebug>();
                 var clientDriverStore = new NetworkDriverStore();
-                var clientRelayConstructor = new RelayDriverConstructor(serverRelayData, clientRelayData, false);
+                var clientRelayConstructor = new RelayDriverConstructor(default, clientRelayData, false);
                 clientRelayConstructor.CreateClientDriver(clientWorld, ref clientDriverStore, clientNetDebug);
 
                 var clientDriverQuery = clientWorld.EntityManager.CreateEntityQuery(typeof(NetworkStreamDriver));

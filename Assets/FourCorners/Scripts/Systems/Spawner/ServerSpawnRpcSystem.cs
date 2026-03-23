@@ -48,10 +48,9 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     {
                         var spawner = SystemAPI.GetComponentRW<Components.Spawner.Spawner>(spawnerEntity);
                         
-                        if (spawner.ValueRO.Timer >= spawner.ValueRO.SpawnInterval && spawner.ValueRO.SpawnAmount > 0)
+                        // Removed the spawner.Timer check to decouple manual RPC spawns from the automatic wave timer.
+                        if (spawner.ValueRO.SpawnAmount > 0)
                         {
-                            spawner.ValueRW.Timer = 0; // Reset Cooldown
-                            
                             var position = SystemAPI.GetComponent<LocalTransform>(spawnerEntity).Position;
 
                             for (int i = 0; i < spawner.ValueRO.SpawnAmount; i++)

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using ElementLogicFail.Scripts.Manager.Interface;
 using ElementLogicFail.Scripts.Scenes.Interface;
 using ElementLogicFail.Scripts.Services.Interface;
@@ -15,7 +15,6 @@ namespace ElementLogicFail.Scripts.Scenes
             
             await addressablesService.PreloadDependenciesAsync("Characters");
             await addressablesService.PreloadDependenciesAsync("Buildings");
-            await addressablesService.PreloadDependenciesAsync("Particles");
         }
 
         protected override void Loaded()

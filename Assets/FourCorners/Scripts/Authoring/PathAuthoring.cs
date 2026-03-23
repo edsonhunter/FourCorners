@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using ElementLogicFail.Scripts.Components.Path;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Authoring

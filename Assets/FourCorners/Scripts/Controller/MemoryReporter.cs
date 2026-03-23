@@ -49,10 +49,7 @@ namespace ElementLogicFail.Scripts.Controller
         private void CreateQueries()
         {
             _totalElementsQuery = _entityManager.CreateEntityQuery(typeof(ElementData));
-            _activeElementsQuery = _entityManager.CreateEntityQuery(
-                ComponentType.ReadOnly<ElementData>(),
-                ComponentType.Exclude<Disabled>() 
-            );
+            _activeElementsQuery = _entityManager.CreateEntityQuery(ComponentType.ReadOnly<ElementData>());
         }
 
         void OnEnable()

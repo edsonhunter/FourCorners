@@ -13,66 +13,86 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     /// Runs on clients only (PresentationSystemGroup doesn't exist on server).
     /// </summary>
     [BurstCompile]
-    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct BaseVisibilitySystem : ISystem
     {
         private BufferLookup<LinkedEntityGroup> _linkedEntityGroupLookup;
+        private ComponentLookup<DisableRendering> _disableRenderingLookup;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PlayerBase>();
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             _linkedEntityGroupLookup = state.GetBufferLookup<LinkedEntityGroup>(true);
+            _disableRenderingLookup = state.GetComponentLookup<DisableRendering>(true);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             _linkedEntityGroupLookup.Update(ref state);
-            var ecb = new EntityCommandBuffer(Allocator.TempJob);
+            _disableRenderingLookup.Update(ref state);
 
-            foreach (var (playerBase, entity) in SystemAPI.Query<RefRO<PlayerBase>>().WithEntityAccess())
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
+
+            var job = new UpdateVisibilityJob
             {
-                bool shouldBeHidden = !playerBase.ValueRO.IsActive;
-                bool hasDisableRendering = SystemAPI.HasComponent<DisableRendering>(entity);
+                Ecb = ecb,
+                LinkedGroupLookup = _linkedEntityGroupLookup,
+                DisableRenderingLookup = _disableRenderingLookup
+            };
 
-                if (shouldBeHidden && !hasDisableRendering)
+            state.Dependency = job.ScheduleParallel(state.Dependency);
+        }
+    }
+
+    [BurstCompile]
+    public partial struct UpdateVisibilityJob : IJobEntity
+    {
+        public EntityCommandBuffer.ParallelWriter Ecb;
+        [ReadOnly] public BufferLookup<LinkedEntityGroup> LinkedGroupLookup;
+        [ReadOnly] public ComponentLookup<DisableRendering> DisableRenderingLookup;
+
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<PlayerBase> playerBase)
+        {
+            bool shouldBeHidden = !playerBase.ValueRO.IsActive;
+            bool hasDisableRendering = DisableRenderingLookup.HasComponent(entity);
+
+            if (shouldBeHidden && !hasDisableRendering)
+            {
+                // Hide root entity
+                Ecb.AddComponent<DisableRendering>(sortKey, entity);
+
+                // Also hide all children via LinkedEntityGroup
+                if (LinkedGroupLookup.TryGetBuffer(entity, out var linkedGroup))
                 {
-                    // Hide root entity
-                    ecb.AddComponent<DisableRendering>(entity);
-
-                    // Also hide all children via LinkedEntityGroup
-                    if (_linkedEntityGroupLookup.TryGetBuffer(entity, out var linkedGroup))
+                    for (int i = 0; i < linkedGroup.Length; i++)
                     {
-                        for (int i = 0; i < linkedGroup.Length; i++)
-                        {
-                            var child = linkedGroup[i].Value;
-                            if (child != entity)
-                                ecb.AddComponent<DisableRendering>(child);
-                        }
-                    }
-                }
-                else if (!shouldBeHidden && hasDisableRendering)
-                {
-                    // Show root entity
-                    ecb.RemoveComponent<DisableRendering>(entity);
-
-                    // Also show all children via LinkedEntityGroup
-                    if (_linkedEntityGroupLookup.TryGetBuffer(entity, out var linkedGroup))
-                    {
-                        for (int i = 0; i < linkedGroup.Length; i++)
-                        {
-                            var child = linkedGroup[i].Value;
-                            if (child != entity)
-                                ecb.RemoveComponent<DisableRendering>(child);
-                        }
+                        var child = linkedGroup[i].Value;
+                        if (child != entity)
+                            Ecb.AddComponent<DisableRendering>(sortKey, child);
                     }
                 }
             }
+            else if (!shouldBeHidden && hasDisableRendering)
+            {
+                // Show root entity
+                Ecb.RemoveComponent<DisableRendering>(sortKey, entity);
 
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
+                // Also show all children via LinkedEntityGroup
+                if (LinkedGroupLookup.TryGetBuffer(entity, out var linkedGroup))
+                {
+                    for (int i = 0; i < linkedGroup.Length; i++)
+                    {
+                        var child = linkedGroup[i].Value;
+                        if (child != entity)
+                            Ecb.RemoveComponent<DisableRendering>(sortKey, child);
+                    }
+                }
+            }
         }
     }
 }

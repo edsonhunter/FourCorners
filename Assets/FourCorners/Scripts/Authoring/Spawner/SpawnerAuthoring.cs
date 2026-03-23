@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using ElementLogicFail.Scripts.Components.Element;
 using Unity.Entities;
 using UnityEngine;
