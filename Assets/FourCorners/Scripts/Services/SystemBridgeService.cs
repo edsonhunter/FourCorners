@@ -32,5 +32,18 @@ namespace ElementLogicFail.Scripts.Services
             
             return (Vector3.zero, Vector3.zero);
         }
+
+        public void NotifyClientSceneReady()
+        {
+            foreach (var world in World.All)
+            {
+                if (world.IsClient())
+                {
+                    var entityManager = world.EntityManager;
+                    entityManager.CreateEntity(typeof(SceneLoadedTag));
+                    break;
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Scenes;
 
 namespace ElementLogicFail.Scripts.Systems.Connection
 {
@@ -9,16 +10,25 @@ namespace ElementLogicFail.Scripts.Systems.Connection
     public partial struct ClientRequestGameSystem : ISystem
     {
         private EntityQuery _pendingNetworkIdQuery;
+        private EntityQuery _sceneQuery;
 
         public void OnCreate(ref SystemState state)
         {
             var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<NetworkId>().WithNone<NetworkStreamInGame>();
             _pendingNetworkIdQuery = state.GetEntityQuery(builder);
             state.RequireForUpdate(_pendingNetworkIdQuery);
+            
+            _sceneQuery = state.GetEntityQuery(ComponentType.ReadOnly<SceneReference>());
         }
 
         public void OnUpdate(ref SystemState state)
         {
+            using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
+            foreach (var sceneEntity in sceneEntities)
+            {
+                if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity)) return;
+            }
+
             var ecb = new EntityCommandBuffer(Allocator.Temp);
             using var connectionEntities = _pendingNetworkIdQuery.ToEntityArray(Allocator.Temp);
             foreach (var entity in connectionEntities)
@@ -31,6 +41,7 @@ namespace ElementLogicFail.Scripts.Systems.Connection
             }
 
             ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 }
