@@ -1,12 +1,19 @@
+using System;
 using ElementLogicFail.Scripts.Components.Bounds;
+using ElementLogicFail.Scripts.Components.Request;
 using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Systems.Camera;
 using Unity.Entities;
+using Unity.Mathematics;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Services
 {
     public class SystemBridgeService : ISystemBridgeService
     {
+        public Action<Vector3> OnCameraFocus { get; set; }
+
         public (Vector3 min, Vector3 max) GetMapBounds()
         {
             if (World.DefaultGameObjectInjectionWorld == null)

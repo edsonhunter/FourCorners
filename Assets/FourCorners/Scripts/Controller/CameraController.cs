@@ -1,4 +1,7 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface.Camera;
+using ElementLogicFail.Scripts.Manager.Interface.Camera;
+using FourCorners.Scripts.Systems.Camera;
+using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace ElementLogicFail.Scripts.Controller
@@ -24,6 +27,7 @@ namespace ElementLogicFail.Scripts.Controller
         private Vector2 _zoomLimits = new Vector2(3f, 15f);
 
         private bool _isInitialized;
+        private LocalPlayerCameraSystem _cameraSystem;
 
         public void Setup()
         {
@@ -43,9 +47,11 @@ namespace ElementLogicFail.Scripts.Controller
             }
         }
         
-        public void Init(ICameraManager cameraManager, Vector3 min, Vector3 max)
+        public void Init(ICameraManager cameraManager, Vector3 min,
+            Vector3 max)
         {
             _cameraManager = cameraManager;
+            RegisterCameraBridge();
             _cameraManager.Initialize(min, max);
             _isInitialized = true;
             SetActiveControls(true);
@@ -67,6 +73,33 @@ namespace ElementLogicFail.Scripts.Controller
 
             ProcessInput();
             MoveRig();
+        }
+
+        private void OnDestroy()
+        {
+            if (_cameraSystem != null)
+            {
+                _cameraSystem.OnCameraFocus -= MoveCameraToPlayerBase;
+            }
+        }
+
+        private void RegisterCameraBridge()
+        {
+            foreach (var world in World.All)
+            {
+                _cameraSystem = world.GetExistingSystemManaged<LocalPlayerCameraSystem>();
+                if (_cameraSystem != null)
+                {
+                    _cameraSystem.OnCameraFocus -= MoveCameraToPlayerBase;
+                    _cameraSystem.OnCameraFocus += MoveCameraToPlayerBase;
+                    break;
+                }
+            }
+        }
+        
+        public void MoveCameraToPlayerBase(float3 pos)
+        {
+            SnapPosition(pos);
         }
 
         private void ProcessInput()
@@ -160,6 +193,35 @@ namespace ElementLogicFail.Scripts.Controller
             else
             {
                 _cameraManager.InputHandler?.DisableControls();
+            }
+        }
+
+        private void SnapPosition(Vector3 groundPosition)
+        {
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+            Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+
+            if (groundPlane.Raycast(ray, out float enter))
+            {
+                Vector3 currentLookPoint = ray.GetPoint(enter);
+                Vector3 rigToGroundOffset = transform.position - currentLookPoint;
+
+                _targetPosition = groundPosition + rigToGroundOffset;
+                
+                Vector2 limitX = _cameraManager.BoundsCalculator.MapLimitX;
+                Vector2 limitZ = _cameraManager.BoundsCalculator.MapLimitZ;
+                _targetPosition.x = Mathf.Clamp(_targetPosition.x, limitX.x, limitX.y);
+                _targetPosition.z = Mathf.Clamp(_targetPosition.z, limitZ.x, limitZ.y);
+
+                transform.position = _targetPosition;
+                
+            }
+            else
+            {
+                // Fallback for flat camera
+                _targetPosition = groundPosition;
+                _targetPosition.y = transform.position.y;
+                transform.position = _targetPosition;
             }
         }
     }

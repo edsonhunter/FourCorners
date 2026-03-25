@@ -14,16 +14,14 @@ namespace ElementLogicFail.Scripts.Scenes
 
         protected override Task Loading()
         {
+            GetService<ISystemBridgeService>().NotifyClientSceneReady();
             return WaitAndInitCameraAsync();
         }
 
         protected override void Loaded()
         {
-            if (cameraController != null)
-            {
-                var cameraManager = GetManager<ICameraManager>();
-                cameraController.Init(cameraManager, _bounds.min, _bounds.max);
-            }
+            var cameraManager = GetManager<ICameraManager>();
+            cameraController.Init(cameraManager, _bounds.min, _bounds.max);
         }
 
         private async Task WaitAndInitCameraAsync()
