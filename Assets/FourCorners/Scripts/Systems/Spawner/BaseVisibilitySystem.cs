@@ -14,7 +14,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     /// </summary>
     [BurstCompile]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct BaseVisibilitySystem : ISystem
     {
         private BufferLookup<LinkedEntityGroup> _linkedEntityGroupLookup;
