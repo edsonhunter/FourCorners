@@ -9,7 +9,7 @@ using Unity.Transforms;
 
 namespace FourCorners.Scripts.Systems.Camera
 {
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial class LocalPlayerCameraSystem : SystemBase
     {
         public Action<float3> OnCameraFocus;
