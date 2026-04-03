@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using ElementLogicFail.Scripts.Components.Request;
 using ElementLogicFail.Scripts.Components.Spawner;
 using Unity.Entities;
@@ -10,10 +10,10 @@ namespace ElementLogicFail.Scripts.Tests
 {
     public static class EntityTest
     {
-        public static Entity CreateElement(EntityManager manager, Team type, float speed, int cooldown)
+        public static Entity CreateMinion(EntityManager manager, Team type, float speed, int cooldown)
         {
             var entity = manager.CreateEntity();
-            manager.SetComponentData(entity, new ElementData()
+            manager.SetComponentData(entity, new MinionData()
             {
                 Team= type,
                 Speed = speed,
@@ -25,9 +25,9 @@ namespace ElementLogicFail.Scripts.Tests
             return entity;
         }
 
-        public static ElementData CreateElementData(Team type, float speed, float cooldown)
+        public static MinionData CreateMinionData(Team type, float speed, float cooldown)
         {
-            return new ElementData()
+            return new MinionData()
             {
                 Team = type,
                 Speed = speed,
@@ -37,13 +37,13 @@ namespace ElementLogicFail.Scripts.Tests
             };
         }
         
-        public static Entity CreateTestElement(EntityManager entityManager, Team type, float cooldown, float3 position)
+        public static Entity CreateTestMinion(EntityManager entityManager, Team type, float cooldown, float3 position)
         {
             var entity = entityManager.CreateEntity(
                 typeof(LocalTransform),
                 typeof(PhysicsCollider),
                 typeof(PhysicsVelocity),
-                typeof(ElementData));
+                typeof(MinionData));
             
             entityManager.AddComponentData(entity, new PhysicsMass
             {
@@ -55,13 +55,13 @@ namespace ElementLogicFail.Scripts.Tests
             var capsule = CapsuleCollider.Create(new CapsuleGeometry { Vertex0 = float3.zero, Vertex1 = new float3(0, 1, 0), Radius = 0.5f });
             entityManager.SetComponentData(entity, new LocalTransform { Position = position, Scale = 1 });
             entityManager.SetComponentData(entity, new PhysicsCollider { Value = capsule });
-            entityManager.SetComponentData(entity, CreateElementData(type, 2, cooldown));
+            entityManager.SetComponentData(entity, CreateMinionData(type, 2, cooldown));
             return entity;
         }
         
         public static Entity CreateTestSpawner(EntityManager entityManager, float spawnRate, float timer)
         {
-            Entity entity = entityManager.CreateEntity(typeof(Spawner), typeof(LocalTransform), typeof(ElementSpawnRequest), typeof(SpawnerPrefab));
+            Entity entity = entityManager.CreateEntity(typeof(Spawner), typeof(LocalTransform), typeof(MinionSpawnRequest), typeof(SpawnerPrefab));
             entityManager.SetComponentData(entity, new Spawner
             {
                 Team = Team.Player1,

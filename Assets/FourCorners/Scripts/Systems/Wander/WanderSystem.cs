@@ -1,5 +1,5 @@
-﻿using ElementLogicFail.Scripts.Components.Bounds;
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Bounds;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -45,20 +45,20 @@ namespace ElementLogicFail.Scripts.Systems.Wander
         public float DeltaTime;
         public WanderArea Area;
 
-        private void Execute(ref ElementData element, ref LocalTransform transform)
+        private void Execute(ref MinionData minion, ref LocalTransform transform)
         {
-            if (math.distancesq(transform.Position, element.Target) < 0.04f)
+            if (math.distancesq(transform.Position, minion.Target) < 0.04f)
             {
-                element.RandomSeed = element.RandomSeed * 1664525u + 1013904223u;
-                var rand = new Random(element.RandomSeed);
-                element.Target = new float3(
+                minion.RandomSeed = minion.RandomSeed * 1664525u + 1013904223u;
+                var rand = new Random(minion.RandomSeed);
+                minion.Target = new float3(
                     rand.NextFloat(Area.MinArea.x, Area.MaxArea.x),
                     0,
                     rand.NextFloat(Area.MinArea.z, Area.MaxArea.z));
-                element.RandomSeed = rand.NextUInt();
+                minion.RandomSeed = rand.NextUInt();
             }
             
-            float3 direction = math.normalizesafe(element.Target - transform.Position);
+            float3 direction = math.normalizesafe(minion.Target - transform.Position);
             
             // Apply rotation to face movement direction
             if (math.lengthsq(direction) > 0.001f)
@@ -66,7 +66,7 @@ namespace ElementLogicFail.Scripts.Systems.Wander
                 transform.Rotation = quaternion.LookRotationSafe(direction, math.up());
             }
 
-            transform.Position += direction * element.Speed * DeltaTime;
+            transform.Position += direction * minion.Speed * DeltaTime;
         }
     }
 }

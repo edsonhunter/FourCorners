@@ -1,4 +1,4 @@
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -9,8 +9,8 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(ElementSpawningSystem))]
-    public partial struct ElementDestructionSystem : ISystem
+    [UpdateAfter(typeof(MinionSpawningSystem))]
+    public partial struct MinionDestructionSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -41,7 +41,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     {
         public EntityCommandBuffer.ParallelWriter Ecb;
 
-        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<ElementData> data, RefRO<ElementDestructionTag> destructionTag)
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<MinionData> data, RefRO<MinionDestructionTag> destructionTag)
         {
             Ecb.DestroyEntity(sortKey, entity);
         }

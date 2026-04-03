@@ -1,4 +1,5 @@
-﻿using ElementLogicFail.Scripts.Components.Request;
+using ElementLogicFail.Scripts.Components.Minion;
+using ElementLogicFail.Scripts.Components.Request;
 using ElementLogicFail.Scripts.Systems.Spawner;
 using ElementLogicFail.Scripts.Tests.Editor;
 using NUnit.Framework;
@@ -21,7 +22,7 @@ namespace ElementLogicFail.Scripts.Tests.Systems
             World.GetOrCreateSystem<SpawnerSystem>().Update(World.Unmanaged);
             World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>().Update();
             
-            var buffer = entityManager.GetBuffer<ElementSpawnRequest>(spawnerEntity);
+            var buffer = entityManager.GetBuffer<MinionSpawnRequest>(spawnerEntity);
             Assert.AreEqual(1, buffer.Length);
         }
         
@@ -33,7 +34,7 @@ namespace ElementLogicFail.Scripts.Tests.Systems
             World.GetOrCreateSystem<SpawnerSystem>().Update(World.Unmanaged);
             World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>().Update();
             
-            var buffer = EntityManager.GetBuffer<ElementSpawnRequest>(spawnerEntity);
+            var buffer = EntityManager.GetBuffer<MinionSpawnRequest>(spawnerEntity);
             Assert.AreEqual(0, buffer.Length);
         }
     }

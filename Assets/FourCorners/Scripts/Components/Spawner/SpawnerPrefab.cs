@@ -1,4 +1,4 @@
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Entities;
 
 namespace ElementLogicFail.Scripts.Components.Spawner

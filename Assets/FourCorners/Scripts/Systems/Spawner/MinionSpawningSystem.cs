@@ -1,5 +1,5 @@
 using ElementLogicFail.Scripts.Components.Bounds;
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using ElementLogicFail.Scripts.Components.Path;
 using ElementLogicFail.Scripts.Components.Request;
 using Unity.Burst;
@@ -14,7 +14,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     [UpdateAfter(typeof(SpawnerSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct ElementSpawningSystem : ISystem
+    public partial struct MinionSpawningSystem : ISystem
     {
         private NativeParallelHashMap<int, Entity> _modelTypeToPrefab;
         private Random _random;
@@ -29,7 +29,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
             _modelTypeToPrefab = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
             _random = Random.CreateFromIndex(1234);
-            _prefabQuery = state.GetEntityQuery(ComponentType.ReadOnly<ElementPrefabDescriptor>());
+            _prefabQuery = state.GetEntityQuery(ComponentType.ReadOnly<MinionPrefabDescriptor>());
         }
 
         [BurstCompile]
@@ -51,7 +51,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 _lastPrefabCount = currentPrefabCount;
             }
 
-            var prefabLookup = SystemAPI.GetComponentLookup<ElementPrefabDescriptor>(true);
+            var prefabLookup = SystemAPI.GetComponentLookup<MinionPrefabDescriptor>(true);
             var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
             var jobRandom = new Random(_random.NextUInt());
 
@@ -85,7 +85,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     {
         public NativeParallelHashMap<int, Entity> ModelTypeToPrefab;
 
-        private void Execute(Entity entity, RefRO<ElementPrefabDescriptor> prefabDesc)
+        private void Execute(Entity entity, RefRO<MinionPrefabDescriptor> prefabDesc)
         {
             if (prefabDesc.ValueRO.ModelType != UnitModelType.None)
             {
@@ -101,13 +101,13 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     public partial struct ProcessSpawningJob : IJobEntity
     {
         [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPrefab;
-        [ReadOnly] public ComponentLookup<ElementPrefabDescriptor> PrefabLookup;
+        [ReadOnly] public ComponentLookup<MinionPrefabDescriptor> PrefabLookup;
         [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
         public EntityCommandBuffer.ParallelWriter Ecb;
         public WanderArea Area;
         public uint Seed;
 
-        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey, DynamicBuffer<ElementSpawnRequest> requestBuffer, RefRO<Components.Spawner.Spawner> spawner)
+        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey, DynamicBuffer<MinionSpawnRequest> requestBuffer, RefRO<Components.Spawner.Spawner> spawner)
         {
             if (requestBuffer.IsEmpty) return;
 
@@ -134,7 +134,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                             }
 
                             Ecb.SetComponent(sortKey, instance, LocalTransform.FromPosition(request.Position));
-                            Ecb.SetComponent(sortKey, instance, new ElementData
+                            Ecb.SetComponent(sortKey, instance, new MinionData
                             {
                                 Team = request.Type,
                                 TeamColor = (TeamColor)request.Type,

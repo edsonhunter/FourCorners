@@ -1,10 +1,10 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Entities;
 using Unity.Mathematics;
 
 namespace ElementLogicFail.Scripts.Components.Request
 {
-    public struct ElementSpawnRequest : IBufferElementData
+    public struct MinionSpawnRequest : IBufferElementData
     {
         public Team Type;
         public UnitModelType ModelType;

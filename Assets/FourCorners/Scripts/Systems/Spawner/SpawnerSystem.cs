@@ -9,7 +9,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateBefore(typeof(ElementSpawningSystem))] // Explicitly guarantee order
+    [UpdateBefore(typeof(MinionSpawningSystem))] // Explicitly guarantee order
     public partial struct SpawnerSystem : ISystem
     {
         [BurstCompile]
@@ -80,7 +80,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                     var randomPrefabIndex = random.NextInt(0, prefabs.Length);
                     var selectedType = prefabs[randomPrefabIndex].ModelType;
 
-                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    Ecb.AppendToBuffer(sortKey, entity, new MinionSpawnRequest
                     {
                         Type = spawner.Team,
                         ModelType = selectedType,

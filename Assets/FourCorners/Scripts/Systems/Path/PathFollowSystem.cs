@@ -1,4 +1,4 @@
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using ElementLogicFail.Scripts.Components.Path;
 using Unity.Burst;
 using Unity.Entities;
@@ -33,14 +33,14 @@ namespace ElementLogicFail.Scripts.Systems.Path
         public float DeltaTime;
         public float ElapsedTime;
 
-        private void Execute(RefRW<LocalTransform> transform, RefRW<PathFollower> follower, RefRW<ElementData> element, DynamicBuffer<PathWaypoint> buffer)
+        private void Execute(RefRW<LocalTransform> transform, RefRW<PathFollower> follower, RefRW<MinionData> minion, DynamicBuffer<PathWaypoint> buffer)
         {
             if (buffer.IsEmpty) return;
 
             var followerRW = follower.ValueRW;
             var currentTarget = buffer[followerRW.CurrentIndex].Position;
             
-            element.ValueRW.Target = currentTarget;
+            minion.ValueRW.Target = currentTarget;
             
             float3 forwardDirection = currentTarget - transform.ValueRO.Position;
             forwardDirection.y = 0;
@@ -55,7 +55,7 @@ namespace ElementLogicFail.Scripts.Systems.Path
             float3 rightDirection = math.cross(new float3(0, 1, 0), forwardDirection);
             
             // Generate a smooth Perlin Noise value based on the simulation elapsed time and the unit's unique random seed
-            float noiseValue = noise.cnoise(new float2(ElapsedTime * 2f, element.ValueRO.RandomSeed * 0.001f));
+            float noiseValue = noise.cnoise(new float2(ElapsedTime * 2f, minion.ValueRO.RandomSeed * 0.001f));
             
             // Combine Forward and Right directions, scaled by the Noise
             // This produces a snaking/wandering trajectory while still progressing towards the True Forward line.
@@ -69,7 +69,7 @@ namespace ElementLogicFail.Scripts.Systems.Path
             }
 
             // Apply drift
-            transform.ValueRW.Position += finalDirection * element.ValueRO.Speed * DeltaTime;
+            transform.ValueRW.Position += finalDirection * minion.ValueRO.Speed * DeltaTime;
 
             // Check distance
             if (math.distancesq(transform.ValueRO.Position, currentTarget) < 0.2f * 0.2f)

@@ -1,4 +1,4 @@
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -15,7 +15,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial struct CollisionSystem : ISystem
     {
-        private ComponentLookup<ElementData> _elementLookup;
+        private ComponentLookup<MinionData> _minionLookup;
         private ComponentLookup<LocalTransform> _localTransformLookup;
         private NativeHashSet<Entity> _processedEntities;
         
@@ -25,15 +25,15 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<SimulationSingleton>();
             
-            _elementLookup = SystemAPI.GetComponentLookup<ElementData>(true);
-            _localTransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
+            _minionLookup = state.GetComponentLookup<MinionData>(true);
+            _localTransformLookup = state.GetComponentLookup<LocalTransform>(true);
             _processedEntities = new NativeHashSet<Entity>(128, Allocator.Persistent);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            _elementLookup.Update(ref state);
+            _minionLookup.Update(ref state);
             _localTransformLookup.Update(ref state);
 
             _processedEntities.Clear();
@@ -44,7 +44,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             
             var job = new CollisionEventJob
             {
-                ElementLookup = _elementLookup,
+                MinionLookup = _minionLookup,
                 LocalTransformLookup = _localTransformLookup,
                 EntityCommandBuffer = parallelWriter,
                 ProcessedEntities = _processedEntities
@@ -63,7 +63,7 @@ namespace ElementLogicFail.Scripts.Systems.Collision
     
     public struct CollisionEventJob : ICollisionEventsJob
     {
-        [ReadOnly] public ComponentLookup<ElementData> ElementLookup;
+        [ReadOnly] public ComponentLookup<MinionData> MinionLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
         public NativeHashSet<Entity> ProcessedEntities;
         public EntityCommandBuffer.ParallelWriter EntityCommandBuffer;
@@ -73,13 +73,13 @@ namespace ElementLogicFail.Scripts.Systems.Collision
             Entity a = collisionEvent.EntityA;
             Entity b = collisionEvent.EntityB;
 
-            if (!ElementLookup.HasComponent(a) || !ElementLookup.HasComponent(b))
+            if (!MinionLookup.HasComponent(a) || !MinionLookup.HasComponent(b))
             {
                 return;
             }
             
-            var dataA = ElementLookup[a];
-            var dataB = ElementLookup[b];
+            var dataA = MinionLookup[a];
+            var dataB = MinionLookup[b];
 
             if (dataA.Team == dataB.Team)
             {

@@ -1,11 +1,10 @@
-using ElementLogicFail.Scripts.Components.Element;
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Components.Element
+namespace ElementLogicFail.Scripts.Components.Minion
 {
-    public struct ElementPrefabDescriptor : IComponentData
+    public struct MinionPrefabDescriptor : IComponentData
     {
-        public int ElementType;
+        public int MinionType;
         public UnitModelType ModelType;
         public Unity.Entities.Serialization.EntityPrefabReference PrefabReference;
         public Entity Prefab;

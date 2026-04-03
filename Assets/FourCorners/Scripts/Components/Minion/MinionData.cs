@@ -2,9 +2,9 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Components.Element
+namespace ElementLogicFail.Scripts.Components.Minion
 {
-    public struct ElementData : IComponentData
+    public struct MinionData : IComponentData
     {
         [GhostField] public Team Team;
         [GhostField] public TeamColor TeamColor;

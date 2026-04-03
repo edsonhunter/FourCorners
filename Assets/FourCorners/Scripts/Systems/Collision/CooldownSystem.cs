@@ -1,4 +1,4 @@
-﻿using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -18,11 +18,11 @@ namespace ElementLogicFail.Scripts.Systems.Collision
         public void OnUpdate(ref SystemState state)
         {
             float deltaTime = SystemAPI.Time.DeltaTime;
-            foreach (RefRW<ElementData> elementData in SystemAPI.Query<RefRW<ElementData>>())
+            foreach (RefRW<MinionData> minionData in SystemAPI.Query<RefRW<MinionData>>())
             {
-                if (elementData.ValueRO.Cooldown > 0f)
+                if (minionData.ValueRO.Cooldown > 0f)
                 {
-                    elementData.ValueRW.Cooldown = math.max(0f, elementData.ValueRO.Cooldown - deltaTime);
+                    minionData.ValueRW.Cooldown = math.max(0f, minionData.ValueRO.Cooldown - deltaTime);
                 }
             }
         }

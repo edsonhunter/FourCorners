@@ -1,4 +1,4 @@
-﻿namespace ElementLogicFail.Scripts.Components.Element
+namespace ElementLogicFail.Scripts.Components.Minion
 {
     public enum Team
     {

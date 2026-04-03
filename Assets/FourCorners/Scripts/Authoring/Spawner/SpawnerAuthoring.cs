@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ElementLogicFail.Scripts.Components.Element;
+using ElementLogicFail.Scripts.Components.Minion;
 using Unity.Entities;
 using UnityEngine;
 
@@ -46,7 +46,7 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
                     SpawnerEntity = entity
                 });
 
-                AddBuffer<Components.Request.ElementSpawnRequest>(entity);
+                AddBuffer<Components.Request.MinionSpawnRequest>(entity);
                 
                 var buffer = AddBuffer<Components.Path.PathWaypoint>(entity);
                 if (authoring.Waypoints != null)
