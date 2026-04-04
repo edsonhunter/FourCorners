@@ -1,9 +1,9 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 
-namespace ElementLogicFail.Scripts.Authoring.Minion
+namespace FourCorners.Scripts.Authoring.Minion
 {
     public class MinionAuthoring : MonoBehaviour
     {

@@ -1,8 +1,8 @@
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace ElementLogicFail.Scripts.Components.Request
+namespace FourCorners.Scripts.Components.Request
 {
     public struct MinionSpawnRequest : IBufferElementData
     {

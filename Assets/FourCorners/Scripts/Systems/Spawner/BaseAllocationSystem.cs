@@ -1,9 +1,9 @@
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     /// <summary>
     /// Assigns an available PlayerBase and its Spawners to a connected player.

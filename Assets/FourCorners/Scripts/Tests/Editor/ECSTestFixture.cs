@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Tests.Editor
+namespace FourCorners.Scripts.Tests.Editor
 {
     public class ECSTestFixture
     {

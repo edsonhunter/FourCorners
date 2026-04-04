@@ -1,10 +1,10 @@
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics.Systems;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]

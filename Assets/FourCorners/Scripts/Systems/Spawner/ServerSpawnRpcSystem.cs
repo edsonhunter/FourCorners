@@ -1,13 +1,13 @@
-using ElementLogicFail.Scripts.Components.Minion;
-using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [UpdateInGroup(typeof(SimulationSystemGroup))]

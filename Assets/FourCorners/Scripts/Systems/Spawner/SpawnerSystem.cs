@@ -1,10 +1,10 @@
-using ElementLogicFail.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Request;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]

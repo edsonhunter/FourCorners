@@ -2,7 +2,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using Unity.Networking.Transport.Relay;
 
-namespace ElementLogicFail.Scripts.Services
+namespace FourCorners.Scripts.Services
 {
     public struct RelayDriverConstructor : INetworkStreamDriverConstructor
     {

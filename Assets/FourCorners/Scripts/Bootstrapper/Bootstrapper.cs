@@ -1,14 +1,14 @@
-using ElementLogicFail.Scripts.Manager;
-using ElementLogicFail.Scripts.Manager.Camera;
-using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.Manager.Interface.Camera;
-using ElementLogicFail.Scripts.Scenes;
-using ElementLogicFail.Scripts.Services;
-using ElementLogicFail.Scripts.Services.Interface;
-using ElementLogicFail.Scripts.Utils.Threadpool;
+using FourCorners.Scripts.Manager;
+using FourCorners.Scripts.Manager.Camera;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.Manager.Interface.Camera;
+using FourCorners.Scripts.Scenes;
+using FourCorners.Scripts.Services;
+using FourCorners.Scripts.Services.Interface;
+using FourCorners.Scripts.Utils.Threadpool;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Bootstrapper
+namespace FourCorners.Scripts.Bootstrapper
 {
     public class Bootstrapper : MonoBehaviour
     {

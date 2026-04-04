@@ -1,4 +1,4 @@
-namespace ElementLogicFail.Scripts.Domain.Interface
+namespace FourCorners.Scripts.Domain.Interface
 {
     public interface IMinion
     {

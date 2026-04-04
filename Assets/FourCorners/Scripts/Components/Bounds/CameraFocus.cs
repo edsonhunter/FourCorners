@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace ElementLogicFail.Scripts.Components.Bounds
+namespace FourCorners.Scripts.Components.Bounds
 {
     public struct CameraFocus : IComponentData { }
     

@@ -1,8 +1,8 @@
-﻿using Unity.Entities;
+using Unity.Entities;
 using UnityEngine;
-using ElementLogicFail.Scripts.Components.Bounds;
+using FourCorners.Scripts.Components.Bounds;
 
-namespace ElementLogicFail.Scripts.Authoring.Bounds
+namespace FourCorners.Scripts.Authoring.Bounds
 {
     public class BoundsAuthoring : MonoBehaviour
     {

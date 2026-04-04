@@ -2,7 +2,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Components.Minion
+namespace FourCorners.Scripts.Components.Minion
 {
     public struct MinionData : IComponentData
     {

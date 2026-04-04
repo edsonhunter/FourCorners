@@ -1,12 +1,11 @@
 {
-    "name": "Corner.Authoring",
+    "name": "FourCorners.Services.Interface",
     "rootNamespace": "",
     "references": [
-        "GUID:3c024e83b8cd8694fb4a11bd98da95a2",
-        "GUID:734d92eba21c94caba915361bd5ac177",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:e0cd26848372d4e5c891c569017e11f1",
-        "GUID:8819f35a0fc84499b990e90a4ca1911f"
+        "GUID:ac88e0386a85820499113b11a72f611f",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

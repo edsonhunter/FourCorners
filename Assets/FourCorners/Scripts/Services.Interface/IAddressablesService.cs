@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace ElementLogicFail.Scripts.Services.Interface
+namespace FourCorners.Scripts.Services.Interface
 {
     public interface IAddressablesService : IService
     {

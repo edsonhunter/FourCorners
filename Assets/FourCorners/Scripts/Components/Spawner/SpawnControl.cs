@@ -1,6 +1,6 @@
-﻿using Unity.Entities;
+using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Components.Spawner
+namespace FourCorners.Scripts.Components.Spawner
 {
     public struct SpawnControl : IComponentData
     {

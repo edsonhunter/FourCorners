@@ -1,7 +1,7 @@
 using System;
-using ElementLogicFail.Scripts.Domain.Interface;
+using FourCorners.Scripts.Domain.Interface;
 
-namespace ElementLogicFail.Scripts.Domain
+namespace FourCorners.Scripts.Domain
 {
     public class Minion : IMinion
     {

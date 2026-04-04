@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Services.Interface
+namespace FourCorners.Scripts.Services.Interface
 {
     public interface ISystemBridgeService : IService
     {

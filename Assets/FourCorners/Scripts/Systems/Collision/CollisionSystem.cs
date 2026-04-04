@@ -1,4 +1,4 @@
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -7,7 +7,7 @@ using Unity.Physics;
 using Unity.Transforms;
 using Unity.Physics.Systems;
 
-namespace ElementLogicFail.Scripts.Systems.Collision
+namespace FourCorners.Scripts.Systems.Collision
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]

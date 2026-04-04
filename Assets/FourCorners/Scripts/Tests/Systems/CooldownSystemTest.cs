@@ -1,10 +1,10 @@
-using ElementLogicFail.Scripts.Components.Minion;
-using ElementLogicFail.Scripts.Systems.Collision;
-using ElementLogicFail.Scripts.Tests.Editor;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Systems.Collision;
+using FourCorners.Scripts.Tests.Editor;
 using NUnit.Framework;
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Tests.Systems
+namespace FourCorners.Scripts.Tests.Systems
 {
     [TestFixture]
     public class CooldownSystemTest : ECSTestFixture

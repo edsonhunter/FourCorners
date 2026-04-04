@@ -1,4 +1,4 @@
-﻿namespace ElementLogicFail.Scripts.Services.Interface
+namespace FourCorners.Scripts.Services.Interface
 {
     public interface IService
     {

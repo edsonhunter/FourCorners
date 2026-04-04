@@ -1,10 +1,10 @@
-﻿using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Systems.Connection
+namespace FourCorners.Scripts.Systems.Connection
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct ServerAcceptGameSystem : ISystem

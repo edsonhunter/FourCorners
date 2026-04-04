@@ -1,8 +1,8 @@
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Entities;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Authoring.Spawner
+namespace FourCorners.Scripts.Authoring.Spawner
 {
     public class PlayerBaseAuthoring : MonoBehaviour
     {

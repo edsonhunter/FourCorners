@@ -1,6 +1,6 @@
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Components.Request
+namespace FourCorners.Scripts.Components.Request
 {
     public struct GoInGameRequest : IRpcCommand { }
 }

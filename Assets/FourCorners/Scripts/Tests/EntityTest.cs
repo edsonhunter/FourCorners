@@ -1,12 +1,12 @@
-using ElementLogicFail.Scripts.Components.Minion;
-using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Tests
+namespace FourCorners.Scripts.Tests
 {
     public static class EntityTest
     {

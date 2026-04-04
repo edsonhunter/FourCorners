@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace ElementLogicFail.Scripts.Utils.Threadpool
+namespace FourCorners.Scripts.Utils.Threadpool
 {
     public class ThreadPool
     {

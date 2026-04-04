@@ -1,8 +1,8 @@
-using ElementLogicFail.Scripts.Controller;
+using FourCorners.Scripts.Controller;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace ElementLogicFail.Scripts.Manager.Camera
+namespace FourCorners.Scripts.Manager.Camera
 {
     public class CameraInputHandler : ICameraInputHandler
     {

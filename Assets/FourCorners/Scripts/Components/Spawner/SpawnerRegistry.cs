@@ -1,7 +1,7 @@
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Components.Spawner
+namespace FourCorners.Scripts.Components.Spawner
 {
     public struct SpawnerRegistry : IComponentData
     {

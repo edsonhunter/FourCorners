@@ -1,4 +1,4 @@
-namespace ElementLogicFail.Scripts.Components.Minion
+namespace FourCorners.Scripts.Components.Minion
 {
     public enum UnitModelType
     {

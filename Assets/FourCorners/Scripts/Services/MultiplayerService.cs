@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Services.Interface;
 using Unity.NetCode;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
@@ -12,7 +12,7 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay.Models;
 using Unity.Entities;
-namespace ElementLogicFail.Scripts.Services
+namespace FourCorners.Scripts.Services
 {
     public class MultiplayerService : IMultiplayerService
     {

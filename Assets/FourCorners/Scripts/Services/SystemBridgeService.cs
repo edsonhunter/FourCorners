@@ -1,14 +1,14 @@
 using System;
-using ElementLogicFail.Scripts.Components.Bounds;
-using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Components.Bounds;
+using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Services.Interface;
 using FourCorners.Scripts.Systems.Camera;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Services
+namespace FourCorners.Scripts.Services
 {
     public class SystemBridgeService : ISystemBridgeService
     {

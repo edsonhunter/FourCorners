@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.Scenes.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
-using ElementLogicFail.Scripts.Utils;
+using System.Threading.Tasks;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Services.Interface;
+using FourCorners.Scripts.Utils;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Scenes
+namespace FourCorners.Scripts.Scenes
 {
     public abstract class BaseScene<T> : BaseScene where T : class, ISceneData
     {

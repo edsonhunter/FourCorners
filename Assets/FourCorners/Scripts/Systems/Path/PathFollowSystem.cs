@@ -1,11 +1,11 @@
-using ElementLogicFail.Scripts.Components.Minion;
-using ElementLogicFail.Scripts.Components.Path;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Path;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Path
+namespace FourCorners.Scripts.Systems.Path
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]

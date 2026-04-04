@@ -1,10 +1,10 @@
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Rendering;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     /// <summary>
     /// Hides/shows PlayerBase entities based on IsActive.

@@ -1,6 +1,6 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface;
+using FourCorners.Scripts.Manager.Interface;
 
-namespace ElementLogicFail.Scripts.Manager
+namespace FourCorners.Scripts.Manager
 {
     public class LoadingManager : ILoadingManager
     {

@@ -1,11 +1,11 @@
-using ElementLogicFail.Scripts.Components.Minion;
-using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Systems.Spawner;
-using ElementLogicFail.Scripts.Tests.Editor;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Systems.Spawner;
+using FourCorners.Scripts.Tests.Editor;
 using NUnit.Framework;
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Tests.Systems
+namespace FourCorners.Scripts.Tests.Systems
 {
     [TestFixture]
     public class SpawnerSystemTest : ECSTestFixture

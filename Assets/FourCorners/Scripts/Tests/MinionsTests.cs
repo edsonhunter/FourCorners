@@ -1,10 +1,10 @@
 using System;
-using ElementLogicFail.Scripts.Domain;
-using ElementLogicFail.Scripts.Domain.Interface;
+using FourCorners.Scripts.Domain;
+using FourCorners.Scripts.Domain.Interface;
 using NUnit.Framework;
 using Random = UnityEngine.Random;
 
-namespace ElementLogicFail.Scripts.Tests
+namespace FourCorners.Scripts.Tests
 {
     public class MinionsTests
     {

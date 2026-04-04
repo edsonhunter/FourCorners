@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Utils.Threadpool
+namespace FourCorners.Scripts.Utils.Threadpool
 {
     public class ThreadPoolController : MonoBehaviour
     {

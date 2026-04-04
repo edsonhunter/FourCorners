@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Entities;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Authoring
+namespace FourCorners.Scripts.Authoring
 {
     public class MinionPrefabAuthoring : MonoBehaviour
     {

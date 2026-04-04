@@ -1,11 +1,11 @@
-using ElementLogicFail.Scripts.Components.Bounds;
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Bounds;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Wander
+namespace FourCorners.Scripts.Systems.Wander
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
@@ -39,7 +39,7 @@ namespace ElementLogicFail.Scripts.Systems.Wander
     }
 
     [BurstCompile]
-    [WithNone(typeof(ElementLogicFail.Scripts.Components.Path.PathFollower))]
+    [WithNone(typeof(FourCorners.Scripts.Components.Path.PathFollower))]
     public partial struct WanderJob : IJobEntity
     {
         public float DeltaTime;

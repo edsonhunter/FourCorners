@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 
-namespace ElementLogicFail.Scripts.Utils
+namespace FourCorners.Scripts.Utils
 {
     public static class ReflectionExtensions
     {

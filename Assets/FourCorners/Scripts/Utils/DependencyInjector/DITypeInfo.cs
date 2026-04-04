@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace ElementLogicFail.Scripts.Utils.DependencyInjector
+namespace FourCorners.Scripts.Utils.DependencyInjector
 {
     public class DITypeInfo
     {

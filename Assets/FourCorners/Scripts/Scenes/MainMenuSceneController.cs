@@ -1,11 +1,11 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.Scenes.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
-using ElementLogicFail.Scripts.UI;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Services.Interface;
+using FourCorners.Scripts.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ElementLogicFail.Scripts.Scenes
+namespace FourCorners.Scripts.Scenes
 {
     public class MainMenuSceneController : BaseScene<MainMenuData>
     {

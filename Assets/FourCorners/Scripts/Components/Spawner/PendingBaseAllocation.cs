@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Components.Spawner
+namespace FourCorners.Scripts.Components.Spawner
 {
     /// <summary>
     /// Tag added to a server-side connection entity after the GoInGameRequest RPC is received.

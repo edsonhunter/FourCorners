@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace ElementLogicFail.Scripts.Utils
+namespace FourCorners.Scripts.Utils
 {
     [AttributeUsage(AttributeTargets.Field)]
     public class InjectAttribute : Attribute

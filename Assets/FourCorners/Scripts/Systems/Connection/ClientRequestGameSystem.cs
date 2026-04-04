@@ -1,10 +1,10 @@
-﻿using ElementLogicFail.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Request;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Scenes;
 
-namespace ElementLogicFail.Scripts.Systems.Connection
+namespace FourCorners.Scripts.Systems.Connection
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct ClientRequestGameSystem : ISystem

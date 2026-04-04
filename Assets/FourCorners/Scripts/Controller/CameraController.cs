@@ -1,10 +1,10 @@
-using ElementLogicFail.Scripts.Manager.Interface.Camera;
+using FourCorners.Scripts.Manager.Interface.Camera;
 using FourCorners.Scripts.Systems.Camera;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Controller
+namespace FourCorners.Scripts.Controller
 {
     public class CameraController : MonoBehaviour
     {

@@ -1,5 +1,5 @@
 {
-    "name": "Corner.Domain.Interface",
+    "name": "FourCorners.Utils",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],

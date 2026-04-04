@@ -1,12 +1,12 @@
 using System.Text;
-using ElementLogicFail.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Minion;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Controller
+namespace FourCorners.Scripts.Controller
 {
     public class MemoryReporter : MonoBehaviour
     {

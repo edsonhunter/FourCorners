@@ -1,10 +1,10 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.Scenes;
-using ElementLogicFail.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.Scenes;
+using FourCorners.Scripts.Scenes.Interface;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
-namespace ElementLogicFail.Scripts.Manager
+namespace FourCorners.Scripts.Manager
 {
     public class SceneManager : ISceneManager
     {

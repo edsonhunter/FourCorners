@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.Scenes.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Services.Interface;
 
-namespace ElementLogicFail.Scripts.Scenes
+namespace FourCorners.Scripts.Scenes
 {
     public class LoaderSceneController : BaseScene<LoaderData>
     {
