@@ -1,11 +1,11 @@
-namespace FourCorners.Scripts.Components.Minion
+namespace FourCorners.Scripts.Components.Team
 {
-    public enum Team
+    public enum TeamNumber
     {
-        Player1 = 0,
-        Player2 = 1,
-        Player3 = 2,
-        Player4 = 3,
+        Team1 = 0,
+        Team2 = 1,
+        Team3 = 2,
+        Team4 = 3,
     }
 
     public enum TeamColor

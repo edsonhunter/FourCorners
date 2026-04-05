@@ -1,4 +1,4 @@
-using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Team;
 using Unity.Entities;
 using UnityEngine;
 
@@ -6,7 +6,7 @@ namespace FourCorners.Scripts.Authoring.Spawner
 {
     public class PlayerBaseAuthoring : MonoBehaviour
     {
-        public Team Team;
+        TeamNumber teamNumber;
 
         public class PlayerBaseAuthoringBaker : Baker<PlayerBaseAuthoring>
         {
@@ -16,7 +16,7 @@ namespace FourCorners.Scripts.Authoring.Spawner
 
                 AddComponent(entity, new Components.Spawner.PlayerBase
                 {
-                    Team = authoring.Team,
+                    TeamNumber = authoring.teamNumber,
                     IsActive = false,
                     NetworkId = 0
                 });

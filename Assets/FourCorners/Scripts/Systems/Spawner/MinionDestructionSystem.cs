@@ -1,8 +1,6 @@
 using FourCorners.Scripts.Components.Minion;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Physics.Systems;
 
 namespace FourCorners.Scripts.Systems.Spawner
 {

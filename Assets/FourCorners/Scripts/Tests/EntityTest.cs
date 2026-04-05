@@ -1,6 +1,7 @@
 using FourCorners.Scripts.Components.Minion;
 using FourCorners.Scripts.Components.Request;
 using FourCorners.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Team;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -10,12 +11,12 @@ namespace FourCorners.Scripts.Tests
 {
     public static class EntityTest
     {
-        public static Entity CreateMinion(EntityManager manager, Team type, float speed, int cooldown)
+        public static Entity CreateMinion(EntityManager manager, TeamNumber type, float speed, int cooldown)
         {
             var entity = manager.CreateEntity();
             manager.SetComponentData(entity, new MinionData()
             {
-                Team= type,
+                TeamNumber= type,
                 Speed = speed,
                 Cooldown = cooldown,
                 Target = float3.zero,
@@ -25,11 +26,11 @@ namespace FourCorners.Scripts.Tests
             return entity;
         }
 
-        public static MinionData CreateMinionData(Team type, float speed, float cooldown)
+        public static MinionData CreateMinionData(TeamNumber type, float speed, float cooldown)
         {
             return new MinionData()
             {
-                Team = type,
+                TeamNumber = type,
                 Speed = speed,
                 Cooldown = cooldown,
                 Target = float3.zero,
@@ -37,7 +38,7 @@ namespace FourCorners.Scripts.Tests
             };
         }
         
-        public static Entity CreateTestMinion(EntityManager entityManager, Team type, float cooldown, float3 position)
+        public static Entity CreateTestMinion(EntityManager entityManager, TeamNumber type, float cooldown, float3 position)
         {
             var entity = entityManager.CreateEntity(
                 typeof(LocalTransform),
@@ -61,10 +62,10 @@ namespace FourCorners.Scripts.Tests
         
         public static Entity CreateTestSpawner(EntityManager entityManager, float spawnRate, float timer)
         {
-            Entity entity = entityManager.CreateEntity(typeof(Spawner), typeof(LocalTransform), typeof(MinionSpawnRequest), typeof(SpawnerPrefab));
-            entityManager.SetComponentData(entity, new Spawner
+            Entity entity = entityManager.CreateEntity(typeof(SpawnerData), typeof(LocalTransform), typeof(MinionSpawnRequest), typeof(SpawnerPrefab));
+            entityManager.SetComponentData(entity, new SpawnerData
             {
-                Team = Team.Player1,
+                TeamNumber = TeamNumber.Team1,
                 SpawnInterval = spawnRate,
                 Timer = timer,
                 IsActive = true,

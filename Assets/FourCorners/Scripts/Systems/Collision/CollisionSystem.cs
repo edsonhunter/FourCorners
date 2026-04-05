@@ -81,7 +81,7 @@ namespace FourCorners.Scripts.Systems.Collision
             var dataA = MinionLookup[a];
             var dataB = MinionLookup[b];
 
-            if (dataA.Team == dataB.Team)
+            if (dataA.TeamNumber == dataB.TeamNumber)
             {
                 return;
             }

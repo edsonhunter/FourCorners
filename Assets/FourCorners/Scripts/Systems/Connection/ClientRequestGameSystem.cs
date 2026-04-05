@@ -6,23 +6,38 @@ using Unity.Scenes;
 
 namespace FourCorners.Scripts.Systems.Connection
 {
+    /// <summary>
+    /// Client-side system that fires the GoInGameRequest RPC (with team selection)
+    /// as soon as the scene is loaded and the client has a NetworkId but is not yet InGame.
+    ///
+    /// The desired team index is written by the UI layer via ClientRequestGameSystem.SetDesiredTeam()
+    /// before the connection is established — or defaults to -1 (server auto-assigns).
+    /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct ClientRequestGameSystem : ISystem
     {
+        // Written by the UI / MonoBridge layer before the client connects.
+        // -1 means "no preference — let the server assign any free slot."
+        // Range: 0–3 for the four corners. Thread-safe: written once before simulation starts.
+        public static int DesiredTeamIndex = -1;
+
         private EntityQuery _pendingNetworkIdQuery;
         private EntityQuery _sceneQuery;
 
         public void OnCreate(ref SystemState state)
         {
-            var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<NetworkId>().WithNone<NetworkStreamInGame>();
+            var builder = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<NetworkId>()
+                .WithNone<NetworkStreamInGame>();
             _pendingNetworkIdQuery = state.GetEntityQuery(builder);
             state.RequireForUpdate(_pendingNetworkIdQuery);
-            
+
             _sceneQuery = state.GetEntityQuery(ComponentType.ReadOnly<SceneReference>());
         }
 
         public void OnUpdate(ref SystemState state)
         {
+            // Wait until all referenced sub-scenes are fully loaded
             using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
             foreach (var sceneEntity in sceneEntities)
             {
@@ -31,12 +46,17 @@ namespace FourCorners.Scripts.Systems.Connection
 
             var ecb = new EntityCommandBuffer(Allocator.Temp);
             using var connectionEntities = _pendingNetworkIdQuery.ToEntityArray(Allocator.Temp);
+
             foreach (var entity in connectionEntities)
             {
+                // Mark the local connection as InGame so this system won't fire again
                 ecb.AddComponent<NetworkStreamInGame>(entity);
-                UnityEngine.Debug.Log($"[ClientRequestGameSystem] Sending GoInGameRequest for connection {entity}");
+
+                UnityEngine.Debug.Log(
+                    $"[ClientRequestGameSystem] Sending GoInGameRequest with TeamIndex={DesiredTeamIndex}");
+
                 var req = ecb.CreateEntity();
-                ecb.AddComponent<GoInGameRequest>(req);
+                ecb.AddComponent(req, new GoInGameRequest { RequestedTeamIndex = DesiredTeamIndex });
                 ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = entity });
             }
 

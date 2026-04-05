@@ -4,9 +4,9 @@ using Unity.NetCode;
 
 namespace FourCorners.Scripts.Components.Spawner
 {
-    public struct Spawner : IComponentData
+    public struct SpawnerData : IComponentData
     {
-        public Team Team;
+        public Team.TeamNumber TeamNumber;
         public int SpawnAmount;
         public float SpawnInterval;
         public float Timer;

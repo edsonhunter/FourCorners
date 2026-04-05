@@ -1,4 +1,5 @@
 using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -58,9 +59,9 @@ namespace FourCorners.Scripts.Systems.Spawner
         private void Execute(
             Entity entity,
             [EntityIndexInQuery] int sortKey,
-            ref Components.Spawner.Spawner spawner,
+            ref SpawnerData spawner,
             RefRO<LocalToWorld> worldTransform,
-            DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
+            DynamicBuffer<SpawnerPrefab> prefabs)
         {
             if (spawner.SpawnInterval <= 0f || spawner.SpawnAmount <= 0 || prefabs.Length <= 0 || !spawner.IsActive)
                 return;
@@ -82,7 +83,7 @@ namespace FourCorners.Scripts.Systems.Spawner
 
                     Ecb.AppendToBuffer(sortKey, entity, new MinionSpawnRequest
                     {
-                        Type = spawner.Team,
+                        Type = spawner.TeamNumber,
                         ModelType = selectedType,
                         Position = worldTransform.ValueRO.Position
                     });

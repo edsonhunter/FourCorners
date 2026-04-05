@@ -2,12 +2,13 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Team;
 
 namespace FourCorners.Scripts.Authoring.Minion
 {
     public class MinionAuthoring : MonoBehaviour
     {
-        public Team Type;
+        public TeamNumber Type;
         public float speed;
         public int Cooldown;
         
@@ -18,7 +19,7 @@ namespace FourCorners.Scripts.Authoring.Minion
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity, new MinionData
                 {
-                    Team = authoring.Type,
+                    TeamNumber = authoring.Type,
                     Speed = authoring.speed,
                     Target = float3.zero,
                     RandomSeed = (uint)UnityEngine.Random.Range(1, int.MaxValue),

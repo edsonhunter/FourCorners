@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Team;
 using Unity.Entities;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace FourCorners.Scripts.Authoring.Spawner
 {
     public class SpawnerAuthoring : MonoBehaviour
     {
-        public Team type;
+        public TeamNumber type;
         public List<UnitModelType> UnitsToSpawn;
         public int spawnAmount = 5;
         public float spawnInterval = 2.0f;
@@ -19,9 +20,9 @@ namespace FourCorners.Scripts.Authoring.Spawner
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
 
-                AddComponent(entity, new Components.Spawner.Spawner
+                AddComponent(entity, new Components.Spawner.SpawnerData
                 {
-                    Team = authoring.type,
+                    TeamNumber = authoring.type,
                     SpawnAmount = authoring.spawnAmount,
                     SpawnInterval = authoring.spawnInterval,
                     Timer = 0,

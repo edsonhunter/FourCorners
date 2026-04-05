@@ -2,6 +2,8 @@ using FourCorners.Scripts.Components.Bounds;
 using FourCorners.Scripts.Components.Minion;
 using FourCorners.Scripts.Components.Path;
 using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Team;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -107,7 +109,7 @@ namespace FourCorners.Scripts.Systems.Spawner
         public WanderArea Area;
         public uint Seed;
 
-        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey, DynamicBuffer<MinionSpawnRequest> requestBuffer, RefRO<Components.Spawner.Spawner> spawner)
+        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey, DynamicBuffer<MinionSpawnRequest> requestBuffer, RefRO<SpawnerData> spawner)
         {
             if (requestBuffer.IsEmpty) return;
 
@@ -116,7 +118,7 @@ namespace FourCorners.Scripts.Systems.Spawner
             for (int i = 0; i < requestBuffer.Length; i++)
             {
                 var request = requestBuffer[i];
-                if (request.Type != spawner.ValueRO.Team) continue;
+                if (request.Type != spawner.ValueRO.TeamNumber) continue;
 
                 if (ModelTypeToPrefab.TryGetValue((int)request.ModelType, out var prefabEntity))
                 {
@@ -136,7 +138,7 @@ namespace FourCorners.Scripts.Systems.Spawner
                             Ecb.SetComponent(sortKey, instance, LocalTransform.FromPosition(request.Position));
                             Ecb.SetComponent(sortKey, instance, new MinionData
                             {
-                                Team = request.Type,
+                                TeamNumber = request.Type,
                                 TeamColor = (TeamColor)request.Type,
                                 Speed = 2f,
                                 Target = new float3(

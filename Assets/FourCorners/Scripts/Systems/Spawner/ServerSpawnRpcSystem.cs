@@ -30,7 +30,7 @@ namespace FourCorners.Scripts.Systems.Spawner
 
             // Pre-build a map of NetworkId -> Spawner entity to avoid O(N*M) iteration
             var spawnerMap = new NativeParallelHashMap<int, Entity>(8, Allocator.Temp);
-            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.Spawner>>().WithEntityAccess())
+            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.SpawnerData>>().WithEntityAccess())
             {
                 if (spawner.ValueRO.IsActive)
                 {
@@ -46,7 +46,7 @@ namespace FourCorners.Scripts.Systems.Spawner
 
                     if (spawnerMap.TryGetValue(networkId.Value, out var spawnerEntity))
                     {
-                        var spawner = SystemAPI.GetComponentRW<Components.Spawner.Spawner>(spawnerEntity);
+                        var spawner = SystemAPI.GetComponentRW<Components.Spawner.SpawnerData>(spawnerEntity);
                         
                         // Removed the spawner.Timer check to decouple manual RPC spawns from the automatic wave timer.
                         if (spawner.ValueRO.SpawnAmount > 0)
@@ -57,7 +57,7 @@ namespace FourCorners.Scripts.Systems.Spawner
                             {
                                 ecb.AppendToBuffer(spawnerEntity, new MinionSpawnRequest
                                 {
-                                    Type = spawner.ValueRO.Team,
+                                    Type = spawner.ValueRO.TeamNumber,
                                     ModelType = reqRpc.ModelType,
                                     Position = position
                                 });
