@@ -26,12 +26,14 @@ namespace FourCorners.Scripts.Systems.Spawner
             {
                 Ecb = ecb
             };
-            
+
             state.Dependency = job.ScheduleParallel(state.Dependency);
         }
 
         [BurstCompile]
-        public void OnDestroy(ref SystemState state) { }
+        public void OnDestroy(ref SystemState state)
+        {
+        }
     }
 
     [BurstCompile]
@@ -39,7 +41,8 @@ namespace FourCorners.Scripts.Systems.Spawner
     {
         public EntityCommandBuffer.ParallelWriter Ecb;
 
-        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<MinionData> data, RefRO<MinionDestructionTag> destructionTag)
+        private void Execute(Entity entity, [EntityIndexInQuery] int sortKey, RefRO<MinionData> data,
+            RefRO<MinionDestructionTag> destructionTag)
         {
             Ecb.DestroyEntity(sortKey, entity);
         }

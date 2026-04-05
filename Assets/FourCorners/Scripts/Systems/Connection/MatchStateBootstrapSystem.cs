@@ -52,6 +52,8 @@ namespace FourCorners.Scripts.Systems.Connection
         }
 
         // OnUpdate intentionally empty — all work is done in OnCreate
-        public void OnUpdate(ref SystemState state) { }
+        public void OnUpdate(ref SystemState state)
+        {
+        }
     }
 }

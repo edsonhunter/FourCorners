@@ -65,7 +65,6 @@ namespace FourCorners.Scripts.Tests
             Entity entity = entityManager.CreateEntity(typeof(SpawnerData), typeof(LocalTransform), typeof(MinionSpawnRequest), typeof(SpawnerPrefab));
             entityManager.SetComponentData(entity, new SpawnerData
             {
-                TeamNumber = TeamNumber.Team1,
                 SpawnInterval = spawnRate,
                 Timer = timer,
                 IsActive = true,

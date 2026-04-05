@@ -1,6 +1,4 @@
-using FourCorners.Scripts.Components.Minion;
 using FourCorners.Scripts.Components.Request;
-using FourCorners.Scripts.Components.Spawner;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -18,6 +16,7 @@ namespace FourCorners.Scripts.Systems.Spawner
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<ReceiveRpcCommandRequest, SpawnMinionRpc>();
             state.RequireForUpdate(state.GetEntityQuery(builder));
@@ -26,11 +25,13 @@ namespace FourCorners.Scripts.Systems.Spawner
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
             // Pre-build a map of NetworkId -> Spawner entity to avoid O(N*M) iteration
             var spawnerMap = new NativeParallelHashMap<int, Entity>(8, Allocator.Temp);
-            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.SpawnerData>>().WithEntityAccess())
+            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.SpawnerData>>()
+                         .WithEntityAccess())
             {
                 if (spawner.ValueRO.IsActive)
                 {
@@ -38,7 +39,8 @@ namespace FourCorners.Scripts.Systems.Spawner
                 }
             }
 
-            foreach (var (reqSrc, reqRpc, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, SpawnMinionRpc>().WithEntityAccess())
+            foreach (var (reqSrc, reqRpc, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, SpawnMinionRpc>()
+                         .WithEntityAccess())
             {
                 if (SystemAPI.HasComponent<NetworkId>(reqSrc.SourceConnection))
                 {
@@ -47,8 +49,7 @@ namespace FourCorners.Scripts.Systems.Spawner
                     if (spawnerMap.TryGetValue(networkId.Value, out var spawnerEntity))
                     {
                         var spawner = SystemAPI.GetComponentRW<Components.Spawner.SpawnerData>(spawnerEntity);
-                        
-                        // Removed the spawner.Timer check to decouple manual RPC spawns from the automatic wave timer.
+
                         if (spawner.ValueRO.SpawnAmount > 0)
                         {
                             var position = SystemAPI.GetComponent<LocalTransform>(spawnerEntity).Position;
@@ -57,7 +58,6 @@ namespace FourCorners.Scripts.Systems.Spawner
                             {
                                 ecb.AppendToBuffer(spawnerEntity, new MinionSpawnRequest
                                 {
-                                    Type = spawner.ValueRO.TeamNumber,
                                     ModelType = reqRpc.ModelType,
                                     Position = position
                                 });
@@ -69,8 +69,6 @@ namespace FourCorners.Scripts.Systems.Spawner
                 ecb.DestroyEntity(reqEntity);
             }
 
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
             spawnerMap.Dispose();
         }
     }

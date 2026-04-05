@@ -6,7 +6,7 @@ namespace FourCorners.Scripts.Authoring.Spawner
 {
     public class PlayerBaseAuthoring : MonoBehaviour
     {
-        TeamNumber teamNumber;
+        public TeamNumber teamNumber;
 
         public class PlayerBaseAuthoringBaker : Baker<PlayerBaseAuthoring>
         {

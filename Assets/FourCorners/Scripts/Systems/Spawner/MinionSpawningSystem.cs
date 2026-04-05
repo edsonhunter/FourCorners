@@ -55,21 +55,22 @@ namespace FourCorners.Scripts.Systems.Spawner
 
             var prefabLookup = SystemAPI.GetComponentLookup<MinionPrefabDescriptor>(true);
             var pathLookup = SystemAPI.GetBufferLookup<PathWaypoint>(true);
-            var jobRandom = new Random(_random.NextUInt());
+            var playerBaseLookup = SystemAPI.GetComponentLookup<PlayerBase>(true);
 
             var spawnJob = new ProcessSpawningJob
             {
                 ModelTypeToPrefab = _modelTypeToPrefab,
                 PrefabLookup = prefabLookup,
                 PathLookup = pathLookup,
+                PlayerBaseLookup = playerBaseLookup,
                 Ecb = ecb,
                 Area = area,
                 Seed = _random.NextUInt()
             };
-            
+
             state.Dependency = spawnJob.ScheduleParallel(state.Dependency);
-            
-            _random.NextUInt(); 
+
+            _random.NextUInt();
         }
 
         [BurstCompile]
@@ -105,20 +106,31 @@ namespace FourCorners.Scripts.Systems.Spawner
         [ReadOnly] public NativeParallelHashMap<int, Entity> ModelTypeToPrefab;
         [ReadOnly] public ComponentLookup<MinionPrefabDescriptor> PrefabLookup;
         [ReadOnly] public BufferLookup<PathWaypoint> PathLookup;
+        [ReadOnly] public ComponentLookup<PlayerBase> PlayerBaseLookup;
+
         public EntityCommandBuffer.ParallelWriter Ecb;
         public WanderArea Area;
         public uint Seed;
 
-        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey, DynamicBuffer<MinionSpawnRequest> requestBuffer, RefRO<SpawnerData> spawner)
+        private void Execute(Entity spawnerEntity, [EntityIndexInQuery] int sortKey,
+            DynamicBuffer<MinionSpawnRequest> requestBuffer, RefRO<SpawnerData> spawner)
         {
             if (requestBuffer.IsEmpty) return;
 
+            // Resolve team identity once per spawner — not per request.
+            if (!PlayerBaseLookup.TryGetComponent(spawner.ValueRO.PlayerBaseEntity, out var owningBase))
+            {
+                requestBuffer.Clear();
+                return;
+            }
+
+            var teamNumber = owningBase.TeamNumber;
             var random = Random.CreateFromIndex(Seed + (uint)sortKey);
 
             for (int i = 0; i < requestBuffer.Length; i++)
             {
                 var request = requestBuffer[i];
-                if (request.Type != spawner.ValueRO.TeamNumber) continue;
+                // No request.Type guard needed — all requests in this buffer belong to this spawner.
 
                 if (ModelTypeToPrefab.TryGetValue((int)request.ModelType, out var prefabEntity))
                 {
@@ -138,8 +150,8 @@ namespace FourCorners.Scripts.Systems.Spawner
                             Ecb.SetComponent(sortKey, instance, LocalTransform.FromPosition(request.Position));
                             Ecb.SetComponent(sortKey, instance, new MinionData
                             {
-                                TeamNumber = request.Type,
-                                TeamColor = (TeamColor)request.Type,
+                                TeamNumber = teamNumber,
+                                TeamColor = (TeamColor)teamNumber,
                                 Speed = 2f,
                                 Target = new float3(
                                     random.NextFloat(Area.MinArea.x, Area.MaxArea.x),
@@ -152,6 +164,7 @@ namespace FourCorners.Scripts.Systems.Spawner
                     }
                 }
             }
+
             requestBuffer.Clear();
         }
     }
