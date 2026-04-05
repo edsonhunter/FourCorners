@@ -26,6 +26,7 @@ namespace FourCorners.Scripts.Systems.Connection
 
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<NetworkId>()
                 .WithNone<NetworkStreamInGame>();
@@ -44,7 +45,8 @@ namespace FourCorners.Scripts.Systems.Connection
                 if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity)) return;
             }
 
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
             using var connectionEntities = _pendingNetworkIdQuery.ToEntityArray(Allocator.Temp);
 
             foreach (var entity in connectionEntities)
@@ -59,9 +61,6 @@ namespace FourCorners.Scripts.Systems.Connection
                 ecb.AddComponent(req, new GoInGameRequest { RequestedTeamIndex = DesiredTeamIndex });
                 ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = entity });
             }
-
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 }

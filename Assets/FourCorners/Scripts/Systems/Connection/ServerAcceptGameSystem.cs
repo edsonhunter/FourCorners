@@ -22,6 +22,7 @@ namespace FourCorners.Scripts.Systems.Connection
     {
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             // Only run when there are pending join RPCs
             var rpcQuery = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<GoInGameRequest, ReceiveRpcCommandRequest>();
@@ -39,11 +40,12 @@ namespace FourCorners.Scripts.Systems.Connection
             // isReadOnly: false because we mark slots as occupied in-place.
             var teamBuffer = SystemAPI.GetSingletonBuffer<TeamStatusElement>(isReadOnly: false);
 
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
             foreach (var (request, receive, rpcEntity) in
-                SystemAPI.Query<RefRO<GoInGameRequest>, RefRO<ReceiveRpcCommandRequest>>()
-                    .WithEntityAccess())
+                     SystemAPI.Query<RefRO<GoInGameRequest>, RefRO<ReceiveRpcCommandRequest>>()
+                         .WithEntityAccess())
             {
                 var sourceConnection = receive.ValueRO.SourceConnection;
 
@@ -121,9 +123,6 @@ namespace FourCorners.Scripts.Systems.Connection
                 var gameStartRpc = ecb.CreateEntity();
                 ecb.AddComponent<SendRpcCommandRequest>(gameStartRpc);
             }
-
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 }
