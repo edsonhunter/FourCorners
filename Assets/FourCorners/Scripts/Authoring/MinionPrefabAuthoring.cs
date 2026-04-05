@@ -12,7 +12,6 @@ namespace FourCorners.Scripts.Authoring
         public struct PrefabDefinition
         {
             public GameObject Prefab;
-            public int InitialCount;
             public UnitModelType ModelType;
         }
 
@@ -34,8 +33,6 @@ namespace FourCorners.Scripts.Authoring
                     AddComponent(entity, new MinionPrefabDescriptor
                     {
                         ModelType = def.ModelType,
-                        PrefabReference = default,
-                        InitialCount = def.InitialCount,
                         Prefab = bakedPrefab
                     });
                 }
