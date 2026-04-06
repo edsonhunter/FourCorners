@@ -5,7 +5,7 @@ namespace FourCorners.Scripts.Services.Interface
     public interface IMultiplayerService : IService
     {
         Task AuthenticateAsync();
-        
+
         // Direct IP/Port
         Task<bool> HostDirectGameAsync(ushort port);
         Task<bool> JoinDirectGameAsync(string ip, ushort port);
@@ -13,5 +13,8 @@ namespace FourCorners.Scripts.Services.Interface
         // Unity Relay
         Task<string> HostRelayGameAsync(int maxPlayers);
         Task<bool> JoinRelayGameAsync(string joinCode);
+
+        /// <summary>Disconnects from the current session and cleans up Netcode worlds.</summary>
+        void Disconnect();
     }
 }

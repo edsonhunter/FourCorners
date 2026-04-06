@@ -1,4 +1,5 @@
 using FourCorners.Scripts.Components.Bounds;
+using FourCorners.Scripts.Components.Connection;
 using FourCorners.Scripts.Components.Minion;
 using FourCorners.Scripts.Components.Path;
 using FourCorners.Scripts.Components.Request;
@@ -28,6 +29,8 @@ namespace FourCorners.Scripts.Systems.Spawner
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<WanderArea>();
+            // Only run when the match is Active — the lobby gate
+            state.RequireForUpdate<MatchState>();
 
             _modelTypeToPrefab = new NativeParallelHashMap<int, Entity>(16, Allocator.Persistent);
             _random = Random.CreateFromIndex(1234);
@@ -37,6 +40,10 @@ namespace FourCorners.Scripts.Systems.Spawner
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            // Global lobby gate: minions must not spawn until the host starts the game.
+            var matchState = SystemAPI.GetSingleton<MatchState>();
+            if (matchState.Phase != MatchPhase.Active) return;
+
             var area = SystemAPI.GetSingleton<WanderArea>();
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();

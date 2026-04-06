@@ -1,3 +1,4 @@
+using FourCorners.Scripts.Components.Connection;
 using FourCorners.Scripts.Components.Request;
 using FourCorners.Scripts.Components.Spawner;
 using FourCorners.Scripts.Components.Team;
@@ -8,14 +9,17 @@ using Unity.NetCode;
 namespace FourCorners.Scripts.Systems.Connection
 {
     /// <summary>
-    /// Server-side system that handles the GoInGameRequest RPC, which now carries a
-    /// RequestedTeamIndex (0-3). Validation flow:
+    /// Server-side system that handles the GoInGameRequest RPC. Validation flow:
     ///   1. Look up the MatchStateTag entity's DynamicBuffer[TeamStatusElement].
-    ///   2. Try to grant the client's desired team.
-    ///   3. If taken, scan for any free slot (fallback).
-    ///   4. If no slot exists, send TeamRejectedRpc back to the client and drop the request.
-    ///   5. On success, mark the slot occupied, add NetworkStreamInGame, and add
-    ///      PendingBaseAllocation (with the approved team) to the connection entity.
+    ///   2. Try to grant the client's desired team; fallback to any free slot.
+    ///   3. If no slot exists, send TeamRejectedRpc and drop the request.
+    ///   4. On success:
+    ///      a. Mark the team slot occupied.
+    ///      b. Add the player to ConnectedPlayerElement buffer.
+    ///      c. If this is the FIRST player, assign HostTag to their connection entity.
+    ///      d. Transition MatchState: WaitingForPlayers → Lobby once first player arrives.
+    ///      e. Broadcast LobbyStateUpdateRpc to ALL connected players.
+    ///      f. Add NetworkStreamInGame + PendingBaseAllocation.
     /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct ServerAcceptGameSystem : ISystem
@@ -23,23 +27,21 @@ namespace FourCorners.Scripts.Systems.Connection
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            // Only run when there are pending join RPCs
+
             var rpcQuery = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<GoInGameRequest, ReceiveRpcCommandRequest>();
             state.RequireForUpdate(state.GetEntityQuery(rpcQuery));
 
-            // Also require the MatchState entity to exist so the buffer is accessible
             var matchQuery = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<MatchStateTag, TeamStatusElement>();
+                .WithAll<MatchStateTag, TeamStatusElement, MatchState>();
             state.RequireForUpdate(state.GetEntityQuery(matchQuery));
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            // GetSingletonBuffer gives direct read/write access to the 4-element buffer.
-            // isReadOnly: false because we mark slots as occupied in-place.
-            var teamBuffer = SystemAPI.GetSingletonBuffer<TeamStatusElement>(isReadOnly: false);
-
+            var teamBuffer      = SystemAPI.GetSingletonBuffer<TeamStatusElement>(isReadOnly: false);
+            var playerBuffer    = SystemAPI.GetSingletonBuffer<ConnectedPlayerElement>(isReadOnly: false);
+            var matchStateEntity = SystemAPI.GetSingletonEntity<MatchStateTag>();
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
@@ -49,7 +51,6 @@ namespace FourCorners.Scripts.Systems.Connection
             {
                 var sourceConnection = receive.ValueRO.SourceConnection;
 
-                // Guard: connection must still exist (client may have dropped mid-frame)
                 if (!state.EntityManager.Exists(sourceConnection))
                 {
                     UnityEngine.Debug.LogWarning(
@@ -58,26 +59,19 @@ namespace FourCorners.Scripts.Systems.Connection
                     continue;
                 }
 
-                int desired = request.ValueRO.RequestedTeamIndex;
-
                 // --- Team Availability Resolution ---
+                int desired     = request.ValueRO.RequestedTeamIndex;
                 int grantedTeam = -1;
 
-                // 1. Try the desired team first
                 if (desired >= 0 && desired < teamBuffer.Length && !teamBuffer[desired].IsOccupied)
                 {
                     grantedTeam = desired;
                 }
                 else
                 {
-                    // 2. Fallback: scan all 4 slots for any free one
                     for (int i = 0; i < teamBuffer.Length; i++)
                     {
-                        if (!teamBuffer[i].IsOccupied)
-                        {
-                            grantedTeam = i;
-                            break;
-                        }
+                        if (!teamBuffer[i].IsOccupied) { grantedTeam = i; break; }
                     }
                 }
 
@@ -85,43 +79,71 @@ namespace FourCorners.Scripts.Systems.Connection
 
                 if (grantedTeam == -1)
                 {
-                    // No slot available — reject the client
                     UnityEngine.Debug.LogWarning(
-                        $"[ServerAcceptGameSystem] All 4 teams are occupied. Sending TeamRejectedRpc to {sourceConnection}.");
-
+                        $"[ServerAcceptGameSystem] All 4 teams occupied. Rejecting connection {sourceConnection}.");
                     var rejectionRpc = ecb.CreateEntity();
                     ecb.AddComponent<TeamRejectedRpc>(rejectionRpc);
-                    ecb.AddComponent(rejectionRpc, new SendRpcCommandRequest
-                    {
-                        TargetConnection = sourceConnection
-                    });
+                    ecb.AddComponent(rejectionRpc, new SendRpcCommandRequest { TargetConnection = sourceConnection });
                     continue;
                 }
 
                 // --- Grant the team slot ---
-                // Write back directly into the singleton buffer (no structural change needed)
                 teamBuffer[grantedTeam] = new TeamStatusElement
                 {
-                    IsOccupied = true,
+                    IsOccupied      = true,
                     OccupyingPlayer = sourceConnection
                 };
 
+                var networkId = SystemAPI.GetComponent<NetworkId>(sourceConnection);
+
+                // --- First player ever? Assign HostTag ---
+                bool isHost = playerBuffer.IsEmpty;
+                if (isHost)
+                {
+                    ecb.AddComponent<HostTag>(sourceConnection);
+                    UnityEngine.Debug.Log($"[ServerAcceptGameSystem] HostTag assigned to NetworkId={networkId.Value}.");
+
+                    // WaitingForPlayers → Lobby: at least one player has arrived
+                    ecb.SetComponent(matchStateEntity, new MatchState { Phase = MatchPhase.Lobby });
+                }
+
+                // Register player in the connected roster
+                playerBuffer.Add(new ConnectedPlayerElement
+                {
+                    NetworkId        = networkId.Value,
+                    ConnectionEntity = sourceConnection
+                });
+
+                int newPlayerCount = playerBuffer.Length;
+
                 UnityEngine.Debug.Log(
-                    $"[ServerAcceptGameSystem] Granted Team {grantedTeam} to connection {sourceConnection} " +
-                    $"(requested {desired}).");
+                    $"[ServerAcceptGameSystem] Granted Team {grantedTeam} to NetworkId={networkId.Value} " +
+                    $"(isHost={isHost}). Total players: {newPlayerCount}.");
 
-                // Bring the connection into the game simulation
+                // --- Broadcast LobbyStateUpdateRpc to every accepted player ---
+                // We iterate the player buffer (which now includes the new player).
+                for (int i = 0; i < playerBuffer.Length; i++)
+                {
+                    var targetConn   = playerBuffer[i].ConnectionEntity;
+                    // Fix: We can't use HasComponent<HostTag> immediately because it was just added via ECB.
+                    // The first player in the buffer (index 0) is always the host.
+                    bool targetIsHost = (i == 0);
+
+                    var lobbyRpc = ecb.CreateEntity();
+                    ecb.AddComponent(lobbyRpc, new LobbyStateUpdateRpc
+                    {
+                        IsHost      = targetIsHost,
+                        PlayerCount = newPlayerCount
+                    });
+                    ecb.AddComponent(lobbyRpc, new SendRpcCommandRequest { TargetConnection = targetConn });
+                }
+
+                // --- Bring connection into simulation ---
                 ecb.AddComponent<NetworkStreamInGame>(sourceConnection);
-
-                // Hand off to BaseAllocationSystem with the exact approved team
                 ecb.AddComponent(sourceConnection, new PendingBaseAllocation
                 {
                     ApprovedTeam = (TeamNumber)grantedTeam
                 });
-
-                // Notify all clients that the game has started / a player joined
-                var gameStartRpc = ecb.CreateEntity();
-                ecb.AddComponent<SendRpcCommandRequest>(gameStartRpc);
             }
         }
     }

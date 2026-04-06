@@ -221,5 +221,32 @@ namespace FourCorners.Scripts.Services
                 return Task.FromResult(false);
             }
         }
+        public void Disconnect()
+        {
+            Debug.Log("[MultiplayerService] Disconnecting from session. Disposing Netcode worlds.");
+
+            foreach (var world in World.All)
+            {
+                if ((world.IsClient() || world.IsServer()) && world.IsCreated)
+                {
+                    world.EntityManager
+                        .CreateEntityQuery(typeof(NetworkStreamConnection))
+                        .ToEntityArray(Unity.Collections.Allocator.Temp)
+                        .Dispose(); // flush pending connections before tear-down
+
+                    // Request graceful disconnect by destroying in-game stream connections
+                    var networkQuery = world.EntityManager.CreateEntityQuery(
+                        typeof(NetworkStreamConnection));
+                    if (!networkQuery.IsEmpty)
+                    {
+                        var ecb = new Unity.Entities.EntityCommandBuffer(Unity.Collections.Allocator.Temp);
+                        foreach (var e in networkQuery.ToEntityArray(Unity.Collections.Allocator.Temp))
+                            ecb.AddComponent<NetworkStreamRequestDisconnect>(e);
+                        ecb.Playback(world.EntityManager);
+                        ecb.Dispose();
+                    }
+                }
+            }
+        }
     }
 }

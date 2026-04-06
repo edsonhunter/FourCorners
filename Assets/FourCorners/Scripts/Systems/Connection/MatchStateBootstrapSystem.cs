@@ -1,3 +1,4 @@
+using FourCorners.Scripts.Components.Connection;
 using FourCorners.Scripts.Components.Team;
 using Unity.Collections;
 using Unity.Entities;
@@ -32,6 +33,15 @@ namespace FourCorners.Scripts.Systems.Connection
             // Create the canonical MatchState entity
             var matchStateEntity = state.EntityManager.CreateEntity();
             state.EntityManager.AddComponent<MatchStateTag>(matchStateEntity);
+
+            // MatchPhase state — starts as WaitingForPlayers, gates minion spawning
+            state.EntityManager.AddComponentData(matchStateEntity, new MatchState
+            {
+                Phase = MatchPhase.WaitingForPlayers
+            });
+
+            // Player roster — grows as players are accepted by ServerAcceptGameSystem
+            state.EntityManager.AddBuffer<ConnectedPlayerElement>(matchStateEntity);
 
             var buffer = state.EntityManager.AddBuffer<TeamStatusElement>(matchStateEntity);
 

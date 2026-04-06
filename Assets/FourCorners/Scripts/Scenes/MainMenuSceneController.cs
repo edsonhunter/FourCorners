@@ -1,7 +1,8 @@
+using System.Threading.Tasks;
 using FourCorners.Scripts.Manager.Interface;
 using FourCorners.Scripts.Scenes.Interface;
 using FourCorners.Scripts.Services.Interface;
-using FourCorners.Scripts.UI;
+using FourCorners.Scripts.View;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,11 @@ namespace FourCorners.Scripts.Scenes
         [field: SerializeField] private Button playGameButton;
         [field: SerializeField] private Button configButton;
         [field: SerializeField] private ConnectionScreenUI connectionScreenPanel;
+
+        protected override Task Loading()
+        {
+            return GetService<ISystemBridgeService>().RegisterBridge();
+        }
 
         protected override void Loaded()
         {
@@ -49,7 +55,7 @@ namespace FourCorners.Scripts.Scenes
 
         private void StartGame()
         {
-            GetManager<ISceneManager>().LoadScene(new GameplayData());
+            GetManager<ISceneManager>().LoadScene(new LobbyData());
         }
     }
     
