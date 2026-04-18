@@ -93,7 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 919947c6516082141bb076d2640bf5b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Corner.Authoring::ElementLogicFail.Scripts.Authoring.Spawner.PlayerBaseAuthoring
-  Team: 2
+  teamNumber: 2
 --- !u!1 &3818421013916739529
 GameObject:
   m_ObjectHideFlags: 0
@@ -201,7 +201,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 917d6f8bd34c409bb2fc635255e0cb75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
-  type: 2
   UnitsToSpawn: 02000000
   spawnAmount: 5
   spawnInterval: 10
@@ -286,7 +285,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 917d6f8bd34c409bb2fc635255e0cb75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
-  type: 2
   UnitsToSpawn: 02000000
   spawnAmount: 5
   spawnInterval: 10
@@ -340,7 +338,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 917d6f8bd34c409bb2fc635255e0cb75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementLogicFail.Scripts.Authoring.Spawner.SpawnerAuthoring
-  type: 2
   UnitsToSpawn: 02000000
   spawnAmount: 5
   spawnInterval: 10
