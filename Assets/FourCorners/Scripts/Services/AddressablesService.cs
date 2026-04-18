@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Services.Interface;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace ElementLogicFail.Scripts.Services
+namespace FourCorners.Scripts.Services
 {
     public class AddressablesService : IAddressablesService
     {

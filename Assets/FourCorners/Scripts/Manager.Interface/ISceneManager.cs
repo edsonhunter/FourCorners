@@ -1,7 +1,7 @@
-﻿using ElementLogicFail.Scripts.Scenes.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Services.Interface;
 
-namespace ElementLogicFail.Scripts.Manager.Interface
+namespace FourCorners.Scripts.Manager.Interface
 {
     public interface ISceneManager : IManager
     {

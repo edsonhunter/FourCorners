@@ -1,7 +1,7 @@
 using Unity.NetCode;
 using UnityEngine.Scripting;
 
-namespace ElementLogicFail.Scripts.Bootstrapper
+namespace FourCorners.Scripts.Bootstrapper
 {
     [Preserve]
     public class GameBootstrap : ClientServerBootstrap

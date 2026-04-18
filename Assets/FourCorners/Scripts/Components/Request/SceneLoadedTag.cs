@@ -1,6 +1,6 @@
-﻿using Unity.Entities;
+using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Components.Request
+namespace FourCorners.Scripts.Components.Request
 {
     public struct SceneLoadedTag : IComponentData
     {

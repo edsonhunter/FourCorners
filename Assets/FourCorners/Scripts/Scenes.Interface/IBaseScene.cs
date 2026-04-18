@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
-namespace ElementLogicFail.Scripts.Scenes.Interface
+namespace FourCorners.Scripts.Scenes.Interface
 {
     public interface IBaseScene
     {

@@ -1,13 +1,11 @@
-using ElementLogicFail.Scripts.Components.Element;
-using ElementLogicFail.Scripts.Components.Request;
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Request;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
@@ -18,6 +16,7 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<ReceiveRpcCommandRequest, SpawnMinionRpc>();
             state.RequireForUpdate(state.GetEntityQuery(builder));
@@ -26,11 +25,13 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
             // Pre-build a map of NetworkId -> Spawner entity to avoid O(N*M) iteration
             var spawnerMap = new NativeParallelHashMap<int, Entity>(8, Allocator.Temp);
-            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.Spawner>>().WithEntityAccess())
+            foreach (var (spawner, entity) in SystemAPI.Query<RefRO<Components.Spawner.SpawnerData>>()
+                         .WithEntityAccess())
             {
                 if (spawner.ValueRO.IsActive)
                 {
@@ -38,7 +39,8 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 }
             }
 
-            foreach (var (reqSrc, reqRpc, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, SpawnMinionRpc>().WithEntityAccess())
+            foreach (var (reqSrc, reqRpc, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, SpawnMinionRpc>()
+                         .WithEntityAccess())
             {
                 if (SystemAPI.HasComponent<NetworkId>(reqSrc.SourceConnection))
                 {
@@ -46,18 +48,16 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
                     if (spawnerMap.TryGetValue(networkId.Value, out var spawnerEntity))
                     {
-                        var spawner = SystemAPI.GetComponentRW<Components.Spawner.Spawner>(spawnerEntity);
-                        
-                        // Removed the spawner.Timer check to decouple manual RPC spawns from the automatic wave timer.
+                        var spawner = SystemAPI.GetComponentRW<Components.Spawner.SpawnerData>(spawnerEntity);
+
                         if (spawner.ValueRO.SpawnAmount > 0)
                         {
                             var position = SystemAPI.GetComponent<LocalTransform>(spawnerEntity).Position;
 
                             for (int i = 0; i < spawner.ValueRO.SpawnAmount; i++)
                             {
-                                ecb.AppendToBuffer(spawnerEntity, new ElementSpawnRequest
+                                ecb.AppendToBuffer(spawnerEntity, new MinionSpawnRequest
                                 {
-                                    Type = spawner.ValueRO.Team,
                                     ModelType = reqRpc.ModelType,
                                     Position = position
                                 });
@@ -69,8 +69,6 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
                 ecb.DestroyEntity(reqEntity);
             }
 
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
             spawnerMap.Dispose();
         }
     }

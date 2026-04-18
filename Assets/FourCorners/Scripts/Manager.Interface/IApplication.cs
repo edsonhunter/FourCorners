@@ -1,6 +1,6 @@
-﻿using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Services.Interface;
 
-namespace ElementLogicFail.Scripts.Manager.Interface
+namespace FourCorners.Scripts.Manager.Interface
 {
     public interface IApplication
     {

@@ -1,19 +1,20 @@
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     /// <summary>
-    /// Assigns an available PlayerBase and its Spawners to a connected player.
+    /// Activates the PlayerBase and all of its owned Spawners for a newly connected player.
     ///
-    /// Runs only after NetworkStreamInGame has been set (by ServerAcceptGameSystem),
-    /// which causes Netcode to activate prespawned ghost entities (remove Disabled tag).
-    /// Connections waiting for a base are marked with PendingBaseAllocation.
-    ///
-    /// IMPORTANT: Never queries for Disabled or Prefab entities — bases must be fully
-    /// active before we modify them, to avoid prespawned ghost baseline mismatches.
+    /// Linking strategy (no TeamNumber on spawners):
+    ///   1. Find the PlayerBase whose TeamNumber == PendingBaseAllocation.ApprovedTeam.
+    ///   2. Set PlayerBase.IsActive = true, PlayerBase.NetworkId = playerId.
+    ///   3. Scan all SpawnerData for entries where spawner.PlayerBaseEntity == baseEntity.
+    ///      Set their NetworkId = playerId and IsActive = true (ghost field for client replication).
+    ///      SpawnerSystem independently gates on PlayerBase.IsActive, so IsActive here is
+    ///      a derived mirror — not the authority.
     /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
@@ -24,76 +25,82 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
 
         public void OnCreate(ref SystemState state)
         {
-            // Requires at least one connection waiting for a base
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<NetworkId, NetworkStreamInGame, PendingBaseAllocation>();
             state.RequireForUpdate(state.GetEntityQuery(builder));
 
-            // Also require PlayerBase entities to exist (they become active after NetworkStreamInGame is set)
             _baseQuery = state.GetEntityQuery(ComponentType.ReadWrite<PlayerBase>());
-            state.RequireForUpdate(_baseQuery);
+            _spawnerQuery = state.GetEntityQuery(ComponentType.ReadWrite<SpawnerData>());
 
-            _spawnerQuery = state.GetEntityQuery(ComponentType.ReadWrite<Components.Spawner.Spawner>());
+            state.RequireForUpdate(_baseQuery);
         }
 
         public void OnUpdate(ref SystemState state)
         {
             var bases = _baseQuery.ToEntityArray(Allocator.Temp);
             var spawners = _spawnerQuery.ToEntityArray(Allocator.Temp);
+            var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
-
-            int baseIndex = 0;
-
-            foreach (var (networkId, entity) in
-                SystemAPI.Query<RefRO<NetworkId>>()
-                    .WithAll<NetworkStreamInGame, PendingBaseAllocation>()
-                    .WithEntityAccess())
+            foreach (var (networkId, allocation, connectionEntity) in
+                     SystemAPI.Query<RefRO<NetworkId>, RefRO<PendingBaseAllocation>>()
+                         .WithAll<NetworkStreamInGame>()
+                         .WithEntityAccess())
             {
                 int playerId = networkId.ValueRO.Value;
+                var approvedTeam = allocation.ValueRO.ApprovedTeam;
                 bool assigned = false;
+                Entity baseEntity = Entity.Null;
 
-                // Find the next unassigned (IsActive=false) base
-                for (; baseIndex < bases.Length; baseIndex++)
+                // --- Phase 1: Activate the PlayerBase ---
+                foreach (var candidate in bases)
                 {
-                    var baseEntity = bases[baseIndex];
-                    var baseData = state.EntityManager.GetComponentData<PlayerBase>(baseEntity);
+                    var baseData = state.EntityManager.GetComponentData<PlayerBase>(candidate);
 
-                    if (!baseData.IsActive)
+                    if (baseData.TeamNumber == approvedTeam && !baseData.IsActive)
                     {
-                        // Assign base to this player
                         baseData.IsActive = true;
                         baseData.NetworkId = playerId;
-                        state.EntityManager.SetComponentData(baseEntity, baseData);
+                        state.EntityManager.SetComponentData(candidate, baseData);
 
-                        // Activate all spawners for the same team
-                        foreach (var spawnerEntity in spawners)
-                        {
-                            var spawnerData = state.EntityManager.GetComponentData<Components.Spawner.Spawner>(spawnerEntity);
-                            if (spawnerData.Team == baseData.Team)
-                            {
-                                spawnerData.IsActive = true;
-                                spawnerData.NetworkId = playerId;
-                                state.EntityManager.SetComponentData(spawnerEntity, spawnerData);
-                            }
-                        }
-
-                        baseIndex++;
+                        baseEntity = candidate;
                         assigned = true;
-                        UnityEngine.Debug.Log($"[Server] Assigned base Team={baseData.Team} to NetworkId={playerId}");
+
+                        UnityEngine.Debug.Log(
+                            $"[BaseAllocationSystem] Activated PlayerBase Team={approvedTeam} for NetworkId={playerId}");
                         break;
                     }
                 }
 
-                if (!assigned)
-                    UnityEngine.Debug.LogWarning($"[Server] No available base for NetworkId={playerId}");
+                // --- Phase 2: Activate owned Spawners by entity reference ---
+                // No TeamNumber scan — each spawner carries its owning base entity directly.
+                if (assigned)
+                {
+                    foreach (var spawnerEntity in spawners)
+                    {
+                        var spawnerData = state.EntityManager.GetComponentData<SpawnerData>(spawnerEntity);
 
-                // Remove the pending tag so this connection isn't processed again
-                ecb.RemoveComponent<PendingBaseAllocation>(entity);
+                        if (spawnerData.PlayerBaseEntity == baseEntity)
+                        {
+                            spawnerData.NetworkId = playerId;
+                            spawnerData.IsActive = true; // mirror for client ghost replication
+                            state.EntityManager.SetComponentData(spawnerEntity, spawnerData);
+                        }
+                    }
+
+                    // Only consume the allocation request once the SubScene has successfully loaded and mapped
+                    ecb.RemoveComponent<PendingBaseAllocation>(connectionEntity);
+                }
+                else
+                {
+                    // Soft log: we yield execution and retry next frame, as the SubScene map might still be streaming asynchronously.
+                    UnityEngine.Debug.LogWarning(
+                        $"[BaseAllocationSystem] Yielding Base Allocation for Team={approvedTeam} NetworkId={playerId}. " +
+                        "Awaiting PlayerBase instantiation from SubScene streaming.");
+                }
             }
 
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
             bases.Dispose();
             spawners.Dispose();
         }

@@ -1,10 +1,10 @@
-using ElementLogicFail.Scripts.Components.Element;
-using ElementLogicFail.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Request;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.MonoBridge
+namespace FourCorners.Scripts.MonoBridge
 {
     public class ClientInputBridge : MonoBehaviour
     {

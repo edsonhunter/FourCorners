@@ -1,7 +1,7 @@
-using ElementLogicFail.Scripts.Components.Element;
+using FourCorners.Scripts.Components.Minion;
 using Unity.Entities;
 
-namespace ElementLogicFail.Scripts.Components.Spawner
+namespace FourCorners.Scripts.Components.Spawner
 {
     [InternalBufferCapacity(8)]
     public struct SpawnerPrefab : IBufferElementData

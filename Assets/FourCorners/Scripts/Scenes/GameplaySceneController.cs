@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using ElementLogicFail.Scripts.Controller;
-using ElementLogicFail.Scripts.Manager.Interface.Camera;
-using ElementLogicFail.Scripts.Scenes.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
+using System.Threading.Tasks;
+using FourCorners.Scripts.Controller;
+using FourCorners.Scripts.Manager.Interface.Camera;
+using FourCorners.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Services.Interface;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Scenes
+namespace FourCorners.Scripts.Scenes
 {
     public class GameplaySceneController : BaseScene<GameplayData>
     {
@@ -14,7 +14,6 @@ namespace ElementLogicFail.Scripts.Scenes
 
         protected override Task Loading()
         {
-            GetService<ISystemBridgeService>().NotifyClientSceneReady();
             return WaitAndInitCameraAsync();
         }
 
@@ -37,6 +36,9 @@ namespace ElementLogicFail.Scripts.Scenes
             }
             
             cameraController.Setup();
+
+            // Notify systems (e.g. ClientStreamReadySystem) that the scene is fully baked
+            service.NotifyClientSceneReady();
         }
     }
     

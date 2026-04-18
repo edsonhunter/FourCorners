@@ -1,7 +1,7 @@
-using ElementLogicFail.Scripts.Components.Element;
+using FourCorners.Scripts.Components.Minion;
 using Unity.NetCode;
 
-namespace ElementLogicFail.Scripts.Components.Request
+namespace FourCorners.Scripts.Components.Request
 {
     public struct SpawnMinionRpc : IRpcCommand
     {

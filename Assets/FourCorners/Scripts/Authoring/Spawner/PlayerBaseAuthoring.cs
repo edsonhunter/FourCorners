@@ -1,12 +1,12 @@
-using ElementLogicFail.Scripts.Components.Element;
+using FourCorners.Scripts.Components.Team;
 using Unity.Entities;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Authoring.Spawner
+namespace FourCorners.Scripts.Authoring.Spawner
 {
     public class PlayerBaseAuthoring : MonoBehaviour
     {
-        public Team Team;
+        public TeamNumber teamNumber;
 
         public class PlayerBaseAuthoringBaker : Baker<PlayerBaseAuthoring>
         {
@@ -16,7 +16,7 @@ namespace ElementLogicFail.Scripts.Authoring.Spawner
 
                 AddComponent(entity, new Components.Spawner.PlayerBase
                 {
-                    Team = authoring.Team,
+                    TeamNumber = authoring.teamNumber,
                     IsActive = false,
                     NetworkId = 0
                 });

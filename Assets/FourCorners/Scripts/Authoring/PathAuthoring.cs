@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using ElementLogicFail.Scripts.Components.Path;
+using FourCorners.Scripts.Components.Path;
 using Unity.Entities;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Authoring
+namespace FourCorners.Scripts.Authoring
 {
     public class PathAuthoring : MonoBehaviour
     {

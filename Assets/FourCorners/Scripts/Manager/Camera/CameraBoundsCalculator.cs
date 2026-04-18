@@ -1,7 +1,7 @@
-using ElementLogicFail.Scripts.Controller;
+using FourCorners.Scripts.Controller;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Manager.Camera
+namespace FourCorners.Scripts.Manager.Camera
 {
     public class CameraBoundsCalculator : ICameraBoundsCalculator
     {

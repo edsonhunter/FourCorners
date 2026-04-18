@@ -1,11 +1,11 @@
-﻿using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.MonoBridge;
-using ElementLogicFail.Scripts.Scenes.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.MonoBridge;
+using FourCorners.Scripts.Scenes.Interface;
+using FourCorners.Scripts.Services.Interface;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ElementLogicFail.Scripts.Scenes
+namespace FourCorners.Scripts.Scenes
 {
     public class ConfigScene : BaseScene<ConfigData>
     {

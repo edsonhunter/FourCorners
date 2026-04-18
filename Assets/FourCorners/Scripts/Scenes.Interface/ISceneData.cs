@@ -1,4 +1,4 @@
-﻿namespace ElementLogicFail.Scripts.Scenes.Interface
+namespace FourCorners.Scripts.Scenes.Interface
 {
     public interface ISceneData
     {

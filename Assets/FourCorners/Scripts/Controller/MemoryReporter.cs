@@ -1,14 +1,12 @@
-﻿
-
 using System.Text;
-using ElementLogicFail.Scripts.Components.Element;
+using FourCorners.Scripts.Components.Minion;
 using TMPro;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Controller
+namespace FourCorners.Scripts.Controller
 {
     public class MemoryReporter : MonoBehaviour
     {
@@ -17,12 +15,12 @@ namespace ElementLogicFail.Scripts.Controller
         private readonly StringBuilder _stringBuilder = new StringBuilder(512);
 
         private EntityManager _entityManager;
-        private EntityQuery _activeElementsQuery;
-        private EntityQuery _totalElementsQuery;
+        private EntityQuery _activeMinionsQuery;
+        private EntityQuery _totalMinionsQuery;
 
         private int _totalEntityCount;
-        private int _activeElementCount;
-        private int _pooledElementCount;
+        private int _activeMinionCount;
+        private int _pooledMinionCount;
         private float _deltaTime;
 
         private ProfilerRecorder _totalReservedMemoryRecorder;
@@ -48,8 +46,8 @@ namespace ElementLogicFail.Scripts.Controller
 
         private void CreateQueries()
         {
-            _totalElementsQuery = _entityManager.CreateEntityQuery(typeof(ElementData));
-            _activeElementsQuery = _entityManager.CreateEntityQuery(ComponentType.ReadOnly<ElementData>());
+            _totalMinionsQuery = _entityManager.CreateEntityQuery(typeof(MinionData));
+            _activeMinionsQuery = _entityManager.CreateEntityQuery(ComponentType.ReadOnly<MinionData>());
         }
 
         void OnEnable()
@@ -81,9 +79,9 @@ namespace ElementLogicFail.Scripts.Controller
 #if UNITY_EDITOR
             _totalEntityCount = _entityManager.Debug.EntityCount;
 #endif
-            int totalElementCount = _totalElementsQuery.CalculateEntityCount();
-            _activeElementCount = _activeElementsQuery.CalculateEntityCount();
-            _pooledElementCount = totalElementCount - _activeElementCount;
+            int totalMinionCount = _totalMinionsQuery.CalculateEntityCount();
+            _activeMinionCount = _activeMinionsQuery.CalculateEntityCount();
+            _pooledMinionCount = totalMinionCount - _activeMinionCount;
 
             _deltaTime += (Time.unscaledDeltaTime - _deltaTime) * 0.1f;
         }
@@ -98,8 +96,8 @@ namespace ElementLogicFail.Scripts.Controller
             _stringBuilder.AppendLine("--- Entities ---");
             
             _stringBuilder.AppendLine($"Total Entities: {_totalEntityCount}");
-            _stringBuilder.AppendLine($"Active Elves: {_activeElementCount}");
-            _stringBuilder.AppendLine($"Pooled Elves: {_pooledElementCount}");
+            _stringBuilder.AppendLine($"Active Minions: {_activeMinionCount}");
+            _stringBuilder.AppendLine($"Pooled Minions: {_pooledMinionCount}");
             _stringBuilder.AppendLine("--- Memory ---");
 
             long totalReservedMB = _totalReservedMemoryRecorder.LastValue / (1024 * 1024);

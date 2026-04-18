@@ -1,8 +1,8 @@
-using ElementLogicFail.Scripts.Controller;
-using ElementLogicFail.Scripts.Manager.Interface.Camera;
+using FourCorners.Scripts.Controller;
+using FourCorners.Scripts.Manager.Interface.Camera;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Manager.Camera
+namespace FourCorners.Scripts.Manager.Camera
 {
     public class CameraManager : ICameraManager
     {

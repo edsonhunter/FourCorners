@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Controller
+namespace FourCorners.Scripts.Controller
 {
     public interface ICameraBoundsCalculator
     {

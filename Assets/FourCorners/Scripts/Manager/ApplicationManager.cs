@@ -1,10 +1,10 @@
-﻿using System;
-using ElementLogicFail.Scripts.Manager.Interface;
-using ElementLogicFail.Scripts.Services.Interface;
-using ElementLogicFail.Scripts.Utils.DependencyInjector;
+using System;
+using FourCorners.Scripts.Manager.Interface;
+using FourCorners.Scripts.Services.Interface;
+using FourCorners.Scripts.Utils.DependencyInjector;
 using UnityEngine;
 
-namespace ElementLogicFail.Scripts.Manager
+namespace FourCorners.Scripts.Manager
 {
     public class ApplicationManager : MonoBehaviour, IApplication
     {

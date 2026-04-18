@@ -61,6 +61,22 @@ Managing memory through chunking while bridging into unmanaged ECS environments.
 *   **Streaming:** Uses `EntityPrefabReference` and `RequestEntityPrefabLoaded` to stream memory directly into the physics engine without GameObject overhead.
 *   **Critical Rules:** Requires SubScene setup, explicit grouping of `.unity` files in Addressables, and careful handling of `PrefabLoadResult` to prevent runtime crashes.
 
+### 7. Exclusive Team Selection & Handshake
+High-authority team assignment system ensuring exclusivity and player-specific corner binding.
+
+*   **Handshake Protocol:** 
+    *   Client sends a `GoInGameRequest` RPC containing a `RequestedTeamIndex`.
+    *   `ServerAcceptGameSystem` validates the request using a centralized `MatchState` containing a `DynamicBuffer<TeamStatusElement>`.
+*   **MatchState Initialization:** 
+    *   Automated via `MatchStateBootstrapSystem`, which creates the canonical authority entity in the Server world at runtime, removing the need for manual scene setup.
+*   **Team Centralization:** 
+    *   `TeamNumber` and `IsActive` are stored exclusively on `PlayerBase`. Spawners resolve their team identity by traversing their baked `PlayerBaseEntity` parent link.
+*   **Direct Entity Binding:** 
+    *   Approved connections carry `PendingBaseAllocation` with the `ApprovedTeam`.
+    *   `BaseAllocationSystem` performs a direct lookup to bind the player's `NetworkId` to the correct `PlayerBase` and `Spawner` quadrant entities.
+*   **Technical Stability:** 
+    *   Uses `EndSimulationEntityCommandBufferSystem` for all structural changes (accept, allocation, spawn requests) to prevent mid-frame structural changes from invalidating parallel job handles.
+
 ---
 
 ## Development Changelog
@@ -128,3 +144,23 @@ Managing memory through chunking while bridging into unmanaged ECS environments.
 - Upgraded camera controller to an event-driven setup.
 - Fully transitioned camera handling to a Manager-based DI pattern applying SOLID principles.
 - Safely separated Mobile Drag Panning from Desktop Edge Panning using preprocessor directives without runtime overhead.
+
+### 05/03 - 06/03
+- Integrated Unity Relay and direct connectivity hub via `MultiplayerService`.
+- Created `ConnectionScreenUI` and `MultiplayerTestUI` for managing host/join network flows.
+- Expanded input handling to support simultaneous desktop edge-panning and mobile drag-panning.
+
+### 15/03 - 25/03
+- Refactored Spawner system for rigorous server-client wave synchronization.
+- Updated environment prefabs and unified scene loading triggers for better network consistency.
+- Resolved ASMDEF and dependency errors for automated Netcode entity replication.
+
+### 03/04
+- Executed project-wide namespace refactoring (ElementLogicFail -> FourCorners) and Minion migration.
+
+### 05/04
+- Implemented Exclusive Team Selection Handshake and Team Availability validation.
+- Created `MatchState` singleton pattern using `DynamicBuffer<TeamStatusElement>` with automated `MatchStateBootstrapSystem` initialization.
+- Centralized `TeamNumber` authority on `PlayerBase` entities, leveraging baked `Parent` links in Spawners.
+- Refactored `ServerAcceptGameSystem`, `BaseAllocationSystem`, and RPC systems to use `EndSimulationEntityCommandBufferSystem`, resolving `ObjectDisposedException` caused by synchronous structural changes.
+- Deprecated `SpawnerRegistry` and `MatchStateAuthoring` in favor of hierarchical lookups and automated bootstrapping.

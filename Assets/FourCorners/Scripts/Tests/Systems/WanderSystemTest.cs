@@ -1,13 +1,14 @@
-﻿using ElementLogicFail.Scripts.Components.Bounds;
-using ElementLogicFail.Scripts.Components.Element;
-using ElementLogicFail.Scripts.Systems.Wander;
-using ElementLogicFail.Scripts.Tests.Editor;
+using FourCorners.Scripts.Components.Bounds;
+using FourCorners.Scripts.Components.Minion;
+using FourCorners.Scripts.Components.Team;
+using FourCorners.Scripts.Systems.Wander;
+using FourCorners.Scripts.Tests.Editor;
 using NUnit.Framework;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Tests.Systems
+namespace FourCorners.Scripts.Tests.Systems
 {
     [TestFixture]
     public class WanderSystemTest : ECSTestFixture
@@ -26,14 +27,14 @@ namespace ElementLogicFail.Scripts.Tests.Systems
         [Test]
         public void WanderSystem_MovesEntityTowardsTarget()
         {
-            var entity = EntityManager.CreateEntity(typeof(LocalTransform), typeof(ElementData));
+            var entity = EntityManager.CreateEntity(typeof(LocalTransform), typeof(MinionData));
             var initialPosition = new float3(0, 0, 0);
             var targetPosition = new float3(5, 0, 5);
             
             EntityManager.SetComponentData(entity, new LocalTransform { Position = initialPosition, Scale = 1 });
-            var elementData = EntityTest.CreateElementData(Team.Player2, 5f,  0);
-            elementData.Target = targetPosition;
-            EntityManager.SetComponentData(entity, elementData);
+            var minionData = EntityTest.CreateMinionData(TeamNumber.Team2, 5f,  0);
+            minionData.Target = targetPosition;
+            EntityManager.SetComponentData(entity, minionData);
 
             World.GetOrCreateSystem<WanderSystem>().Update(World.Unmanaged);
 
@@ -45,17 +46,17 @@ namespace ElementLogicFail.Scripts.Tests.Systems
         [Test]
         public void WanderSystem_WhenTargetReached_AssignsNewTarget()
         {
-            var entity = EntityManager.CreateEntity(typeof(LocalTransform), typeof(ElementData));
+            var entity = EntityManager.CreateEntity(typeof(LocalTransform), typeof(MinionData));
             var initialTarget = new float3(5, 0, 5);
             
             EntityManager.SetComponentData(entity, new LocalTransform { Position = initialTarget, Scale = 1 });
-            var elementData = EntityTest.CreateElementData(Team.Player2, 5f,  0);
-            elementData.Target = initialTarget;
-            EntityManager.SetComponentData(entity, elementData);
+            var minionData = EntityTest.CreateMinionData(TeamNumber.Team2, 5f,  0);
+            minionData.Target = initialTarget;
+            EntityManager.SetComponentData(entity, minionData);
 
             World.GetOrCreateSystem<WanderSystem>().Update(World.Unmanaged);
             
-            var newTarget = EntityManager.GetComponentData<ElementData>(entity).Target;
+            var newTarget = EntityManager.GetComponentData<MinionData>(entity).Target;
             Assert.IsFalse(newTarget.Equals(initialTarget));
         }
     }

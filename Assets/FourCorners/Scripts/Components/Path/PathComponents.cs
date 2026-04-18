@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace ElementLogicFail.Scripts.Components.Path
+namespace FourCorners.Scripts.Components.Path
 {
     public struct PathFollower : IComponentData
     {

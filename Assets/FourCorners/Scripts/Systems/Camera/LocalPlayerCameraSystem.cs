@@ -1,6 +1,6 @@
 using System;
-using ElementLogicFail.Scripts.Components.Bounds;
-using ElementLogicFail.Scripts.Components.Spawner;
+using FourCorners.Scripts.Components.Bounds;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;

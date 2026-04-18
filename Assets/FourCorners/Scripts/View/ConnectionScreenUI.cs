@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ElementLogicFail.Scripts.UI
+namespace FourCorners.Scripts.View
 {
     public class ConnectionScreenUI : MonoBehaviour
     {

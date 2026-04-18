@@ -1,15 +1,16 @@
-using ElementLogicFail.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Request;
+using FourCorners.Scripts.Components.Spawner;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Transforms;
 
-namespace ElementLogicFail.Scripts.Systems.Spawner
+namespace FourCorners.Scripts.Systems.Spawner
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateBefore(typeof(ElementSpawningSystem))] // Explicitly guarantee order
+    [UpdateBefore(typeof(MinionSpawningSystem))]
     public partial struct SpawnerSystem : ISystem
     {
         [BurstCompile]
@@ -21,24 +22,21 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var deltaTime = SystemAPI.Time.DeltaTime;
-            
-            // Using EndSimulation ECB allows us to process bases in parallel.
-            // Spawns will technically execute 1 frame later when the ECB plays back,
-            // which is highly performant and standard for DOTS networking.
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter();
 
-            uint seed = (uint)(SystemAPI.Time.ElapsedTime * 1000f) + 1;
+            // Read-only lookup: spawners check their owning base's IsActive flag.
+            // This keeps TeamNumber exclusively on PlayerBase — no duplication in SpawnerData.
+            var playerBaseLookup = SystemAPI.GetComponentLookup<PlayerBase>(isReadOnly: true);
 
-            var job = new SpawnerJob 
-            { 
-                DeltaTime = deltaTime,
+            var job = new SpawnerJob
+            {
+                DeltaTime = SystemAPI.Time.DeltaTime,
                 Ecb = ecb,
-                Seed = seed
+                Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000f) + 1,
+                PlayerBaseLookup = playerBaseLookup
             };
-            
-            // Now fully safe to run in parallel!
+
             state.Dependency = job.ScheduleParallel(state.Dependency);
         }
 
@@ -55,14 +53,20 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
         public EntityCommandBuffer.ParallelWriter Ecb;
         public uint Seed;
 
+        [ReadOnly] public ComponentLookup<PlayerBase> PlayerBaseLookup;
+
         private void Execute(
             Entity entity,
             [EntityIndexInQuery] int sortKey,
-            ref Components.Spawner.Spawner spawner,
+            ref SpawnerData spawner,
             RefRO<LocalToWorld> worldTransform,
-            DynamicBuffer<Components.Spawner.SpawnerPrefab> prefabs)
+            DynamicBuffer<SpawnerPrefab> prefabs)
         {
-            if (spawner.SpawnInterval <= 0f || spawner.SpawnAmount <= 0 || prefabs.Length <= 0 || !spawner.IsActive)
+            if (spawner.SpawnInterval <= 0f || spawner.SpawnAmount <= 0 || prefabs.Length <= 0)
+                return;
+
+            // Authority check: read IsActive from the owning PlayerBase
+            if (!PlayerBaseLookup.TryGetComponent(spawner.PlayerBaseEntity, out var owningBase) || !owningBase.IsActive)
                 return;
 
             spawner.Timer += DeltaTime;
@@ -70,19 +74,16 @@ namespace ElementLogicFail.Scripts.Systems.Spawner
             if (spawner.Timer >= spawner.SpawnInterval)
             {
                 spawner.Timer -= spawner.SpawnInterval;
-                
-                // Create a unique random sequence for this exact spawner and frame
+
                 var random = Unity.Mathematics.Random.CreateFromIndex(Seed ^ (uint)sortKey);
 
                 for (int i = 0; i < spawner.SpawnAmount; i++)
                 {
-                    // Pick a random UnitModelType from the available prefabs this base supports
                     var randomPrefabIndex = random.NextInt(0, prefabs.Length);
                     var selectedType = prefabs[randomPrefabIndex].ModelType;
 
-                    Ecb.AppendToBuffer(sortKey, entity, new ElementSpawnRequest
+                    Ecb.AppendToBuffer(sortKey, entity, new MinionSpawnRequest
                     {
-                        Type = spawner.Team,
                         ModelType = selectedType,
                         Position = worldTransform.ValueRO.Position
                     });
