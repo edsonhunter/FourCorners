@@ -88,15 +88,17 @@ namespace FourCorners.Scripts.Systems.Spawner
                             state.EntityManager.SetComponentData(spawnerEntity, spawnerData);
                         }
                     }
+
+                    // Only consume the allocation request once the SubScene has successfully loaded and mapped
+                    ecb.RemoveComponent<PendingBaseAllocation>(connectionEntity);
                 }
                 else
                 {
-                    UnityEngine.Debug.LogError(
-                        $"[BaseAllocationSystem] No inactive base found for Team={approvedTeam} NetworkId={playerId}. " +
-                        "Verify that the PlayerBase in the sub-scene has the correct TeamNumber baked.");
+                    // Soft log: we yield execution and retry next frame, as the SubScene map might still be streaming asynchronously.
+                    UnityEngine.Debug.LogWarning(
+                        $"[BaseAllocationSystem] Yielding Base Allocation for Team={approvedTeam} NetworkId={playerId}. " +
+                        "Awaiting PlayerBase instantiation from SubScene streaming.");
                 }
-
-                ecb.RemoveComponent<PendingBaseAllocation>(connectionEntity);
             }
 
             bases.Dispose();

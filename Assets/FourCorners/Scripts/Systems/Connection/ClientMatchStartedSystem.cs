@@ -32,13 +32,10 @@ namespace FourCorners.Scripts.Systems.Connection
             // RPC entities (no structural changes that affect other running jobs).
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            // Retrieve the bridge service via the managed accessor system.
-            ISystemBridgeServiceAccessor bridgeAccessor = null;
-            foreach (var world in World.All)
-            {
-                var accessor = world.GetExistingSystemManaged<BridgeServiceAccessSystem>();
-                if (accessor != null) { bridgeAccessor = accessor; break; }
-            }
+            // Retrieve the bridge service from THIS world only.
+            // state.World is the managed World reference for the currently executing system,
+            // guaranteeing we don't accidentally invoke another client's UI bridge in MPM.
+            var bridgeAccessor = state.World.GetExistingSystemManaged<BridgeServiceAccessSystem>();
 
             foreach (var (_, reqEntity) in
                      SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>()

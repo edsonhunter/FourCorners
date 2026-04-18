@@ -33,7 +33,7 @@ namespace FourCorners.Scripts.Scenes
             systemBridgeService.OnLobbyStateUpdate += LobbyUpdate;
 
             lobbyScreenUI.Init(
-                systemBridgeService.OnMatchStarted,
+                systemBridgeService.SendStartGameRequest,
                 onStart: () => { /* Start is handled by ClientMatchStartedSystem via OnMatchStarted */ },
                 onExit:  ExitLobby);
         }

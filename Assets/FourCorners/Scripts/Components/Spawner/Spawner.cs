@@ -3,6 +3,7 @@ using Unity.NetCode;
 
 namespace FourCorners.Scripts.Components.Spawner
 {
+    [GhostComponent]
     public struct SpawnerData : IComponentData
     {
         /// <summary>

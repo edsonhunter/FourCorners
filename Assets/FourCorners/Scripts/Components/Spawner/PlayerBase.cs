@@ -4,6 +4,7 @@ using Unity.NetCode;
 
 namespace FourCorners.Scripts.Components.Spawner
 {
+    [GhostComponent]
     public struct PlayerBase : IComponentData
     {
         public Team.TeamNumber TeamNumber;

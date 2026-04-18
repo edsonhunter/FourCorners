@@ -28,16 +28,7 @@ namespace FourCorners.Scripts.Systems.Connection
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            BridgeServiceAccessSystem bridgeSystem = null;
-            foreach (var world in World.All)
-            {
-                var sys = world.GetExistingSystemManaged<BridgeServiceAccessSystem>();
-                if (sys != null)
-                {
-                    bridgeSystem = sys;
-                    break;
-                }
-            }
+            var bridgeSystem = state.World.GetExistingSystemManaged<BridgeServiceAccessSystem>();
 
             foreach (var (rpc, reqEntity) in
                      SystemAPI.Query<RefRO<LobbyStateUpdateRpc>>()

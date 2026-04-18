@@ -26,6 +26,7 @@ namespace FourCorners.Scripts.Systems.Connection
     {
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<MatchStateTag>();
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
 
             var rpcQuery = new EntityQueryBuilder(Allocator.Temp)
@@ -138,12 +139,10 @@ namespace FourCorners.Scripts.Systems.Connection
                     ecb.AddComponent(lobbyRpc, new SendRpcCommandRequest { TargetConnection = targetConn });
                 }
 
-                // --- Bring connection into simulation ---
-                ecb.AddComponent<NetworkStreamInGame>(sourceConnection);
-                ecb.AddComponent(sourceConnection, new PendingBaseAllocation
-                {
-                    ApprovedTeam = (TeamNumber)grantedTeam
-                });
+                // --- Transition to Active is handled when HostStartGameSystem fires ---
+                // Note: We DO NOT add NetworkStreamInGame here. Ghost synchronization
+                // is deferred. The client will send ReadyForGhostsRequest once it transitions
+                // to GameplayScene and finishes baking its subscenes.
             }
         }
     }

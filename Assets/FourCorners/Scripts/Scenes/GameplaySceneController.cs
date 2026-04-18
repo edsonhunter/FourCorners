@@ -14,7 +14,6 @@ namespace FourCorners.Scripts.Scenes
 
         protected override Task Loading()
         {
-            GetService<ISystemBridgeService>().NotifyClientSceneReady();
             return WaitAndInitCameraAsync();
         }
 
@@ -37,6 +36,9 @@ namespace FourCorners.Scripts.Scenes
             }
             
             cameraController.Setup();
+
+            // Notify systems (e.g. ClientStreamReadySystem) that the scene is fully baked
+            service.NotifyClientSceneReady();
         }
     }
     
