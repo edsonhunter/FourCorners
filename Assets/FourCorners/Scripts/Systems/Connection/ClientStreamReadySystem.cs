@@ -39,6 +39,11 @@ namespace FourCorners.Scripts.Systems.Connection
         {
             // Verify all Netcode subscenes referenced in the new world state are fully loaded and baked
             using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
+
+            // [FIX] Prevent premature handshake. If length is 0, the SubScene hasn't 
+            // started pushing entities into the world yet.
+            if (sceneEntities.Length == 0) return;
+
             foreach (var sceneEntity in sceneEntities)
             {
                 if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity)) return;

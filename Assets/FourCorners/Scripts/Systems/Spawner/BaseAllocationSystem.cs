@@ -1,4 +1,5 @@
 using FourCorners.Scripts.Components.Spawner;
+using FourCorners.Scripts.Systems.Connection;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
@@ -18,6 +19,7 @@ namespace FourCorners.Scripts.Systems.Spawner
     /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateAfter(typeof(ServerStreamReadySystem))]
     public partial struct BaseAllocationSystem : ISystem
     {
         private EntityQuery _baseQuery;

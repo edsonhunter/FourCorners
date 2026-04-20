@@ -49,7 +49,7 @@ namespace FourCorners.Scripts.Systems.Connection
             {
                 // Clean up any stale RPCs and bail early
                 foreach (var (_, reqEntity) in
-                         SystemAPI.Query<ReceiveRpcCommandRequest>()
+                         SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>()
                              .WithAll<StartGameRequest>()
                              .WithEntityAccess())
                 {

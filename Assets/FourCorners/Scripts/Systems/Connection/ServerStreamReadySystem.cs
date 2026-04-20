@@ -17,6 +17,7 @@ namespace FourCorners.Scripts.Systems.Connection
     /// NetworkStreamInGame to officially start Ghost streaming for that client.
     /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
+    [UpdateAfter(typeof(ServerAcceptGameSystem))]
     public partial struct ServerStreamReadySystem : ISystem
     {
         public void OnCreate(ref SystemState state)
