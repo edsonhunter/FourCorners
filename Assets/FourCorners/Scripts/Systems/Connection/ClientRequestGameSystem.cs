@@ -23,7 +23,6 @@ namespace FourCorners.Scripts.Systems.Connection
         public static int DesiredTeamIndex = -1;
 
         private EntityQuery _pendingNetworkIdQuery;
-        private EntityQuery _sceneQuery;
 
         public void OnCreate(ref SystemState state)
         {
@@ -33,19 +32,10 @@ namespace FourCorners.Scripts.Systems.Connection
                 .WithNone<ClientLobbyJoinedTag>();
             _pendingNetworkIdQuery = state.GetEntityQuery(builder);
             state.RequireForUpdate(_pendingNetworkIdQuery);
-
-            _sceneQuery = state.GetEntityQuery(ComponentType.ReadOnly<SceneReference>());
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            // Wait until all referenced sub-scenes are fully loaded
-            using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
-            foreach (var sceneEntity in sceneEntities)
-            {
-                if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity)) return;
-            }
-
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
             using var connectionEntities = _pendingNetworkIdQuery.ToEntityArray(Allocator.Temp);
