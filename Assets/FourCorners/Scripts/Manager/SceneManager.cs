@@ -1,6 +1,7 @@
 using FourCorners.Scripts.Manager.Interface;
 using FourCorners.Scripts.Scenes;
 using FourCorners.Scripts.Scenes.Interface;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -28,7 +29,7 @@ namespace FourCorners.Scripts.Manager
                     .completed +=
                 async operation =>
                 {
-                    _activeScene = BaseScene.GetActiveScene();
+                    _activeScene = GetActiveSceneController();
                     _activeScene.Init(_application, data);
                     _activeScene.SetActiveScene(true);
                     await _activeScene.FireLoading();
@@ -43,7 +44,7 @@ namespace FourCorners.Scripts.Manager
                 async operation =>
                 {
                     SetLastLoadedSceneActive();
-                    var overlay = BaseScene.GetActiveScene();
+                    var overlay = GetActiveSceneController();
                     overlay.Init(_application, data);
                     _activeScene.SetActiveScene(false);
                     await overlay.FireLoading();
@@ -91,6 +92,23 @@ namespace FourCorners.Scripts.Manager
             }
 
             UnitySceneManager.SetActiveScene(lastLoadedScene);
+        }
+        
+        private BaseScene GetActiveSceneController()
+        {
+            Scene activeScene = UnitySceneManager.GetActiveScene();
+            GameObject[] overlayRootObjects = activeScene.GetRootGameObjects();
+
+            BaseScene baseScene = null;
+            foreach (GameObject rootObject in overlayRootObjects)
+            {
+                if (rootObject.GetComponent<BaseScene>() == null)
+                    continue;
+                
+                baseScene = rootObject.GetComponent<BaseScene>();
+            }
+
+            return baseScene;
         }
     }
 }

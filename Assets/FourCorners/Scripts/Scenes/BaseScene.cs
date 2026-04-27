@@ -15,8 +15,6 @@ namespace FourCorners.Scripts.Scenes
     public abstract class BaseScene : MonoBehaviour, IBaseScene
     {
         public bool IsActiveScene { get; private set; }
-        public static BaseScene GetActiveScene() => _currentScene;
-        private static BaseScene _currentScene;
         internal ISceneData SceneData;
         internal IApplication Application;
         
@@ -31,11 +29,6 @@ namespace FourCorners.Scripts.Scenes
             this.AssertForbiddenMethods("Start", "Awake", "Update");
         }
         #endif
-        
-        private void Awake()
-        {
-            _currentScene = this;
-        }
         
         public async Task FireLoading()
         {
