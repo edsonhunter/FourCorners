@@ -46,7 +46,7 @@ namespace FourCorners.Scripts.Services
                 {
                     world.EntityManager.CreateEntity(typeof(SceneLoadedTag));
                     // Removed 'break;' so that ThinClients in the Unity Editor's Multiplayer Play Mode
-                    // also receive the tag and can successfully trigger ServerStreamReadySystem.
+                    // also receive the tag and can successfully trigger ClientStreamReadySystem.
                 }
             }
         }

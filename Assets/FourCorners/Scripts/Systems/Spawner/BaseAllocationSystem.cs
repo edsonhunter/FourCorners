@@ -42,6 +42,14 @@ namespace FourCorners.Scripts.Systems.Spawner
         {
             var bases = _baseQuery.ToEntityArray(Allocator.Temp);
             var spawners = _spawnerQuery.ToEntityArray(Allocator.Temp);
+
+            // ComponentLookup is the correct ECS pattern for random-access reads/writes
+            // on entities that are NOT part of the current SystemAPI.Query iteration.
+            // Using EntityManager.GetComponentData/SetComponentData inside a SystemAPI.Query
+            // loop violates ECS safety handles and causes silent failures in the editor.
+            var baseLookup = SystemAPI.GetComponentLookup<PlayerBase>(isReadOnly: false);
+            var spawnerLookup = SystemAPI.GetComponentLookup<SpawnerData>(isReadOnly: false);
+
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
@@ -58,13 +66,13 @@ namespace FourCorners.Scripts.Systems.Spawner
                 // --- Phase 1: Activate the PlayerBase ---
                 foreach (var candidate in bases)
                 {
-                    var baseData = state.EntityManager.GetComponentData<PlayerBase>(candidate);
+                    if (!baseLookup.TryGetComponent(candidate, out var baseData)) continue;
 
                     if (baseData.TeamNumber == approvedTeam && !baseData.IsActive)
                     {
                         baseData.IsActive = true;
                         baseData.NetworkId = playerId;
-                        state.EntityManager.SetComponentData(candidate, baseData);
+                        baseLookup[candidate] = baseData;
 
                         baseEntity = candidate;
                         assigned = true;
@@ -81,22 +89,23 @@ namespace FourCorners.Scripts.Systems.Spawner
                 {
                     foreach (var spawnerEntity in spawners)
                     {
-                        var spawnerData = state.EntityManager.GetComponentData<SpawnerData>(spawnerEntity);
+                        if (!spawnerLookup.TryGetComponent(spawnerEntity, out var spawnerData)) continue;
 
                         if (spawnerData.PlayerBaseEntity == baseEntity)
                         {
                             spawnerData.NetworkId = playerId;
                             spawnerData.IsActive = true; // mirror for client ghost replication
-                            state.EntityManager.SetComponentData(spawnerEntity, spawnerData);
+                            spawnerLookup[spawnerEntity] = spawnerData;
                         }
                     }
 
-                    // Only consume the allocation request once the SubScene has successfully loaded and mapped
+                    // Only consume the allocation request once the base was successfully activated
                     ecb.RemoveComponent<PendingBaseAllocation>(connectionEntity);
                 }
                 else
                 {
-                    // Soft log: we yield execution and retry next frame, as the SubScene map might still be streaming asynchronously.
+                    // Soft log: we yield execution and retry next frame, as the SubScene map
+                    // might still be streaming asynchronously.
                     UnityEngine.Debug.LogWarning(
                         $"[BaseAllocationSystem] Yielding Base Allocation for Team={approvedTeam} NetworkId={playerId}. " +
                         "Awaiting PlayerBase instantiation from SubScene streaming.");

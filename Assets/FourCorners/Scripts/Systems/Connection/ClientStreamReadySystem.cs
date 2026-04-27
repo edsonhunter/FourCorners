@@ -37,16 +37,19 @@ namespace FourCorners.Scripts.Systems.Connection
 
         public void OnUpdate(ref SystemState state)
         {
-            // Verify all Netcode subscenes referenced in the new world state are fully loaded and baked
-            using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
-
-            // [FIX] Prevent premature handshake. If length is 0, the SubScene hasn't 
-            // started pushing entities into the world yet.
-            if (sceneEntities.Length == 0) return;
-
-            foreach (var sceneEntity in sceneEntities)
+            // ThinClients have no SubScene pipeline — they will never produce SceneReference entities.
+            // Blocking on sceneEntities.Length == 0 would deadlock them permanently.
+            // SceneLoadedTag injection from NotifyClientSceneReady() is their sole readiness signal.
+            bool isThinClient = (state.WorldUnmanaged.Flags & WorldFlags.GameThinClient) != 0;
+            if (!isThinClient)
             {
-                if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity)) return;
+                // For full clients, wait until all SubScenes are fully baked before handshaking.
+                using var sceneEntities = _sceneQuery.ToEntityArray(Allocator.Temp);
+                if (sceneEntities.Length == 0) return;
+                foreach (var sceneEntity in sceneEntities)
+                {
+                    if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, sceneEntity)) return;
+                }
             }
 
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
